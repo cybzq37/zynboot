@@ -66,6 +66,13 @@ management:
 
 # Zyn
 zyn:
+  cors:
+    enabled: true
+    allowed-origins: ["*"]
+    allowed-methods: ["GET","POST","PUT","DELETE","PATCH","OPTIONS"]
+    allowed-headers: ["*"]
+    allow-credentials: false
+    max-age: 3600
   discovery:
     connect-timeout-ms: 3000
     read-timeout-ms: 10000
