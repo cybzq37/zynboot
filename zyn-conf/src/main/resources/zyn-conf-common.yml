@@ -66,6 +66,10 @@ management:
 
 # Zyn
 zyn:
+  discovery:
+    connect-timeout-ms: 3000
+    read-timeout-ms: 10000
+    follow-redirects: false
   satoken:
     enabled: true
     login-type: login

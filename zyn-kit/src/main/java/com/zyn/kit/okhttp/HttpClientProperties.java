@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -27,6 +29,21 @@ public class HttpClientProperties {
 
     /** 单次请求总超时（秒）。 */
     private long callTimeoutSeconds = DEFAULT_CALL_TIMEOUT_SECONDS;
+
+    /** 连接池最大空闲连接数。 */
+    private int maxConnections = 50;
+
+    /** 空闲连接存活时间（秒）。 */
+    private long keepAliveSeconds = 60;
+
+    /** 请求体最大字节数，超过拦截器拒绝（0=不限制）。 */
+    private long maxRequestBytes = 0;
+
+    /** 是否跟随重定向（微服务内部一般 false）。 */
+    private boolean followRedirects = false;
+
+    /** 全局默认请求头（所有请求自动附加）。 */
+    private Map<String, String> defaultHeaders = new HashMap<>();
 
     /** 是否在 HTTP 非 2xx 或 IO 异常时抛出异常。 */
     private boolean throwOnHttpError = false;

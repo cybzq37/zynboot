@@ -1,0 +1,38 @@
+package com.zyn.infra.discovery;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 服务发现配置。
+ */
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "zyn.discovery")
+public class DiscoveryProperties {
+
+    /** 连接超时（毫秒）。 */
+    private long connectTimeoutMs = 3000;
+
+    /** 读取超时（毫秒）。 */
+    private long readTimeoutMs = 10000;
+
+    /** 是否跟随重定向（微服务内部一般 false）。 */
+    private boolean followRedirects = false;
+
+    /** 服务地址映射。 */
+    private Map<String, String> services = new HashMap<>();
+
+    public String getRequiredUrl(String serviceName) {
+        String url = services.get(serviceName);
+        if (url == null || url.isBlank()) {
+            throw new IllegalStateException(
+                    "Service URL not configured: zyn.discovery.services." + serviceName);
+        }
+        return url;
+    }
+}

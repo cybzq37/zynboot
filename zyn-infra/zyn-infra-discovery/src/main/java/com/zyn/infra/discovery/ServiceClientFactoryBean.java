@@ -37,7 +37,16 @@ public class ServiceClientFactoryBean implements FactoryBean<Object>, Environmen
             throw new IllegalStateException(
                     "Service URL not configured: zyn.discovery.services." + serviceName);
         }
-        this.proxy = ServiceProxyBuilder.build(clientType, url);
+
+        long connectTimeoutMs = environment.getProperty(
+                "zyn.discovery.connect-timeout-ms", Long.class, 3000L);
+        long readTimeoutMs = environment.getProperty(
+                "zyn.discovery.read-timeout-ms", Long.class, 10000L);
+        boolean followRedirects = environment.getProperty(
+                "zyn.discovery.follow-redirects", Boolean.class, false);
+
+        this.proxy = ServiceProxyBuilder.build(
+                clientType, url, connectTimeoutMs, readTimeoutMs, followRedirects);
         log.info("Created service client: {} -> {} ({})", clientType.getSimpleName(), serviceName, url);
     }
 

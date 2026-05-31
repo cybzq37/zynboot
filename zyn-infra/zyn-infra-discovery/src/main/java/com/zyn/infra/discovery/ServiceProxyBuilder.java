@@ -13,18 +13,21 @@ import java.time.Duration;
  */
 public final class ServiceProxyBuilder {
 
-    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(3);
-    private static final Duration READ_TIMEOUT = Duration.ofSeconds(10);
-
     private ServiceProxyBuilder() {
     }
 
-    public static <T> T build(Class<T> serviceType, String baseUrl) {
+    public static <T> T build(Class<T> serviceType, String baseUrl,
+                              long connectTimeoutMs, long readTimeoutMs,
+                              boolean followRedirects) {
         HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(CONNECT_TIMEOUT)
+                .connectTimeout(Duration.ofMillis(connectTimeoutMs))
+                .followRedirects(followRedirects
+                        ? HttpClient.Redirect.NORMAL
+                        : HttpClient.Redirect.NEVER)
                 .build();
+
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-        requestFactory.setReadTimeout(READ_TIMEOUT);
+        requestFactory.setReadTimeout(Duration.ofMillis(readTimeoutMs));
 
         RestClient client = RestClient.builder()
                 .baseUrl(baseUrl)
