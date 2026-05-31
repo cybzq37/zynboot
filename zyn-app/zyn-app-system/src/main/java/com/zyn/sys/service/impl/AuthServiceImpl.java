@@ -72,8 +72,6 @@ public class AuthServiceImpl implements AuthService {
                         .permName(p.getPermName())
                         .permType(p.getPermType())
                         .path(p.getPath())
-                        .component(p.getComponent())
-                        .icon(p.getIcon())
                         .sort(p.getSort())
                         .visible(p.getVisible())
                         .build())

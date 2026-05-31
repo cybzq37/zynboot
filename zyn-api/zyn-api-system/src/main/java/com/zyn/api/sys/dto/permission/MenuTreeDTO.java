@@ -14,8 +14,6 @@ public class MenuTreeDTO {
     String permName;
     Integer permType;
     String path;
-    String component;
-    String icon;
     Integer sort;
     Boolean visible;
     List<MenuTreeDTO> children;

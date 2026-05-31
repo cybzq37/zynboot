@@ -17,8 +17,6 @@ public class PermissionDTO {
     String permName;
     Integer permType;
     String path;
-    String component;
-    String icon;
     Integer sort;
     Boolean visible;
     Integer status;

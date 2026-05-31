@@ -14,8 +14,6 @@ public class SysPermission extends BaseEntity {
     private String permName;
     private Integer permType;
     private String path;
-    private String component;
-    private String icon;
     private Integer sort;
     private Boolean visible;
     private Integer status;

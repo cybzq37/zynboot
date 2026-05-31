@@ -66,8 +66,6 @@ public class PermissionManager {
                         .permName(p.getPermName())
                         .permType(p.getPermType())
                         .path(p.getPath())
-                        .component(p.getComponent())
-                        .icon(p.getIcon())
                         .sort(p.getSort())
                         .visible(p.getVisible())
                         .children(buildTree(all, p.getId()))

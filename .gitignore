@@ -24,6 +24,7 @@ desktop.ini
 *.log
 *.log.gz
 logs/
+uploads/
 
 # Maven
 .mvn/timing.properties
