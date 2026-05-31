@@ -11,7 +11,7 @@ import org.springframework.web.service.annotation.*;
 import java.util.List;
 
 @ServiceClient("sys")
-@HttpExchange("/api/v1/resource")
+@HttpExchange("/sys/api/v1/resource")
 public interface SysResourceApi {
 
     @GetExchange

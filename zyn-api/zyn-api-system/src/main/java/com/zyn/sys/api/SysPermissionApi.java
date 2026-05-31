@@ -14,7 +14,7 @@ import org.springframework.web.service.annotation.*;
 import java.util.List;
 
 @ServiceClient("sys")
-@HttpExchange("/api/v1/permission")
+@HttpExchange("/sys/api/v1/permission")
 public interface SysPermissionApi {
 
     @GetExchange

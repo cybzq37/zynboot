@@ -10,7 +10,7 @@ import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
 @ServiceClient("sys")
-@HttpExchange("/api/v1/auth")
+@HttpExchange("/sys/api/v1/auth")
 public interface SysAuthApi {
 
     @PostExchange("/login")

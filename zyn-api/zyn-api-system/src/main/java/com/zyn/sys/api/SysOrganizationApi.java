@@ -12,7 +12,7 @@ import org.springframework.web.service.annotation.*;
 import java.util.List;
 
 @ServiceClient("sys")
-@HttpExchange("/api/v1/org")
+@HttpExchange("/sys/api/v1/org")
 public interface SysOrganizationApi {
 
     @GetExchange

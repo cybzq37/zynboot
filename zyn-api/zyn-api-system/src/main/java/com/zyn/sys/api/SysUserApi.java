@@ -13,7 +13,7 @@ import org.springframework.web.service.annotation.*;
 import java.util.Map;
 
 @ServiceClient("sys")
-@HttpExchange("/api/v1/user")
+@HttpExchange("/sys/api/v1/user")
 public interface SysUserApi {
 
     @GetExchange

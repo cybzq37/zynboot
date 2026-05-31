@@ -13,7 +13,7 @@ import org.springframework.web.service.annotation.*;
 import java.util.List;
 
 @ServiceClient("sys")
-@HttpExchange("/api/v1/role")
+@HttpExchange("/sys/api/v1/role")
 public interface SysRoleApi {
 
     @GetExchange
