@@ -1,7 +1,0 @@
-**/target/
-**/build/
-**/.idea/
-**/.git/
-**/logs/
-**/*.log
-**/node_modules/
