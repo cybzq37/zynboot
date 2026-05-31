@@ -1,6 +1,6 @@
 package com.zyn.sys.handler.query;
 
-import com.zyn.api.sys.response.role.RoleRes;
+import com.zyn.sys.response.role.RoleRes;
 import com.zyn.sys.infrastructure.entity.SysRole;
 import com.zyn.sys.infrastructure.entity.SysUserRole;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;

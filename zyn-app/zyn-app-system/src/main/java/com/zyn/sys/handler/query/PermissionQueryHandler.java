@@ -1,7 +1,7 @@
 package com.zyn.sys.handler.query;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.zyn.api.sys.response.permission.MenuTreeRes;
+import com.zyn.sys.response.permission.MenuTreeRes;
 import com.zyn.sys.infrastructure.entity.SysPermission;
 import com.zyn.sys.infrastructure.mapper.SysPermissionMapper;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;

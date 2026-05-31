@@ -2,11 +2,12 @@ package com.zyn.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zyn.api.sys.command.user.UserSaveCmd;
-import com.zyn.api.sys.query.user.UserPageQuery;
-import com.zyn.api.sys.response.user.UserRes;
+import com.zyn.sys.command.user.UserSaveCmd;
+import com.zyn.sys.query.user.UserPageQuery;
+import com.zyn.sys.response.user.UserRes;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.kit.util.BeanUtils;
+import com.zyn.sys.api.SysUserApi;
 import com.zyn.sys.domain.aggregate.UserAggregate;
 import com.zyn.sys.domain.repository.UserRepository;
 import com.zyn.sys.handler.query.UserQueryHandler;
@@ -25,12 +26,13 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")
-public class SysUserController {
+public class SysUserController implements SysUserApi {
 
     private final UserQueryHandler userQueryHandler;
     private final UserRepository userRepository;
     private final SysUserMapper userMapper;
 
+    @Override
     @GetMapping
     public ApiResponse<Map<String, Object>> page(UserPageQuery query) {
         Page<SysUser> page = new Page<>(query.getPageNum(), query.getPageSize());
@@ -49,11 +51,13 @@ public class SysUserController {
         ));
     }
 
+    @Override
     @GetMapping("/{id}")
     public ApiResponse<UserRes> getById(@PathVariable String id) {
         return ApiResponse.ok(userQueryHandler.findById(id));
     }
 
+    @Override
     @PostMapping
     public ApiResponse<Void> create(@RequestBody UserSaveCmd cmd) {
         UserAggregate user = UserAggregate.create(cmd.getUsername(), PasswordUtils.encode(cmd.getPassword()));
@@ -62,6 +66,7 @@ public class SysUserController {
         return ApiResponse.ok(null);
     }
 
+    @Override
     @PutMapping("/{id}")
     public ApiResponse<Void> update(@PathVariable String id, @RequestBody UserSaveCmd cmd) {
         UserAggregate user = userRepository.findById(id)
@@ -74,6 +79,7 @@ public class SysUserController {
         return ApiResponse.ok(null);
     }
 
+    @Override
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
         userMapper.deleteById(id);

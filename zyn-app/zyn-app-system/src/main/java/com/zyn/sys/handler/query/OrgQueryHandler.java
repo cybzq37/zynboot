@@ -1,7 +1,7 @@
 package com.zyn.sys.handler.query;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.zyn.api.sys.response.org.OrgTreeRes;
+import com.zyn.sys.response.org.OrgTreeRes;
 import com.zyn.sys.infrastructure.entity.SysOrganization;
 import com.zyn.sys.infrastructure.mapper.SysOrganizationMapper;
 import lombok.RequiredArgsConstructor;

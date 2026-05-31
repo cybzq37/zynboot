@@ -1,10 +1,10 @@
 package com.zyn.sys.handler.command;
 
-import com.zyn.api.sys.response.user.LoginRes;
-import com.zyn.api.sys.response.user.LoginUserRes;
-import com.zyn.api.sys.response.user.UserRes;
-import com.zyn.api.sys.response.user.UserInfoRes;
-import com.zyn.api.sys.response.permission.MenuTreeRes;
+import com.zyn.sys.response.user.LoginRes;
+import com.zyn.sys.response.user.LoginUserRes;
+import com.zyn.sys.response.user.UserRes;
+import com.zyn.sys.response.user.UserInfoRes;
+import com.zyn.sys.response.permission.MenuTreeRes;
 import com.zyn.infra.satoken.utils.LoginHelper;
 import com.zyn.kit.exception.BaseException;
 import com.zyn.kit.util.BeanUtils;

@@ -1,8 +1,8 @@
 package com.zyn.app.controller;
 
-import com.zyn.api.sys.client.RemoteUserService;
-import com.zyn.api.sys.response.user.UserRes;
-import com.zyn.api.sys.response.user.UserInfoRes;
+import com.zyn.sys.client.RemoteUserService;
+import com.zyn.sys.response.user.UserRes;
+import com.zyn.sys.response.user.UserInfoRes;
 import com.zyn.kit.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

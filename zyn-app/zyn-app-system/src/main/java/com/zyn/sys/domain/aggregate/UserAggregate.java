@@ -1,6 +1,6 @@
 package com.zyn.sys.domain.aggregate;
 
-import com.zyn.api.sys.command.user.UserSaveCmd;
+import com.zyn.sys.command.user.UserSaveCmd;
 import com.zyn.sys.domain.enums.UserStatus;
 import com.zyn.sys.infrastructure.entity.SysUser;
 import lombok.Getter;

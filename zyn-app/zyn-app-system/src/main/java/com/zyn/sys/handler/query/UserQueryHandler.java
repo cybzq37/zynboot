@@ -1,7 +1,7 @@
 package com.zyn.sys.handler.query;
 
-import com.zyn.api.sys.response.user.LoginUserRes;
-import com.zyn.api.sys.response.user.UserRes;
+import com.zyn.sys.response.user.LoginUserRes;
+import com.zyn.sys.response.user.UserRes;
 import com.zyn.sys.infrastructure.entity.SysRole;
 import com.zyn.sys.infrastructure.entity.SysUser;
 import com.zyn.sys.infrastructure.entity.SysUserRole;
