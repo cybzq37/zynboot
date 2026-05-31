@@ -1,8 +1,7 @@
 FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="zyn"
-
-ARG JAR_FILE
+LABEL description="Zyn application runtime"
 
 RUN apk add --no-cache \
       tzdata \
@@ -20,11 +19,9 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 COPY start.sh /app/start.sh
-COPY ${JAR_FILE} /app/app.jar
+COPY app.jar /app/app.jar
 RUN chmod +x /app/start.sh && chown -R app:app /app
 
 USER app
-
-EXPOSE 8080
 
 ENTRYPOINT ["/app/start.sh"]

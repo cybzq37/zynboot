@@ -4,13 +4,14 @@
 #
 # 环境变量:
 #   SPRING_PROFILES  - Spring Profile（默认 prod）
-#   JVM_XMS          - 初始堆大小（默认 256m）
+#   JVM_XMS          - 初始堆大小（默认 512m）
 #   JVM_XMX          - 最大堆大小（默认 512m）
 #   JVM_OPTS         - 额外 JVM 参数
 # ----------------------------------------------------------
+set -e
 
 SPRING_PROFILES=${SPRING_PROFILES:-prod}
-JVM_XMS=${JVM_XMS:-256m}
+JVM_XMS=${JVM_XMS:-512m}
 JVM_XMX=${JVM_XMX:-512m}
 
 APP_JAR=/app/app.jar

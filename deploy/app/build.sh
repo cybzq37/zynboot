@@ -15,10 +15,19 @@
 #   --tag      镜像版本（默认: latest）
 #   --port     端口映射（默认: 8080）
 #   --profile  Spring Profile（默认: prod）
-#   --jvm-xms  初始堆大小（默认: 256m）
+#   --jvm-xms  初始堆大小（默认: 512m）
 #   --jvm-xmx  最大堆大小（默认: 512m）
 #
-# 流程: 构建镜像 → 停旧容器 → 清理悬空镜像 → 启新容器
+# 目录结构:
+#   deploy/app/
+#   ├── build.sh          ← 本脚本
+#   ├── image/
+#   │   ├── Dockerfile    ← 镜像构建文件
+    #   │   └── start.sh    ← 容器启动脚本
+#   ├── <your-app>.jar    ← 上传 JAR 到这里
+#   └── logs/             ← 运行时日志（自动生成）
+#
+# 流程: 复制 JAR → 构建镜像 → 停旧容器 → 清理悬空镜像 → 启新容器
 # ----------------------------------------------------------
 set -e
 cd "$(dirname "$0")"
@@ -61,23 +70,29 @@ if [ -z "$IMAGE_NAME" ]; then
   exit 1
 fi
 
+JAR_BASENAME=$(basename "$JAR_FILE")
 CONTAINER_NAME="${IMAGE_NAME}"
 FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo "============================================"
 echo "  Image:    $FULL_IMAGE"
-echo "  JAR:      $JAR_FILE"
+echo "  JAR:      $JAR_BASENAME"
 echo "  Port:     $APP_PORT"
 echo "  Profile:  $SPRING_PROFILE"
 echo "  JVM:      -Xms$JVM_XMS -Xmx$JVM_XMX"
 echo "============================================"
 
+# ── 复制 JAR 到构建目录 ──────────────────────────────────────
+echo "复制 JAR: $JAR_BASENAME → image/"
+cp "$JAR_FILE" "image/app.jar"
+
 # ── 构建镜像 ────────────────────────────────────────────────
 echo "构建镜像: $FULL_IMAGE"
 
-docker build -t "$FULL_IMAGE" \
-  --build-arg JAR_FILE="$JAR_FILE" \
-  -f Dockerfile .
+docker build -t "$FULL_IMAGE" image/
+
+# ── 清理构建产物 ─────────────────────────────────────────────
+rm -f image/app.jar
 
 # ── 停旧容器 ────────────────────────────────────────────────
 if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
