@@ -9,6 +9,7 @@ import lombok.EqualsAndHashCode;
 @TableName("sys_resource")
 public class SysResource extends BaseEntity {
 
+    private String permissionId;
     private String resName;
     private Integer resType;
     private String requestMethod;
