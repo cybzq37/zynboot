@@ -10,6 +10,11 @@ public class SaTokenWebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new SaInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new SaInterceptor())
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/api/v1/auth/**",
+                        "/api/v1/sys-proxy/**"
+                );
     }
 }

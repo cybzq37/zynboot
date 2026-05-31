@@ -3,13 +3,19 @@ package com.zyn.infra.discovery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
+import org.springframework.web.service.invoker.HttpServiceArgumentResolver;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ServiceLoader;
 
 /**
- * FactoryBean：根据服务名从配置获取地址，创建 HttpExchange 代理。
- * 通过 Environment 读取 zyn.discovery.services.<serviceName>，避免依赖 Bean 生命周期顺序。
+ * FactoryBean：根据 @HttpExchange.url 创建 HTTP 客户端代理。
+ * 支持 Spring 属性占位符（如 ${api.sys.base-url}）。
+ * <p>
+ * 自动通过 SPI 加载 {@link HttpServiceArgumentResolver} 实现。
  */
 @Slf4j
 public class ServiceClientFactoryBean implements FactoryBean<Object>, EnvironmentAware, InitializingBean {
@@ -45,8 +51,13 @@ public class ServiceClientFactoryBean implements FactoryBean<Object>, Environmen
         boolean followRedirects = environment.getProperty(
                 "zyn.discovery.follow-redirects", Boolean.class, false);
 
+        List<HttpServiceArgumentResolver> resolvers = new ArrayList<>();
+        for (HttpServiceArgumentResolver resolver : ServiceLoader.load(HttpServiceArgumentResolver.class)) {
+            resolvers.add(resolver);
+        }
+
         this.proxy = ServiceProxyBuilder.build(
-                clientType, url, connectTimeoutMs, readTimeoutMs, followRedirects);
+                clientType, url, connectTimeoutMs, readTimeoutMs, followRedirects, resolvers);
         log.info("Created service client: {} -> {} ({})", clientType.getSimpleName(), serviceName, url);
     }
 

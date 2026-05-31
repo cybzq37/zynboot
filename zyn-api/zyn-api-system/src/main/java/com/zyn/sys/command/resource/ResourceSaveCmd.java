@@ -1,15 +1,17 @@
 package com.zyn.sys.command.resource;
 
-import lombok.Builder;
-import lombok.Value;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * API 资源保存命令（创建 / 更新）。
  * <p>
  * id 为空时创建，id 非空时更新。
  */
-@Value
-@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResourceSaveCmd {
 
     /** 资源 ID（更新时必填，创建时为空）。 */

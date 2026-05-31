@@ -1,45 +1,37 @@
 package com.zyn.sys.api;
+import com.zyn.infra.discovery.ServiceClient;
 
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.command.permission.PermissionSaveCmd;
 import com.zyn.sys.query.permission.PermissionQuery;
 import com.zyn.sys.response.permission.MenuTreeRes;
 import com.zyn.sys.response.permission.PermissionRes;
+import com.zyn.infra.discovery.query.HttpQueryMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.service.annotation.*;
 
 import java.util.List;
 
-/**
- * 权限管理 API。
- */
+@ServiceClient("sys")
+@HttpExchange("/api/v1/permission")
 public interface SysPermissionApi {
 
-    /**
-     * 查询权限列表。
-     */
-    ApiResponse<List<PermissionRes>> list(PermissionQuery query);
+    @GetExchange
+    ApiResponse<List<PermissionRes>> list(@HttpQueryMap PermissionQuery query);
 
-    /**
-     * 获取权限树。
-     */
+    @GetExchange("/tree")
     ApiResponse<List<MenuTreeRes>> tree();
 
-    /**
-     * 根据 ID 获取权限。
-     */
-    ApiResponse<PermissionRes> getById(String id);
+    @GetExchange("/{id}")
+    ApiResponse<PermissionRes> getById(@PathVariable String id);
 
-    /**
-     * 创建权限。
-     */
-    ApiResponse<Void> create(PermissionSaveCmd cmd);
+    @PostExchange
+    ApiResponse<Void> create(@RequestBody PermissionSaveCmd cmd);
 
-    /**
-     * 更新权限。
-     */
-    ApiResponse<Void> update(String id, PermissionSaveCmd cmd);
+    @PutExchange("/{id}")
+    ApiResponse<Void> update(@PathVariable String id, @RequestBody PermissionSaveCmd cmd);
 
-    /**
-     * 删除权限。
-     */
-    ApiResponse<Void> delete(String id);
+    @DeleteExchange("/{id}")
+    ApiResponse<Void> delete(@PathVariable String id);
 }

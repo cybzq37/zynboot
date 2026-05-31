@@ -40,6 +40,7 @@ APP_PORT=8080
 SPRING_PROFILE="prod"
 JVM_XMS="512m"
 JVM_XMX="512m"
+EXTRA_ENV=""
 
 # ── 解析参数 ─────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -51,6 +52,7 @@ while [[ $# -gt 0 ]]; do
     --profile)  SPRING_PROFILE="$2"; shift 2 ;;
     --jvm-xms)  JVM_XMS="$2";       shift 2 ;;
     --jvm-xmx)  JVM_XMX="$2";       shift 2 ;;
+    --env)      EXTRA_ENV="${EXTRA_ENV} -e $2"; shift 2 ;;
     *)          JAR_FILE="$1";       shift   ;;
   esac
 done
@@ -115,6 +117,7 @@ docker run -d \
   -e SPRING_ACTIVE_PROFILES="$SPRING_PROFILE" \
   -e JVM_XMS="$JVM_XMS" \
   -e JVM_XMX="$JVM_XMX" \
+  $EXTRA_ENV \
   --restart unless-stopped \
   "$FULL_IMAGE"
 

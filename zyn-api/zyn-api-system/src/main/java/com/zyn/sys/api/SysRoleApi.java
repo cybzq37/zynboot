@@ -1,39 +1,33 @@
 package com.zyn.sys.api;
+import com.zyn.infra.discovery.ServiceClient;
 
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.command.role.RoleSaveCmd;
 import com.zyn.sys.query.role.RoleQuery;
 import com.zyn.sys.response.role.RoleRes;
+import com.zyn.infra.discovery.query.HttpQueryMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.service.annotation.*;
 
 import java.util.List;
 
-/**
- * 角色管理 API。
- */
+@ServiceClient("sys")
+@HttpExchange("/api/v1/role")
 public interface SysRoleApi {
 
-    /**
-     * 查询角色列表。
-     */
-    ApiResponse<List<RoleRes>> list(RoleQuery query);
+    @GetExchange
+    ApiResponse<List<RoleRes>> list(@HttpQueryMap RoleQuery query);
 
-    /**
-     * 根据 ID 获取角色。
-     */
-    ApiResponse<RoleRes> getById(String id);
+    @GetExchange("/{id}")
+    ApiResponse<RoleRes> getById(@PathVariable String id);
 
-    /**
-     * 创建角色。
-     */
-    ApiResponse<Void> create(RoleSaveCmd cmd);
+    @PostExchange
+    ApiResponse<Void> create(@RequestBody RoleSaveCmd cmd);
 
-    /**
-     * 更新角色。
-     */
-    ApiResponse<Void> update(String id, RoleSaveCmd cmd);
+    @PutExchange("/{id}")
+    ApiResponse<Void> update(@PathVariable String id, @RequestBody RoleSaveCmd cmd);
 
-    /**
-     * 删除角色。
-     */
-    ApiResponse<Void> delete(String id);
+    @DeleteExchange("/{id}")
+    ApiResponse<Void> delete(@PathVariable String id);
 }

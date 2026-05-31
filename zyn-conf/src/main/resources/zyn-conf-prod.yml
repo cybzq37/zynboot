@@ -7,28 +7,28 @@ spring:
     dynamic:
       datasource:
         master:
-          url: jdbc:postgresql://192.168.1.3:5432/zyn_base
+          url: jdbc:postgresql://${DB_HOST:192.168.1.3}:5432/zyn_base
           username: postgres
           password: ${POSTGRES_PASSWORD:Zyn@Secure#99}
           driver-class-name: org.postgresql.Driver
   data:
     redis:
-      host: 192.168.1.3
+      host: ${REDIS_HOST:192.168.1.3}
       port: 6379
       password: ${REDIS_PASSWORD:Zyn@Secure#99}
       database: 0
     elasticsearch:
-      uris: http://192.168.1.3:9200
+      uris: http://${ES_HOST:192.168.1.3}:9200
       username: elastic
       password: ${ELASTIC_PASSWORD:Zyn@Secure#99}
   kafka:
-    bootstrap-servers: 192.168.1.3:9092
+    bootstrap-servers: ${KAFKA_HOST:192.168.1.3}:9092
 
 zyn:
   discovery:
     services:
-      sys: http://192.168.1.3:28081
-      netty: http://192.168.1.3:28082
+      sys: http://${SYS_HOST:192.168.1.3}:28081
+      netty: http://${NETTY_HOST:192.168.1.3}:28082
   storage:
     s3:
-      endpoint: http://192.168.1.3:8333
+      endpoint: http://${S3_HOST:192.168.1.3}:8333

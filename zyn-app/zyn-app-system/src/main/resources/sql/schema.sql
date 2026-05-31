@@ -2,10 +2,21 @@
 -- Zyn 系统模块 - PostgreSQL Schema
 -- ============================================================
 
+-- 清理旧表（按依赖顺序反向删除）
+DROP TABLE IF EXISTS sys_user_org CASCADE;
+DROP TABLE IF EXISTS sys_role_permission CASCADE;
+DROP TABLE IF EXISTS sys_user_role CASCADE;
+DROP TABLE IF EXISTS sys_audit_log CASCADE;
+DROP TABLE IF EXISTS sys_resource CASCADE;
+DROP TABLE IF EXISTS sys_permission CASCADE;
+DROP TABLE IF EXISTS sys_organization CASCADE;
+DROP TABLE IF EXISTS sys_role CASCADE;
+DROP TABLE IF EXISTS sys_user CASCADE;
+
 -- ------------------------------------------------
 -- 用户表
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_user (
+CREATE TABLE sys_user (
     id              VARCHAR(64)  PRIMARY KEY,        -- 主键（UUID）
     username        VARCHAR(64)  NOT NULL,           -- 登录用户名
     password        VARCHAR(256),                    -- 加密密码
@@ -17,17 +28,17 @@ CREATE TABLE IF NOT EXISTS sys_user (
     gender          SMALLINT     DEFAULT 0,          -- 性别：0=未知 1=男 2=女
     status          SMALLINT     DEFAULT 1,          -- 状态：0=禁用 1=启用
     login_ip        VARCHAR(64),                     -- 最后登录 IP
-    login_time      TIMESTAMPTZ,                       -- 最后登录时间
-    pwd_update_time TIMESTAMPTZ,                       -- 密码最后修改时间
+    login_time      TIMESTAMP,                       -- 最后登录时间
+    pwd_update_time TIMESTAMP,                       -- 密码最后修改时间
     login_attempts  INT          DEFAULT 0,          -- 连续登录失败次数
-    lock_time       TIMESTAMPTZ,                       -- 账号锁定时间（null=未锁定）
+    lock_time       TIMESTAMP,                       -- 账号锁定时间（null=未锁定）
     remark          VARCHAR(512),                    -- 备注
     version         INT          DEFAULT 0,          -- 乐观锁版本号
     deleted         BOOLEAN      DEFAULT FALSE,      -- 逻辑删除标记
     create_by       VARCHAR(64),                     -- 创建人
-    create_time     TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
+    create_time     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
     update_by       VARCHAR(64),                     -- 更新人
-    update_time     TIMESTAMPTZ,                       -- 更新时间
+    update_time     TIMESTAMP,                       -- 更新时间
     CONSTRAINT uk_sys_user_username UNIQUE (username)
 );
 
@@ -38,7 +49,7 @@ CREATE INDEX idx_sys_user_status ON sys_user(status) WHERE deleted = FALSE;
 -- ------------------------------------------------
 -- 角色表
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_role (
+CREATE TABLE sys_role (
     id          VARCHAR(64)  PRIMARY KEY,            -- 主键（UUID）
     role_code   VARCHAR(64)  NOT NULL,               -- 角色编码（唯一）
     role_name   VARCHAR(128),                        -- 角色名称
@@ -50,9 +61,9 @@ CREATE TABLE IF NOT EXISTS sys_role (
     version     INT          DEFAULT 0,
     deleted     BOOLEAN      DEFAULT FALSE,
     create_by   VARCHAR(64),
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_by   VARCHAR(64),
-    update_time TIMESTAMPTZ,
+    update_time TIMESTAMP,
     CONSTRAINT uk_sys_role_role_code UNIQUE (role_code)
 );
 
@@ -61,7 +72,7 @@ CREATE INDEX idx_sys_role_status ON sys_role(status) WHERE deleted = FALSE;
 -- ------------------------------------------------
 -- 权限/菜单表
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_permission (
+CREATE TABLE sys_permission (
     id          VARCHAR(64)  PRIMARY KEY,            -- 主键（UUID）
     parent_id   VARCHAR(64)  DEFAULT '0',            -- 父权限 ID
     perm_code   VARCHAR(128) NOT NULL,               -- 权限编码（唯一）
@@ -75,9 +86,9 @@ CREATE TABLE IF NOT EXISTS sys_permission (
     version     INT          DEFAULT 0,
     deleted     BOOLEAN      DEFAULT FALSE,
     create_by   VARCHAR(64),
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_by   VARCHAR(64),
-    update_time TIMESTAMPTZ,
+    update_time TIMESTAMP,
     CONSTRAINT uk_sys_permission_perm_code UNIQUE (perm_code)
 );
 
@@ -87,7 +98,7 @@ CREATE INDEX idx_sys_permission_type ON sys_permission(perm_type) WHERE deleted 
 -- ------------------------------------------------
 -- 组织/部门表
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_organization (
+CREATE TABLE sys_organization (
     id          VARCHAR(64)  PRIMARY KEY,            -- 主键（UUID）
     parent_id   VARCHAR(64)  DEFAULT '0',            -- 父组织 ID
     org_code    VARCHAR(64)  NOT NULL,               -- 组织编码（唯一）
@@ -102,9 +113,9 @@ CREATE TABLE IF NOT EXISTS sys_organization (
     version     INT          DEFAULT 0,
     deleted     BOOLEAN      DEFAULT FALSE,
     create_by   VARCHAR(64),
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_by   VARCHAR(64),
-    update_time TIMESTAMPTZ,
+    update_time TIMESTAMP,
     CONSTRAINT uk_sys_organization_org_code UNIQUE (org_code)
 );
 
@@ -113,7 +124,7 @@ CREATE INDEX idx_sys_organization_parent_id ON sys_organization(parent_id);
 -- ------------------------------------------------
 -- API 资源表
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_resource (
+CREATE TABLE sys_resource (
     id             VARCHAR(64)  PRIMARY KEY,         -- 主键（UUID）
     permission_id  VARCHAR(64),                      -- 关联权限 ID
     res_name       VARCHAR(128),                     -- 资源名称
@@ -125,9 +136,9 @@ CREATE TABLE IF NOT EXISTS sys_resource (
     version        INT          DEFAULT 0,
     deleted        BOOLEAN      DEFAULT FALSE,
     create_by      VARCHAR(64),
-    create_time    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    create_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_by      VARCHAR(64),
-    update_time    TIMESTAMPTZ,
+    update_time    TIMESTAMP,
     CONSTRAINT uk_sys_resource_method_path UNIQUE (request_method, request_path)
 );
 
@@ -137,12 +148,12 @@ CREATE INDEX idx_sys_resource_path ON sys_resource(request_path, request_method)
 -- ------------------------------------------------
 -- 用户-角色关联表（物理删除）
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_user_role (
+CREATE TABLE sys_user_role (
     id          VARCHAR(64) PRIMARY KEY,             -- 主键（UUID）
     user_id     VARCHAR(64) NOT NULL,                -- 用户 ID
     role_id     VARCHAR(64) NOT NULL,                -- 角色 ID
     create_by   VARCHAR(64),
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_sys_user_role UNIQUE (user_id, role_id)
 );
 
@@ -152,12 +163,12 @@ CREATE INDEX idx_sys_user_role_role_id ON sys_user_role(role_id);
 -- ------------------------------------------------
 -- 角色-权限关联表（物理删除）
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_role_permission (
+CREATE TABLE sys_role_permission (
     id            VARCHAR(64) PRIMARY KEY,           -- 主键（UUID）
     role_id       VARCHAR(64) NOT NULL,              -- 角色 ID
     permission_id VARCHAR(64) NOT NULL,              -- 权限 ID
     create_by     VARCHAR(64),
-    create_time   TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    create_time   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_sys_role_permission UNIQUE (role_id, permission_id)
 );
 
@@ -167,12 +178,12 @@ CREATE INDEX idx_sys_role_permission_perm_id ON sys_role_permission(permission_i
 -- ------------------------------------------------
 -- 用户-组织关联表（物理删除）
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_user_org (
+CREATE TABLE sys_user_org (
     id          VARCHAR(64) PRIMARY KEY,             -- 主键（UUID）
     user_id     VARCHAR(64) NOT NULL,                -- 用户 ID
     org_id      VARCHAR(64) NOT NULL,                -- 组织 ID
     create_by   VARCHAR(64),
-    create_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_sys_user_org UNIQUE (user_id, org_id)
 );
 
@@ -182,7 +193,7 @@ CREATE INDEX idx_sys_user_org_org_id ON sys_user_org(org_id);
 -- ------------------------------------------------
 -- 审计日志表（只追加，不修改）
 -- ------------------------------------------------
-CREATE TABLE IF NOT EXISTS sys_audit_log (
+CREATE TABLE sys_audit_log (
     id             BIGSERIAL    PRIMARY KEY,         -- 自增主键
     user_id        VARCHAR(64),                      -- 操作人 ID
     username       VARCHAR(64),                      -- 操作人用户名
@@ -194,7 +205,7 @@ CREATE TABLE IF NOT EXISTS sys_audit_log (
     status         SMALLINT     DEFAULT 1,           -- 结果：0=失败 1=成功
     error_msg      TEXT,                             -- 错误信息（失败时）
     duration_ms    BIGINT,                           -- 请求耗时（毫秒）
-    create_time    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP  -- 创建时间
+    create_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 创建时间
 );
 
 CREATE INDEX idx_audit_log_user_id ON sys_audit_log(user_id);

@@ -1,9 +1,10 @@
 package com.zyn.app.controller;
 
-import com.zyn.sys.client.RemoteUserService;
-import com.zyn.sys.response.user.UserRes;
-import com.zyn.sys.response.user.UserInfoRes;
 import com.zyn.kit.response.ApiResponse;
+import com.zyn.sys.api.SysAuthApi;
+import com.zyn.sys.api.SysUserApi;
+import com.zyn.sys.response.user.UserInfoRes;
+import com.zyn.sys.response.user.UserRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,15 +16,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/sys-demo")
 public class SysDemoController {
 
-    private final RemoteUserService remoteUserService;
+    private final SysUserApi sysUserApi;
+    private final SysAuthApi sysAuthApi;
 
     @GetMapping("/user/{id}")
     public ApiResponse<UserRes> getUser(@PathVariable String id) {
-        return remoteUserService.getById(id);
+        return sysUserApi.getById(id);
     }
 
     @GetMapping("/user/info")
     public ApiResponse<UserInfoRes> getUserInfo() {
-        return remoteUserService.getUserInfo();
+        return sysAuthApi.info();
     }
 }

@@ -25,14 +25,22 @@ public class CacheHelper {
     @SuppressWarnings("unchecked")
     public <T> T getOrLoad(String key, Duration ttl, Supplier<T> loader) {
         if (redisClient != null) {
-            Object cached = redisClient.getObject(key);
-            if (cached != null) {
-                return (T) cached;
+            try {
+                Object cached = redisClient.getObject(key);
+                if (cached != null) {
+                    return (T) cached;
+                }
+            } catch (Exception e) {
+                log.debug("Redis getObject failed, falling back to loader: {}", e.getMessage());
             }
         }
         T value = loader.get();
         if (redisClient != null && value != null) {
-            redisClient.putObject(key, value, ttl);
+            try {
+                redisClient.putObject(key, value, ttl);
+            } catch (Exception e) {
+                log.debug("Redis putObject failed: {}", e.getMessage());
+            }
         }
         return value;
     }

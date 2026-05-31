@@ -1,39 +1,33 @@
 package com.zyn.sys.api;
+import com.zyn.infra.discovery.ServiceClient;
 
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.command.user.UserSaveCmd;
 import com.zyn.sys.query.user.UserPageQuery;
 import com.zyn.sys.response.user.UserRes;
+import com.zyn.infra.discovery.query.HttpQueryMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.service.annotation.*;
 
 import java.util.Map;
 
-/**
- * 用户管理 API。
- */
+@ServiceClient("sys")
+@HttpExchange("/api/v1/user")
 public interface SysUserApi {
 
-    /**
-     * 分页查询用户。
-     */
-    ApiResponse<Map<String, Object>> page(UserPageQuery query);
+    @GetExchange
+    ApiResponse<Map<String, Object>> page(@HttpQueryMap UserPageQuery query);
 
-    /**
-     * 根据 ID 获取用户。
-     */
-    ApiResponse<UserRes> getById(String id);
+    @GetExchange("/{id}")
+    ApiResponse<UserRes> getById(@PathVariable String id);
 
-    /**
-     * 创建用户。
-     */
-    ApiResponse<Void> create(UserSaveCmd cmd);
+    @PostExchange
+    ApiResponse<Void> create(@RequestBody UserSaveCmd cmd);
 
-    /**
-     * 更新用户。
-     */
-    ApiResponse<Void> update(String id, UserSaveCmd cmd);
+    @PutExchange("/{id}")
+    ApiResponse<Void> update(@PathVariable String id, @RequestBody UserSaveCmd cmd);
 
-    /**
-     * 删除用户。
-     */
-    ApiResponse<Void> delete(String id);
+    @DeleteExchange("/{id}")
+    ApiResponse<Void> delete(@PathVariable String id);
 }

@@ -33,3 +33,11 @@ effective-settings*
 
 # Spring Boot
 spring-shell.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/

@@ -1,13 +1,20 @@
 package com.zyn.sys.response.user;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.Set;
 
 @Data
 @Builder
-public class LoginUserRes {
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginUserRes implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     String userId;
     String username;
