@@ -6,22 +6,25 @@ import com.zyn.api.sys.response.permission.PermissionRes;
 import com.zyn.api.sys.query.permission.PermissionQuery;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.kit.util.BeanUtils;
-import com.zyn.sys.entity.SysPermission;
-import com.zyn.sys.manager.PermissionManager;
-import com.zyn.sys.service.SysPermissionService;
+import com.zyn.sys.handler.query.PermissionQueryHandler;
+import com.zyn.sys.infrastructure.entity.SysPermission;
+import com.zyn.sys.infrastructure.mapper.SysPermissionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 权限管理控制器。
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/permission")
 public class SysPermissionController {
 
-    private final SysPermissionService permissionService;
-    private final PermissionManager permissionManager;
+    private final PermissionQueryHandler permissionQueryHandler;
+    private final SysPermissionMapper permissionMapper;
 
     @GetMapping
     public ApiResponse<List<PermissionRes>> list(PermissionQuery query) {
@@ -30,38 +33,38 @@ public class SysPermissionController {
                 .eq(query.getPermType() != null, SysPermission::getPermType, query.getPermType())
                 .eq(query.getStatus() != null, SysPermission::getStatus, query.getStatus())
                 .orderByAsc(SysPermission::getSort);
-        List<SysPermission> permissions = permissionService.list(wrapper);
-        return ApiResponse.ok(BeanUtils.copyList(permissions, PermissionRes.class));
+        return ApiResponse.ok(BeanUtils.copyList(permissionMapper.selectList(wrapper), PermissionRes.class));
     }
 
     @GetMapping("/tree")
     public ApiResponse<List<MenuTreeRes>> tree() {
-        return ApiResponse.ok(permissionManager.getPermissionTree());
+        return ApiResponse.ok(permissionQueryHandler.getPermissionTree());
     }
 
     @GetMapping("/{id}")
     public ApiResponse<PermissionRes> getById(@PathVariable String id) {
-        SysPermission permission = permissionService.getById(id);
+        SysPermission permission = permissionMapper.selectById(id);
         return ApiResponse.ok(BeanUtils.copy(permission, PermissionRes.class));
     }
 
     @PostMapping
-    public ApiResponse<Void> create(@RequestBody PermissionRes permissionDTO) {
-        SysPermission permission = BeanUtils.copy(permissionDTO, SysPermission.class);
-        permissionService.save(permission);
+    public ApiResponse<Void> create(@RequestBody PermissionRes req) {
+        SysPermission permission = BeanUtils.copy(req, SysPermission.class);
+        permissionMapper.insert(permission);
         return ApiResponse.ok(null);
     }
 
-    @PutMapping
-    public ApiResponse<Void> update(@RequestBody PermissionRes permissionDTO) {
-        SysPermission permission = BeanUtils.copy(permissionDTO, SysPermission.class);
-        permissionService.updateById(permission);
+    @PutMapping("/{id}")
+    public ApiResponse<Void> update(@PathVariable String id, @RequestBody PermissionRes req) {
+        SysPermission permission = BeanUtils.copy(req, SysPermission.class);
+        permission.setId(id);
+        permissionMapper.updateById(permission);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        permissionService.removeById(id);
+        permissionMapper.deleteById(id);
         return ApiResponse.ok(null);
     }
 }

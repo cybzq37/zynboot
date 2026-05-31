@@ -5,20 +5,28 @@ import com.zyn.api.sys.response.role.RoleRes;
 import com.zyn.api.sys.query.role.RoleQuery;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.kit.util.BeanUtils;
-import com.zyn.sys.entity.SysRole;
-import com.zyn.sys.service.SysRoleService;
+import com.zyn.sys.domain.aggregate.RoleAggregate;
+import com.zyn.sys.domain.repository.RoleRepository;
+import com.zyn.sys.handler.query.RoleQueryHandler;
+import com.zyn.sys.infrastructure.entity.SysRole;
+import com.zyn.sys.infrastructure.mapper.SysRoleMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 角色管理控制器。
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/role")
 public class SysRoleController {
 
-    private final SysRoleService roleService;
+    private final RoleQueryHandler roleQueryHandler;
+    private final RoleRepository roleRepository;
+    private final SysRoleMapper roleMapper;
 
     @GetMapping
     public ApiResponse<List<RoleRes>> list(RoleQuery query) {
@@ -27,33 +35,34 @@ public class SysRoleController {
                 .like(StringUtils.hasText(query.getRoleName()), SysRole::getRoleName, query.getRoleName())
                 .eq(query.getStatus() != null, SysRole::getStatus, query.getStatus())
                 .orderByAsc(SysRole::getSort);
-        List<SysRole> roles = roleService.list(wrapper);
-        return ApiResponse.ok(BeanUtils.copyList(roles, RoleRes.class));
+        return ApiResponse.ok(BeanUtils.copyList(roleMapper.selectList(wrapper), RoleRes.class));
     }
 
     @GetMapping("/{id}")
     public ApiResponse<RoleRes> getById(@PathVariable String id) {
-        SysRole role = roleService.getById(id);
-        return ApiResponse.ok(BeanUtils.copy(role, RoleRes.class));
+        return ApiResponse.ok(roleQueryHandler.findById(id));
     }
 
     @PostMapping
-    public ApiResponse<Void> create(@RequestBody RoleRes roleDTO) {
-        SysRole role = BeanUtils.copy(roleDTO, SysRole.class);
-        roleService.save(role);
+    public ApiResponse<Void> create(@RequestBody RoleRes req) {
+        RoleAggregate role = RoleAggregate.create(req.getRoleCode(), req.getRoleName());
+        role.updateInfo(req.getRoleName(), req.getDataScope(), req.getRemark());
+        roleRepository.save(role);
         return ApiResponse.ok(null);
     }
 
-    @PutMapping
-    public ApiResponse<Void> update(@RequestBody RoleRes roleDTO) {
-        SysRole role = BeanUtils.copy(roleDTO, SysRole.class);
-        roleService.updateById(role);
+    @PutMapping("/{id}")
+    public ApiResponse<Void> update(@PathVariable String id, @RequestBody RoleRes req) {
+        RoleAggregate role = roleRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("角色不存在"));
+        role.updateInfo(req.getRoleName(), req.getDataScope(), req.getRemark());
+        roleRepository.update(role);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        roleService.removeById(id);
+        roleMapper.deleteById(id);
         return ApiResponse.ok(null);
     }
 }

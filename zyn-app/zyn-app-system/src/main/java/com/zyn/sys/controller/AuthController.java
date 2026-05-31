@@ -6,7 +6,7 @@ import com.zyn.api.sys.response.user.LoginRes;
 import com.zyn.api.sys.response.user.UserInfoRes;
 import cn.dev33.satoken.stp.StpUtil;
 import com.zyn.kit.response.ApiResponse;
-import com.zyn.sys.service.AuthService;
+import com.zyn.sys.handler.command.AuthCommandHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthCommandHandler authService;
 
     @PostMapping("/login")
     public ApiResponse<LoginRes> login(@RequestParam String username, @RequestParam String password) {

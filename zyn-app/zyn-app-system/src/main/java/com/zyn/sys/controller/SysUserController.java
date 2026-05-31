@@ -2,12 +2,16 @@ package com.zyn.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zyn.api.sys.response.user.UserRes;
+import com.zyn.api.sys.command.user.UserSaveCmd;
 import com.zyn.api.sys.query.user.UserPageQuery;
+import com.zyn.api.sys.response.user.UserRes;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.kit.util.BeanUtils;
-import com.zyn.sys.entity.SysUser;
-import com.zyn.sys.service.SysUserService;
+import com.zyn.sys.domain.aggregate.UserAggregate;
+import com.zyn.sys.domain.repository.UserRepository;
+import com.zyn.sys.handler.query.UserQueryHandler;
+import com.zyn.sys.infrastructure.entity.SysUser;
+import com.zyn.sys.infrastructure.mapper.SysUserMapper;
 import com.zyn.sys.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -15,12 +19,17 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * 用户管理控制器（REST 入口，薄层）。
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")
 public class SysUserController {
 
-    private final SysUserService userService;
+    private final UserQueryHandler userQueryHandler;
+    private final UserRepository userRepository;
+    private final SysUserMapper userMapper;
 
     @GetMapping
     public ApiResponse<Map<String, Object>> page(UserPageQuery query) {
@@ -31,7 +40,7 @@ public class SysUserController {
                 .like(StringUtils.hasText(query.getPhone()), SysUser::getPhone, query.getPhone())
                 .eq(query.getStatus() != null, SysUser::getStatus, query.getStatus())
                 .orderByDesc(SysUser::getCreateTime);
-        Page<SysUser> result = userService.page(page, wrapper);
+        Page<SysUser> result = userMapper.selectPage(page, wrapper);
         return ApiResponse.ok(Map.of(
                 "records", BeanUtils.copyList(result.getRecords(), UserRes.class),
                 "total", result.getTotal(),
@@ -42,27 +51,32 @@ public class SysUserController {
 
     @GetMapping("/{id}")
     public ApiResponse<UserRes> getById(@PathVariable String id) {
-        SysUser user = userService.getById(id);
-        return ApiResponse.ok(BeanUtils.copy(user, UserRes.class));
+        return ApiResponse.ok(userQueryHandler.findById(id));
     }
 
     @PostMapping
-    public ApiResponse<Void> create(@RequestBody SysUser user) {
-        user.setPassword(PasswordUtils.encode(user.getPassword()));
-        userService.save(user);
+    public ApiResponse<Void> create(@RequestBody UserSaveCmd cmd) {
+        UserAggregate user = UserAggregate.create(cmd.getUsername(), PasswordUtils.encode(cmd.getPassword()));
+        user.updateProfile(cmd);
+        userRepository.save(user);
         return ApiResponse.ok(null);
     }
 
-    @PutMapping
-    public ApiResponse<Void> update(@RequestBody SysUser user) {
-        user.setPassword(null);
-        userService.updateById(user);
+    @PutMapping("/{id}")
+    public ApiResponse<Void> update(@PathVariable String id, @RequestBody UserSaveCmd cmd) {
+        UserAggregate user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+        user.updateProfile(cmd);
+        if (StringUtils.hasText(cmd.getPassword())) {
+            user.updatePassword(PasswordUtils.encode(cmd.getPassword()));
+        }
+        userRepository.update(user);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        userService.removeById(id);
+        userMapper.deleteById(id);
         return ApiResponse.ok(null);
     }
 }
