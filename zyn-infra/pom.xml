@@ -16,7 +16,7 @@
     <description>Infrastructure modules aggregation POM</description>
 
     <modules>
-        <module>zyn-infra-discovery</module>
+        <module>zyn-infra-exchange</module>
         <module>zyn-infra-redis</module>
         <module>zyn-infra-kafka</module>
         <module>zyn-infra-es</module>

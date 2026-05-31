@@ -10,9 +10,9 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>zyn-infra-discovery</artifactId>
-    <name>zyn-infra-discovery</name>
-    <description>Service discovery and HttpExchange client auto-configuration</description>
+    <artifactId>zyn-infra-exchange</artifactId>
+    <name>zyn-infra-exchange</name>
+    <description>HTTP client infrastructure for inter-service communication</description>
 
     <dependencies>
         <dependency>

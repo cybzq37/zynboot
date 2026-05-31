@@ -1,23 +1,23 @@
 package com.zyn.sys.api;
-import com.zyn.infra.discovery.ServiceClient;
+import com.zyn.infra.exchange.ExchangeClient;
 
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.command.role.RoleSaveCmd;
 import com.zyn.sys.query.role.RoleQuery;
 import com.zyn.sys.response.role.RoleRes;
-import com.zyn.infra.discovery.query.HttpQueryMap;
+import com.zyn.infra.exchange.query.HttpQuery;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.*;
 
 import java.util.List;
 
-@ServiceClient("sys")
+@ExchangeClient("sys")
 @HttpExchange("/sys/api/v1/role")
 public interface SysRoleApi {
 
     @GetExchange
-    ApiResponse<List<RoleRes>> list(@HttpQueryMap RoleQuery query);
+    ApiResponse<List<RoleRes>> list(@HttpQuery RoleQuery query);
 
     @GetExchange("/{id}")
     ApiResponse<RoleRes> getById(@PathVariable String id);

@@ -1,4 +1,4 @@
-package com.zyn.infra.discovery;
+package com.zyn.infra.exchange;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -12,11 +12,11 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import java.util.Set;
 
 /**
- * 扫描所有 {@link ServiceClient @ServiceClient} 标记的接口，
+ * 扫描所有 {@link ExchangeClient @ExchangeClient} 标记的接口，
  * 自动注册为 HttpExchange 代理 Bean。
  */
 @Slf4j
-public class ServiceClientRegistrar implements BeanDefinitionRegistryPostProcessor {
+public class ExchangeClientRegistrar implements BeanDefinitionRegistryPostProcessor {
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) {
@@ -28,7 +28,7 @@ public class ServiceClientRegistrar implements BeanDefinitionRegistryPostProcess
                         return true;
                     }
                 };
-        scanner.addIncludeFilter(new AnnotationTypeFilter(ServiceClient.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(ExchangeClient.class));
 
         Set<BeanDefinition> candidates = scanner.findCandidateComponents("com");
 
@@ -38,7 +38,7 @@ public class ServiceClientRegistrar implements BeanDefinitionRegistryPostProcess
 
             try {
                 Class<?> clientType = Class.forName(className);
-                ServiceClient anno = clientType.getAnnotation(ServiceClient.class);
+                ExchangeClient anno = clientType.getAnnotation(ExchangeClient.class);
                 if (anno == null) continue;
 
                 String serviceName = anno.value();
@@ -47,7 +47,7 @@ public class ServiceClientRegistrar implements BeanDefinitionRegistryPostProcess
                 if (registry.containsBeanDefinition(beanName)) continue;
 
                 AbstractBeanDefinition proxyBd = BeanDefinitionBuilder
-                        .genericBeanDefinition(ServiceClientFactoryBean.class)
+                        .genericBeanDefinition(ExchangeClientFactoryBean.class)
                         .addConstructorArgValue(clientType)
                         .addConstructorArgValue(serviceName)
                         .setScope(BeanDefinition.SCOPE_SINGLETON)

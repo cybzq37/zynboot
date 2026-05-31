@@ -1,4 +1,4 @@
-package com.zyn.infra.discovery;
+package com.zyn.infra.exchange;
 
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;

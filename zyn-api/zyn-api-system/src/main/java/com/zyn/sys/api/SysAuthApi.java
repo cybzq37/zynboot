@@ -1,6 +1,6 @@
 package com.zyn.sys.api;
 
-import com.zyn.infra.discovery.ServiceClient;
+import com.zyn.infra.exchange.ExchangeClient;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.response.user.LoginRes;
 import com.zyn.sys.response.user.UserInfoRes;
@@ -9,7 +9,7 @@ import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
-@ServiceClient("sys")
+@ExchangeClient("sys")
 @HttpExchange("/sys/api/v1/auth")
 public interface SysAuthApi {
 

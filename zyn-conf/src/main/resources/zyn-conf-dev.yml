@@ -58,7 +58,7 @@ spring:
     bootstrap-servers: localhost:9092
 
 zyn:
-  discovery:
+  exchange:
     services:
       sys: http://localhost:28081
       netty: http://localhost:28082

@@ -25,7 +25,7 @@
         </dependency>
         <dependency>
             <groupId>com.zyn</groupId>
-            <artifactId>zyn-infra-discovery</artifactId>
+            <artifactId>zyn-infra-exchange</artifactId>
         </dependency>
         <dependency>
             <groupId>com.zyn</groupId>

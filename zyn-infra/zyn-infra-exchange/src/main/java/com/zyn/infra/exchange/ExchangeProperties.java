@@ -1,4 +1,4 @@
-package com.zyn.infra.discovery;
+package com.zyn.infra.exchange;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -12,8 +12,8 @@ import java.util.Map;
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "zyn.discovery")
-public class DiscoveryProperties {
+@ConfigurationProperties(prefix = "zyn.exchange")
+public class ExchangeProperties {
 
     /** 连接超时（毫秒）。 */
     private long connectTimeoutMs = 3000;
@@ -31,7 +31,7 @@ public class DiscoveryProperties {
         String url = services.get(serviceName);
         if (url == null || url.isBlank()) {
             throw new IllegalStateException(
-                    "Service URL not configured: zyn.discovery.services." + serviceName);
+                    "Service URL not configured: zyn.exchange.services." + serviceName);
         }
         return url;
     }

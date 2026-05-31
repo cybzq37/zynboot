@@ -1,5 +1,5 @@
 package com.zyn.sys.api;
-import com.zyn.infra.discovery.ServiceClient;
+import com.zyn.infra.exchange.ExchangeClient;
 
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.command.resource.ResourceSaveCmd;
@@ -10,7 +10,7 @@ import org.springframework.web.service.annotation.*;
 
 import java.util.List;
 
-@ServiceClient("sys")
+@ExchangeClient("sys")
 @HttpExchange("/sys/api/v1/resource")
 public interface SysResourceApi {
 

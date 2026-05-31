@@ -1,4 +1,4 @@
-package com.zyn.infra.discovery;
+package com.zyn.infra.exchange;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.FactoryBean;
@@ -18,7 +18,7 @@ import java.util.ServiceLoader;
  * 自动通过 SPI 加载 {@link HttpServiceArgumentResolver} 实现。
  */
 @Slf4j
-public class ServiceClientFactoryBean implements FactoryBean<Object>, EnvironmentAware, InitializingBean {
+public class ExchangeClientFactoryBean implements FactoryBean<Object>, EnvironmentAware, InitializingBean {
 
     private final Class<?> clientType;
     private final String serviceName;
@@ -26,7 +26,7 @@ public class ServiceClientFactoryBean implements FactoryBean<Object>, Environmen
     private Environment environment;
     private Object proxy;
 
-    public ServiceClientFactoryBean(Class<?> clientType, String serviceName) {
+    public ExchangeClientFactoryBean(Class<?> clientType, String serviceName) {
         this.clientType = clientType;
         this.serviceName = serviceName;
     }
@@ -38,18 +38,18 @@ public class ServiceClientFactoryBean implements FactoryBean<Object>, Environmen
 
     @Override
     public void afterPropertiesSet() {
-        String url = environment.getProperty("zyn.discovery.services." + serviceName);
+        String url = environment.getProperty("zyn.exchange.services." + serviceName);
         if (url == null || url.isBlank()) {
             throw new IllegalStateException(
-                    "Service URL not configured: zyn.discovery.services." + serviceName);
+                    "Service URL not configured: zyn.exchange.services." + serviceName);
         }
 
         long connectTimeoutMs = environment.getProperty(
-                "zyn.discovery.connect-timeout-ms", Long.class, 3000L);
+                "zyn.exchange.connect-timeout-ms", Long.class, 3000L);
         long readTimeoutMs = environment.getProperty(
-                "zyn.discovery.read-timeout-ms", Long.class, 10000L);
+                "zyn.exchange.read-timeout-ms", Long.class, 10000L);
         boolean followRedirects = environment.getProperty(
-                "zyn.discovery.follow-redirects", Boolean.class, false);
+                "zyn.exchange.follow-redirects", Boolean.class, false);
 
         List<HttpServiceArgumentResolver> resolvers = new ArrayList<>();
         for (HttpServiceArgumentResolver resolver : ServiceLoader.load(HttpServiceArgumentResolver.class)) {

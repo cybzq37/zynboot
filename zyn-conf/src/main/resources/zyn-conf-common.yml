@@ -73,7 +73,7 @@ zyn:
     allowed-headers: ["*"]
     allow-credentials: false
     max-age: 3600
-  discovery:
+  exchange:
     connect-timeout-ms: 3000
     read-timeout-ms: 10000
     follow-redirects: false

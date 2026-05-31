@@ -1,24 +1,24 @@
 package com.zyn.sys.api;
-import com.zyn.infra.discovery.ServiceClient;
+import com.zyn.infra.exchange.ExchangeClient;
 
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.command.permission.PermissionSaveCmd;
 import com.zyn.sys.query.permission.PermissionQuery;
 import com.zyn.sys.response.permission.MenuTreeRes;
 import com.zyn.sys.response.permission.PermissionRes;
-import com.zyn.infra.discovery.query.HttpQueryMap;
+import com.zyn.infra.exchange.query.HttpQuery;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.*;
 
 import java.util.List;
 
-@ServiceClient("sys")
+@ExchangeClient("sys")
 @HttpExchange("/sys/api/v1/permission")
 public interface SysPermissionApi {
 
     @GetExchange
-    ApiResponse<List<PermissionRes>> list(@HttpQueryMap PermissionQuery query);
+    ApiResponse<List<PermissionRes>> list(@HttpQuery PermissionQuery query);
 
     @GetExchange("/tree")
     ApiResponse<List<MenuTreeRes>> tree();
