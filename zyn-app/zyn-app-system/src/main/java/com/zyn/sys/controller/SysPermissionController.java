@@ -1,9 +1,9 @@
 package com.zyn.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.zyn.api.sys.dto.permission.MenuTreeDTO;
-import com.zyn.api.sys.dto.permission.PermissionDTO;
-import com.zyn.api.sys.dto.permission.PermissionQuery;
+import com.zyn.api.sys.response.permission.MenuTreeRes;
+import com.zyn.api.sys.response.permission.PermissionRes;
+import com.zyn.api.sys.query.permission.PermissionQuery;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.kit.util.BeanUtils;
 import com.zyn.sys.entity.SysPermission;
@@ -24,36 +24,36 @@ public class SysPermissionController {
     private final PermissionManager permissionManager;
 
     @GetMapping
-    public ApiResponse<List<PermissionDTO>> list(PermissionQuery query) {
+    public ApiResponse<List<PermissionRes>> list(PermissionQuery query) {
         LambdaQueryWrapper<SysPermission> wrapper = new LambdaQueryWrapper<SysPermission>()
                 .like(StringUtils.hasText(query.getPermName()), SysPermission::getPermName, query.getPermName())
                 .eq(query.getPermType() != null, SysPermission::getPermType, query.getPermType())
                 .eq(query.getStatus() != null, SysPermission::getStatus, query.getStatus())
                 .orderByAsc(SysPermission::getSort);
         List<SysPermission> permissions = permissionService.list(wrapper);
-        return ApiResponse.ok(BeanUtils.copyList(permissions, PermissionDTO.class));
+        return ApiResponse.ok(BeanUtils.copyList(permissions, PermissionRes.class));
     }
 
     @GetMapping("/tree")
-    public ApiResponse<List<MenuTreeDTO>> tree() {
+    public ApiResponse<List<MenuTreeRes>> tree() {
         return ApiResponse.ok(permissionManager.getPermissionTree());
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<PermissionDTO> getById(@PathVariable String id) {
+    public ApiResponse<PermissionRes> getById(@PathVariable String id) {
         SysPermission permission = permissionService.getById(id);
-        return ApiResponse.ok(BeanUtils.copy(permission, PermissionDTO.class));
+        return ApiResponse.ok(BeanUtils.copy(permission, PermissionRes.class));
     }
 
     @PostMapping
-    public ApiResponse<Void> create(@RequestBody PermissionDTO permissionDTO) {
+    public ApiResponse<Void> create(@RequestBody PermissionRes permissionDTO) {
         SysPermission permission = BeanUtils.copy(permissionDTO, SysPermission.class);
         permissionService.save(permission);
         return ApiResponse.ok(null);
     }
 
     @PutMapping
-    public ApiResponse<Void> update(@RequestBody PermissionDTO permissionDTO) {
+    public ApiResponse<Void> update(@RequestBody PermissionRes permissionDTO) {
         SysPermission permission = BeanUtils.copy(permissionDTO, SysPermission.class);
         permissionService.updateById(permission);
         return ApiResponse.ok(null);

@@ -1,4 +1,4 @@
-package com.zyn.api.sys.dto.user;
+package com.zyn.api.sys.response.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class UserRes {
 
     String id;
     String username;

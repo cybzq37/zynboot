@@ -1,4 +1,4 @@
-package com.zyn.api.sys.dto.role;
+package com.zyn.api.sys.query.role;
 
 import lombok.Data;
 

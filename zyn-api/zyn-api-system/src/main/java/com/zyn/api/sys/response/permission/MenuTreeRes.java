@@ -1,4 +1,4 @@
-package com.zyn.api.sys.dto.permission;
+package com.zyn.api.sys.response.permission;
 
 import lombok.Builder;
 import lombok.Value;
@@ -7,7 +7,7 @@ import java.util.List;
 
 @Value
 @Builder
-public class MenuTreeDTO {
+public class MenuTreeRes {
 
     String id;
     String parentId;
@@ -16,5 +16,5 @@ public class MenuTreeDTO {
     String path;
     Integer sort;
     Boolean visible;
-    List<MenuTreeDTO> children;
+    List<MenuTreeRes> children;
 }

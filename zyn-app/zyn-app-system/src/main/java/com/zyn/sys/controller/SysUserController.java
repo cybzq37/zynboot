@@ -2,8 +2,8 @@ package com.zyn.sys.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.zyn.api.sys.dto.user.UserDTO;
-import com.zyn.api.sys.dto.user.UserPageQuery;
+import com.zyn.api.sys.response.user.UserRes;
+import com.zyn.api.sys.query.user.UserPageQuery;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.kit.util.BeanUtils;
 import com.zyn.sys.entity.SysUser;
@@ -33,7 +33,7 @@ public class SysUserController {
                 .orderByDesc(SysUser::getCreateTime);
         Page<SysUser> result = userService.page(page, wrapper);
         return ApiResponse.ok(Map.of(
-                "records", BeanUtils.copyList(result.getRecords(), UserDTO.class),
+                "records", BeanUtils.copyList(result.getRecords(), UserRes.class),
                 "total", result.getTotal(),
                 "pageNum", result.getCurrent(),
                 "pageSize", result.getSize()
@@ -41,9 +41,9 @@ public class SysUserController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<UserDTO> getById(@PathVariable String id) {
+    public ApiResponse<UserRes> getById(@PathVariable String id) {
         SysUser user = userService.getById(id);
-        return ApiResponse.ok(BeanUtils.copy(user, UserDTO.class));
+        return ApiResponse.ok(BeanUtils.copy(user, UserRes.class));
     }
 
     @PostMapping

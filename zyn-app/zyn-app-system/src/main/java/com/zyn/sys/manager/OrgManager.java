@@ -1,7 +1,7 @@
 package com.zyn.sys.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.zyn.api.sys.dto.org.OrgTreeDTO;
+import com.zyn.api.sys.response.org.OrgTreeRes;
 import com.zyn.sys.entity.SysOrganization;
 import com.zyn.sys.service.SysOrganizationService;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class OrgManager {
 
     private final SysOrganizationService organizationService;
 
-    public List<OrgTreeDTO> getOrgTree() {
+    public List<OrgTreeRes> getOrgTree() {
         List<SysOrganization> all = organizationService.list(
                 new LambdaQueryWrapper<SysOrganization>()
                         .eq(SysOrganization::getStatus, 1)
@@ -28,14 +28,14 @@ public class OrgManager {
         return buildTree(all, "0");
     }
 
-    private List<OrgTreeDTO> buildTree(List<SysOrganization> all, String parentId) {
+    private List<OrgTreeRes> buildTree(List<SysOrganization> all, String parentId) {
         Map<String, List<SysOrganization>> parentMap = all.stream()
                 .collect(Collectors.groupingBy(
                         org -> org.getParentId() == null ? "0" : org.getParentId(),
                         Collectors.toList()
                 ));
         return parentMap.getOrDefault(parentId, List.of()).stream()
-                .map(org -> OrgTreeDTO.builder()
+                .map(org -> OrgTreeRes.builder()
                         .id(org.getId())
                         .parentId(org.getParentId())
                         .orgCode(org.getOrgCode())

@@ -1,4 +1,4 @@
-package com.zyn.api.sys.dto.permission;
+package com.zyn.api.sys.response.org;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,15 +9,16 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PermissionDTO {
+public class OrgRes {
 
     String id;
     String parentId;
-    String permCode;
-    String permName;
-    Integer permType;
-    String path;
+    String orgCode;
+    String orgName;
+    Integer orgType;
+    String leaderId;
+    String phone;
+    String email;
     Integer sort;
-    Boolean visible;
     Integer status;
 }

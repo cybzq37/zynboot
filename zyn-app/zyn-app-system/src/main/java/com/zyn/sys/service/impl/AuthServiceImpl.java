@@ -1,10 +1,10 @@
 package com.zyn.sys.service.impl;
 
-import com.zyn.api.sys.dto.user.LoginUserDTO;
-import com.zyn.api.sys.dto.user.UserDTO;
-import com.zyn.api.sys.vo.LoginVO;
-import com.zyn.api.sys.vo.UserInfoVO;
-import com.zyn.api.sys.dto.permission.MenuTreeDTO;
+import com.zyn.api.sys.response.user.LoginUserRes;
+import com.zyn.api.sys.response.user.UserRes;
+import com.zyn.api.sys.response.user.LoginRes;
+import com.zyn.api.sys.response.user.UserInfoRes;
+import com.zyn.api.sys.response.permission.MenuTreeRes;
 import com.zyn.infra.satoken.utils.LoginHelper;
 import com.zyn.kit.exception.BaseException;
 import com.zyn.kit.util.BeanUtils;
@@ -33,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final SysPermissionService permissionService;
 
     @Override
-    public LoginVO login(String username, String password) {
+    public LoginRes login(String username, String password) {
         SysUser user = userService.getByUsername(username);
         if (user == null) {
             throw BaseException.badRequest("用户名或密码错误");
@@ -45,28 +45,28 @@ public class AuthServiceImpl implements AuthService {
             throw BaseException.badRequest("账号已被停用或锁定");
         }
 
-        LoginUserDTO loginUserDTO = userManager.getLoginUser(user.getId());
-        LoginHelper.login(user.getId(), null, loginUserDTO);
+        LoginUserRes loginUserRes = userManager.getLoginUser(user.getId());
+        LoginHelper.login(user.getId(), null, loginUserRes);
 
-        UserDTO userDTO = BeanUtils.copy(user, UserDTO.class);
+        UserRes userDTO = BeanUtils.copy(user, UserRes.class);
         String token = cn.dev33.satoken.stp.StpUtil.getTokenValue();
-        return LoginVO.builder().token(token).userInfo(userDTO).build();
+        return LoginRes.builder().token(token).userInfo(userDTO).build();
     }
 
     @Override
-    public UserInfoVO getCurrentUserInfo() {
-        LoginUserDTO loginUser = LoginHelper.getLoginUser();
+    public UserInfoRes getCurrentUserInfo() {
+        LoginUserRes loginUser = LoginHelper.getLoginUser();
         if (loginUser == null) {
             throw BaseException.badRequest("未登录");
         }
 
         SysUser user = userService.getById(loginUser.getUserId());
-        UserDTO userDTO = BeanUtils.copy(user, UserDTO.class);
+        UserRes userDTO = BeanUtils.copy(user, UserRes.class);
 
         List<SysPermission> menus = permissionService.getPermsByUserId(loginUser.getUserId());
-        List<MenuTreeDTO> menuTree = menus.stream()
+        List<MenuTreeRes> menuTree = menus.stream()
                 .filter(p -> p.getPermType() <= 2)
-                .map(p -> MenuTreeDTO.builder()
+                .map(p -> MenuTreeRes.builder()
                         .id(p.getId())
                         .parentId(p.getParentId())
                         .permName(p.getPermName())
@@ -77,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
                         .build())
                 .collect(Collectors.toList());
 
-        return UserInfoVO.builder()
+        return UserInfoRes.builder()
                 .user(userDTO)
                 .roles(loginUser.getRoleCodes().stream().sorted().collect(Collectors.toList()))
                 .permissions(loginUser.getPermCodes().stream().sorted().collect(Collectors.toList()))

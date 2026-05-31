@@ -1,171 +1,138 @@
 # zyn
 
-Java 21 + Spring Boot 3.5.x
+Java 21 + Spring Boot 3.5.x 多模块框架
 
-## Modules
+## 模块结构
 
-- zyn-kit: 公共 utility toolkit (Jackson / OkHttp / Id 生成器 / 通用 DTO)
-- zyn-infra: 基础设施 (Redis / Kafka / MyBatis / ES / Storage / Geo / Web / Sa-Token)
-- zyn-api: API 契约 (DTO / HttpExchange 接口)
-  - zyn-sys-api: 系统管理 API
-- zyn-svc: 服务实现
-  - zyn-sys-service: 系统管理服务
-  - zyn-netty-service: Netty 服务
-- zyn-demo: 示例应用
+```
+zyn/
+├── zyn-kit/          ← 工具层（工具类、Jackson、OkHttp、线程池、树结构）
+├── zyn-conf/         ← 配置层（环境配置、日志、中间件连接）
+├── zyn-infra/        ← 基础设施层
+│   ├── zyn-infra-discovery   ← 服务发现（HttpExchange 自动注册）
+│   ├── zyn-infra-redis       ← Redis 客户端
+│   ├── zyn-infra-kafka       ← Kafka 客户端
+│   ├── zyn-infra-es          ← Elasticsearch 客户端
+│   ├── zyn-infra-mybatis     ← MyBatis-Plus 扩展
+│   ├── zyn-infra-storage     ← 文件存储（本地/S3）
+│   ├── zyn-infra-geo         ← GIS（Shapefile/GeoJSON/CRS/GDAL）
+│   ├── zyn-infra-web         ← Web 基础（全局异常、响应包装、CORS）
+│   └── zyn-infra-satoken     ← Sa-Token 认证
+├── zyn-api/          ← API 契约层（DTO/Query/HttpExchange 接口）
+│   └── zyn-api-system        ← 系统管理 API
+└── zyn-app/          ← 应用层（业务实现）
+    ├── zyn-app-system        ← 系统管理服务
+    ├── zyn-app-netty         ← Netty 服务
+    └── zyn-app-demo          ← 示例应用
+```
 
-## Tech Stack
 
-- Java 21
-- Spring Boot 3.5.x
-- Redis (optional)
-- Kafka (optional)
-- PostgreSQL / H2
-- MyBatis-Plus
-- GeoTools
-- Elasticsearch (optional)
-- Sa-Token
-- JUnit
-- Lombok
-- Netty
-- SpringDoc
-- log4j2
+## 技术栈
 
-## Build
+| 类别 | 技术 |
+|------|------|
+| 语言 | Java 21 |
+| 框架 | Spring Boot 3.5.x |
+| 数据库 | PostgreSQL + PostGIS |
+| 缓存 | Redis |
+| 消息队列 | Kafka |
+| 搜索引擎 | Elasticsearch + IK/Pinyin/STConvert |
+| 对象存储 | SeaweedFS (S3 兼容) |
+| ORM | MyBatis-Plus |
+| 认证 | Sa-Token |
+| 文档 | SpringDoc (Swagger) |
+| 日志 | Log4j2 + Disruptor |
+| HTTP 客户端 | OkHttp + HttpExchange |
+| GIS | GeoTools + GDAL |
+
+## 构建
 
 ```bash
+# 开发环境
 mvn clean package
+
+# 生产环境
+mvn clean package -P prod
 ```
 
-## Run
+## 中间件
 
 ```bash
-mvn -pl zyn-demo spring-boot:run
+cd deploy/middleware
+bash scripts/start.sh           # 启动全部
+bash scripts/start.sh postgres  # 启动指定服务
+bash scripts/start.sh -f redis  # 重建指定服务
+bash scripts/healthcheck.sh     # 健康检查
 ```
+
+## 部署
 
 ```bash
-mvn -pl zyn-svc/zyn-netty-service spring-boot:run
+cd deploy/app
+./build.sh --jar zyn-app-demo.jar --name demo --port 28080
 ```
 
-## API Docs
 
-After startup:
 
-- Swagger UI: http://localhost:8080/swagger-ui.html
-- OpenAPI: http://localhost:8080/v3/api-docs
+## API 设计
 
-## Configuration
+接口风格 restful，架构模式 CQRS，DDD建模
+采用 CQRS（Command Query Responsibility Segregation）风格定义：
 
-### Sa-Token
+  Query（读）→ 返回数据，不修改状态
+  Command（写）→ 修改状态，不返回数据（REST 中可返回结果）
 
-```yaml
-# Sa-Token 官方配置
-sa-token:
-  token-name: Authorization
-  timeout: 2592000        # token 有效期（秒），默认30天
-  is-concurrent: true     # 是否允许同一账号并发登录
-  is-share: false         # 多次登录是否共享 token
-  token-style: uuid       # token 风格：uuid/simple-uuid/random-32/random-64/random-128/tik
-  is-log: true            # 是否输出操作日志
+  你的外部设计符合 CQRS：
 
-# zyn 扩展配置
-zyn:
-  satoken:
-    enabled: true           # 是否启用（默认 true）
-    login-type: login       # 登录类型标识
-    token-prefix: Bearer    # Token 前缀
-    root-user-id: 1         # 超级管理员用户ID
-```
-
-### MyBatis-Plus
-
-```yaml
-# MyBatis-Plus 官方配置
-mybatis-plus:
-  configuration:
-    map-underscore-to-camel-case: true              # 下划线转驼峰
-    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl  # 使用 Slf4j 输出 SQL
-
-# 通过日志级别控制 SQL 打印开关
-logging:
-  level:
-    com.zyn.**.mapper: debug   # 开启 SQL 打印
-    # com.zyn.**.mapper: info  # 关闭 SQL 打印
-
-# zyn 扩展配置
-zyn:
-  mybatis:
-    enabled: true   # 是否启用 MyBatis 扩展（默认 true）
-```
-
-### Storage
-
-```yaml
-zyn:
-  storage:
-    enabled: true
-    # LOCAL | S3
-    type: LOCAL
-    public-base-url: ""
-    date-path-pattern: yyyy/MM/dd
-    # UUID | ORIGINAL
-    filename-strategy: UUID
-    # APPEND_SUFFIX | FAIL | OVERWRITE
-    conflict-strategy: APPEND_SUFFIX
-    local:
-      root-path: ./uploads
-      access-path-prefix: /uploads
-    s3:
-      bucket: zyn
-      endpoint: ""
-      region: us-east-1
-      access-key: ""
-      secret-key: ""
-      domain: ""
-      path-style-access: true
-```
-
-## Version Management
-
-项目为三层多模块结构，所有模块共享同一版本号，由根 POM 统一管理：
+  Query   → GET 读操作（UserQuery）
+  Cmd     → POST/PUT 写操作（UserSaveCmd、ResetPasswordCmd）
+  Res     → 响应数据（UserRes）
 
 ```
-zyn (root)
-├── zyn-kit
-├── zyn-infra
-│   ├── zyn-infra-redis
-│   ├── zyn-infra-kafka
-│   ├── zyn-infra-es
-│   ├── zyn-infra-mybatis
-│   ├── zyn-infra-storage
-│   ├── zyn-infra-geo
-│   ├── zyn-infra-web
-│   └── zyn-infra-satoken
-├── zyn-api
-│   └── zyn-sys-api
-├── zyn-svc
-│   ├── zyn-sys-service
-│   └── zyn-netty-service
-└── zyn-demo
+com.zyn.api.sys/
+├── client/      ← HttpExchange 远程调用接口
+├── dto/         ← 响应对象（DTO/VO 统一）
+└── query/       ← 请求参数
 ```
 
-各子模块通过 `<parent>` 继承版本，内部依赖通过根 POM 的 `dependencyManagement` + `${project.version}` 统一管理，无需在子模块中硬编码版本。
 
-### 升级版本
+外部交互 DTO（CQRS 风格）
+如果是查询，统一后缀 UserQuery
+如果是增加或修改 UserSaveCmd，其他的动作也可以定义 ResetPasswordCmd、AssignRoleCmd
+如果是实体，统一后缀 Entity
+如果是删除，直接传id或列表
 
-一条命令更新所有模块（根 POM + 全部子模块）的 version 和 parent version：
+整体目录结构：
+entity/
+├── SysUserEntity
+├── SysRoleEntity
+├── SysOrgEntity
+query/
+├── UserQuery
+├── RoleQuery
+├── OrgQuery
+command/
+├── UserSaveCmd
+├── ResetPasswordCmd
+├── AssignRoleCmd
+├── RoleSaveCmd
+├── OrgSaveCmd
+response/
+├── UserRes
+├── UserDetailRes
+├── RoleRes
+├── OrgRes
 
-```bash
-mvn versions:set -DnewVersion=2.0.0-SNAPSHOT
-```
+query command response 都是外部交互的DTO
+内部的DTO如何定义
 
-确认无误后提交变更：
+结算结果 xxxResult
+上下文 xxxContext
+事件 xxxEvent
+配置 xxxConfig xxxProperties
+统计 xxxStatistics
+状态 xxxState
+内部条件封装 UserSpec OrderQueryCriteria
+记录 XXXRecord
+消息 payload
 
-```bash
-mvn versions:commit
-```
-
-如需回退：
-
-```bash
-mvn versions:revert
-```

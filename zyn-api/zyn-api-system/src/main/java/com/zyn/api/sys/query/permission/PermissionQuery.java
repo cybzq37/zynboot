@@ -1,4 +1,4 @@
-package com.zyn.api.sys.dto.permission;
+package com.zyn.api.sys.query.permission;
 
 import lombok.Data;
 

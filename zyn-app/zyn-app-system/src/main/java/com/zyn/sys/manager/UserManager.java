@@ -1,6 +1,6 @@
 package com.zyn.sys.manager;
 
-import com.zyn.api.sys.dto.user.LoginUserDTO;
+import com.zyn.api.sys.response.user.LoginUserRes;
 import com.zyn.sys.entity.SysRole;
 import com.zyn.sys.entity.SysUser;
 import com.zyn.sys.service.SysPermissionService;
@@ -30,7 +30,7 @@ public class UserManager {
     private final SysPermissionService permissionService;
     private final CacheHelper cacheHelper;
 
-    public LoginUserDTO getLoginUser(String userId) {
+    public LoginUserRes getLoginUser(String userId) {
         return cacheHelper.getOrLoad(CACHE_USER_KEY.formatted(userId), CACHE_TTL, () -> {
             SysUser user = userService.getById(userId);
             if (user == null) {
@@ -40,7 +40,7 @@ public class UserManager {
                     .map(SysRole::getRoleCode).collect(Collectors.toSet());
             Set<String> permCodes = permissionService.getPermCodesByUserId(userId).stream()
                     .collect(Collectors.toSet());
-            return LoginUserDTO.builder()
+            return LoginUserRes.builder()
                     .userId(user.getId())
                     .username(user.getUsername())
                     .nickname(user.getNickname())

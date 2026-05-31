@@ -1,8 +1,8 @@
 package com.zyn.app.controller;
 
 import com.zyn.api.sys.client.RemoteUserService;
-import com.zyn.api.sys.dto.user.UserDTO;
-import com.zyn.api.sys.vo.UserInfoVO;
+import com.zyn.api.sys.response.user.UserRes;
+import com.zyn.api.sys.response.user.UserInfoRes;
 import com.zyn.kit.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,12 +18,12 @@ public class SysDemoController {
     private final RemoteUserService remoteUserService;
 
     @GetMapping("/user/{id}")
-    public ApiResponse<UserDTO> getUser(@PathVariable String id) {
+    public ApiResponse<UserRes> getUser(@PathVariable String id) {
         return remoteUserService.getById(id);
     }
 
     @GetMapping("/user/info")
-    public ApiResponse<UserInfoVO> getUserInfo() {
+    public ApiResponse<UserInfoRes> getUserInfo() {
         return remoteUserService.getUserInfo();
     }
 }

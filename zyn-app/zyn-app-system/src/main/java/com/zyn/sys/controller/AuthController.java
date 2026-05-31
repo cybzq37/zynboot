@@ -1,9 +1,9 @@
 package com.zyn.sys.controller;
 
-import com.zyn.api.sys.dto.user.LoginUserDTO;
-import com.zyn.api.sys.dto.user.UserDTO;
-import com.zyn.api.sys.vo.LoginVO;
-import com.zyn.api.sys.vo.UserInfoVO;
+import com.zyn.api.sys.response.user.LoginUserRes;
+import com.zyn.api.sys.response.user.UserRes;
+import com.zyn.api.sys.response.user.LoginRes;
+import com.zyn.api.sys.response.user.UserInfoRes;
 import cn.dev33.satoken.stp.StpUtil;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.service.AuthService;
@@ -18,8 +18,8 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ApiResponse<LoginVO> login(@RequestParam String username, @RequestParam String password) {
-        LoginVO loginVO = authService.login(username, password);
+    public ApiResponse<LoginRes> login(@RequestParam String username, @RequestParam String password) {
+        LoginRes loginVO = authService.login(username, password);
         return ApiResponse.ok(loginVO);
     }
 
@@ -30,8 +30,8 @@ public class AuthController {
     }
 
     @GetMapping("/info")
-    public ApiResponse<UserInfoVO> info() {
-        UserInfoVO userInfo = authService.getCurrentUserInfo();
+    public ApiResponse<UserInfoRes> info() {
+        UserInfoRes userInfo = authService.getCurrentUserInfo();
         return ApiResponse.ok(userInfo);
     }
 }

@@ -1,4 +1,4 @@
-package com.zyn.api.sys.dto.role;
+package com.zyn.api.sys.response.role;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoleDTO {
+public class RoleRes {
 
     String id;
     String roleCode;

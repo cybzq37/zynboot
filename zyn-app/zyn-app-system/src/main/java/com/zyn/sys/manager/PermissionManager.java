@@ -1,7 +1,7 @@
 package com.zyn.sys.manager;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.zyn.api.sys.dto.permission.MenuTreeDTO;
+import com.zyn.api.sys.response.permission.MenuTreeRes;
 import com.zyn.sys.entity.SysPermission;
 import com.zyn.sys.entity.SysRole;
 import com.zyn.sys.service.SysPermissionService;
@@ -43,7 +43,7 @@ public class PermissionManager {
                         .map(SysRole::getRoleCode).collect(Collectors.toSet()));
     }
 
-    public List<MenuTreeDTO> getPermissionTree() {
+    public List<MenuTreeRes> getPermissionTree() {
         List<SysPermission> all = permissionService.list(
                 new LambdaQueryWrapper<SysPermission>()
                         .in(SysPermission::getPermType, 1, 2)
@@ -53,14 +53,14 @@ public class PermissionManager {
         return buildTree(all, "0");
     }
 
-    private List<MenuTreeDTO> buildTree(List<SysPermission> all, String parentId) {
+    private List<MenuTreeRes> buildTree(List<SysPermission> all, String parentId) {
         Map<String, List<SysPermission>> parentMap = all.stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getParentId() == null ? "0" : p.getParentId(),
                         Collectors.toList()
                 ));
         return parentMap.getOrDefault(parentId, List.of()).stream()
-                .map(p -> MenuTreeDTO.builder()
+                .map(p -> MenuTreeRes.builder()
                         .id(p.getId())
                         .parentId(p.getParentId())
                         .permName(p.getPermName())

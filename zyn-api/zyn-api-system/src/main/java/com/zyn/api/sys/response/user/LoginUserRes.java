@@ -1,4 +1,4 @@
-package com.zyn.api.sys.dto.user;
+package com.zyn.api.sys.response.user;
 
 import lombok.Builder;
 import lombok.Data;
@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Data
 @Builder
-public class LoginUserDTO {
+public class LoginUserRes {
 
     String userId;
     String username;
