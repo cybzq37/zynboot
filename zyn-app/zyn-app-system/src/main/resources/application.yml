@@ -10,6 +10,8 @@ spring:
     import:
       - classpath:zyn-conf-common.yml
       - classpath:zyn-conf-@spring.profiles.active@.yml
+  jackson:
+    time-zone: Asia/Shanghai
   sql:
     init:
       mode: always

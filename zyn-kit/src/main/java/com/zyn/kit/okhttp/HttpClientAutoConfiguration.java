@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 @EnableConfigurationProperties(HttpClientProperties.class)
 public class HttpClientAutoConfiguration {
 
-    @Bean(destroyMethod = "dispatcherServiceShutdownNow")
+    @Bean(destroyMethod = "")
     @ConditionalOnMissingBean
     public OkHttpClient okHttpClient(HttpClientProperties props,
                                      ObjectProvider<Interceptor> customInterceptors) {
