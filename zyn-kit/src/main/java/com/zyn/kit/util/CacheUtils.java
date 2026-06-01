@@ -89,7 +89,7 @@ public class CacheUtils<K, V> implements Closeable {
     /**
      * 写入缓存。
      */
-    public void put(K key, V value) {
+    public synchronized void put(K key, V value) {
         if (store.size() >= maxSize) {
             evictOldest();
         }
@@ -104,6 +104,7 @@ public class CacheUtils<K, V> implements Closeable {
      */
     public void invalidate(K key) {
         store.remove(key);
+        insertionOrder.remove(key);
     }
 
     /**

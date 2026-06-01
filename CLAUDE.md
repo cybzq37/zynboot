@@ -96,7 +96,7 @@ Key `zyn.*` configuration switches (all default to `true` / `matchIfMissing`):
 | `zyn.mybatis.enabled` | MyBatis-Plus auto-config |
 | `zyn.storage.enabled` | File storage (type: `LOCAL` or `S3`) |
 | `zyn.exchange.enabled` | Declarative HTTP client scanning |
-| `zyn.cors.enabled` | CORS configuration |
+| `zyn.web.cors.enabled` | CORS configuration |
 | `zyn.web.exception.enabled` | Global exception handler |
 | `zyn.web.response.enabled` | Auto response wrapping (`ApiResponse`) |
 | `zyn.exchange.services.<name>` | Service base URLs for `@ExchangeClient` |

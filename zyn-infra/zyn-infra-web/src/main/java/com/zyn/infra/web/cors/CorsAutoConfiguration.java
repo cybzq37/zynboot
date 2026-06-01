@@ -12,14 +12,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 /**
  * 全局 CORS 跨域自动配置。
  * <p>
- * 通过 {@code zyn.cors.enabled=true} 开启（默认开启）。
- * 生产环境可通过 {@code zyn.cors.allowed-origins} 限制来源。
+ * 通过 {@code zyn.web.cors.enabled=true} 开启（默认开启）。
+ * 生产环境可通过 {@code zyn.web.cors.allowed-origins} 限制来源。
  */
 @Slf4j
 @AutoConfiguration
 @ConditionalOnWebApplication
 @EnableConfigurationProperties(CorsProperties.class)
-@ConditionalOnProperty(prefix = "zyn.cors", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "zyn.web.cors", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class CorsAutoConfiguration {
 
     @Configuration

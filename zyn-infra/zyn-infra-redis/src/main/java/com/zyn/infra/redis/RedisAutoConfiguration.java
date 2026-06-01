@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.zyn.kit.jackson.config.JacksonConfig;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,6 +15,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @AutoConfiguration
 @ConditionalOnClass(RedisConnectionFactory.class)
+@ConditionalOnProperty(prefix = "zyn.redis", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class RedisAutoConfiguration {
 
     @Bean

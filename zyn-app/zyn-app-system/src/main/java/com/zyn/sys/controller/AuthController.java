@@ -6,6 +6,7 @@ import com.zyn.sys.handler.command.AuthCommandHandler;
 import com.zyn.sys.response.user.LoginRes;
 import com.zyn.sys.response.user.UserInfoRes;
 import cn.dev33.satoken.stp.StpUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class AuthController {
     private final AuthCommandHandler authService;
 
     @PostMapping("/login")
-    public ApiResponse<LoginRes> login(@RequestBody LoginCmd cmd) {
+    public ApiResponse<LoginRes> login(@Valid @RequestBody LoginCmd cmd) {
         return ApiResponse.ok(authService.login(cmd.getUsername(), cmd.getPassword()));
     }
 

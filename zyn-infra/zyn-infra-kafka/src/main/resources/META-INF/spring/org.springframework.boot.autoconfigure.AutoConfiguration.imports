@@ -1,1 +1,2 @@
+com.zyn.infra.kafka.config.KafkaAutoConfiguration
 com.zyn.infra.kafka.config.KafkaConsumerAutoConfiguration

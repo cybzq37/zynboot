@@ -6,6 +6,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -17,6 +18,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 
 @AutoConfiguration
 @ConditionalOnBean(ConsumerFactory.class)
+@ConditionalOnProperty(prefix = "zyn.kafka", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class KafkaConsumerAutoConfiguration {
 
     @Bean

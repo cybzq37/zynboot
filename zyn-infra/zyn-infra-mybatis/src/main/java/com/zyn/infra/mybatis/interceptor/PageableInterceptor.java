@@ -2,6 +2,7 @@ package com.zyn.infra.mybatis.interceptor;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zyn.infra.mybatis.util.PageUtils;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -105,12 +106,7 @@ public class PageableInterceptor implements Interceptor {
     }
 
     private org.springframework.data.domain.Page<Object> toSpringPage(IPage<?> iPage) {
-        List<?> records = iPage.getRecords();
-        List<Object> content = records == null ? Collections.emptyList() : (List<Object>) records;
-        int pageNumber = Math.max((int) iPage.getCurrent() - 1, 0);
-        int pageSize = Math.max((int) iPage.getSize(), 1);
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        return new PageImpl<>(content, pageable, iPage.getTotal());
+        return PageUtils.toSpringPage(iPage);
     }
 
     private Pageable extractPageable(Object parameter) {

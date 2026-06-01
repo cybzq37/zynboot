@@ -3,7 +3,9 @@ package com.zyn.sys.infrastructure.repository;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zyn.sys.domain.repository.PermissionRepository;
 import com.zyn.sys.infrastructure.entity.SysPermission;
+import com.zyn.sys.infrastructure.entity.SysRolePermission;
 import com.zyn.sys.infrastructure.mapper.SysPermissionMapper;
+import com.zyn.sys.infrastructure.mapper.SysRolePermissionMapper;
 import com.zyn.sys.query.permission.PermissionQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class PermissionRepositoryImpl implements PermissionRepository {
 
     private final SysPermissionMapper mapper;
+    private final SysRolePermissionMapper rolePermissionMapper;
 
     @Override
     public List<SysPermission> findList(PermissionQuery query) {
@@ -46,6 +49,7 @@ public class PermissionRepositoryImpl implements PermissionRepository {
 
     @Override
     public void delete(String id) {
+        rolePermissionMapper.delete(new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getPermissionId, id));
         mapper.deleteById(id);
     }
 }

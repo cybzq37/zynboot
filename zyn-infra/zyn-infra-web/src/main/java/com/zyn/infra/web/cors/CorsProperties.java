@@ -11,17 +11,18 @@ import java.util.List;
  *
  * <pre>
  * zyn:
- *   cors:
- *     allowed-origins: ["*"]
- *     allowed-methods: ["GET","POST","PUT","DELETE","PATCH","OPTIONS"]
- *     allowed-headers: ["*"]
- *     allow-credentials: false
- *     max-age: 3600
+ *   web:
+ *     cors:
+ *       allowed-origins: ["*"]
+ *       allowed-methods: ["GET","POST","PUT","DELETE","PATCH","OPTIONS"]
+ *       allowed-headers: ["*"]
+ *       allow-credentials: false
+ *       max-age: 3600
  * </pre>
  */
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "zyn.cors")
+@ConfigurationProperties(prefix = "zyn.web.cors")
 public class CorsProperties {
 
     /** 是否启用全局 CORS。 */

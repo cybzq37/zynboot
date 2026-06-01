@@ -44,6 +44,7 @@ public class SysPermissionController {
     public ApiResponse<Void> create(@Valid @RequestBody PermissionSaveCmd cmd) {
         SysPermission permission = BeanUtils.copy(cmd, SysPermission.class);
         permissionRepository.save(permission);
+        permissionQueryHandler.clearCacheByPermissionId(permission.getId());
         return ApiResponse.ok(null);
     }
 

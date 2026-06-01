@@ -3,14 +3,13 @@ package com.zyn.infra.kafka;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaOperations;
-import org.springframework.stereotype.Component;
 
 /**
  * Kafka 客户端封装。
  * <p>
  * 持有 {@link KafkaOperations} 引用，通过 {@link #getOperations()} 获取底层操作对象。
+ * 由 {@link com.zyn.infra.kafka.config.KafkaAutoConfiguration} 自动注册。
  */
-@Component
 public class KafkaClient {
 
     private KafkaOperations<Object, Object> operations;

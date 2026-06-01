@@ -4,7 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zyn.sys.domain.aggregate.RoleAggregate;
 import com.zyn.sys.domain.repository.RoleRepository;
 import com.zyn.sys.infrastructure.entity.SysRole;
+import com.zyn.sys.infrastructure.entity.SysRolePermission;
+import com.zyn.sys.infrastructure.entity.SysUserRole;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;
+import com.zyn.sys.infrastructure.mapper.SysRolePermissionMapper;
+import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zyn.sys.query.role.RoleQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,6 +22,8 @@ import java.util.Optional;
 public class RoleRepositoryImpl implements RoleRepository {
 
     private final SysRoleMapper mapper;
+    private final SysUserRoleMapper userRoleMapper;
+    private final SysRolePermissionMapper rolePermissionMapper;
 
     @Override
     public Optional<RoleAggregate> findById(String id) {
@@ -54,6 +60,8 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public void delete(String id) {
+        userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, id));
+        rolePermissionMapper.delete(new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getRoleId, id));
         mapper.deleteById(id);
     }
 }

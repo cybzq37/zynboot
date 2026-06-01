@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zyn.sys.domain.aggregate.OrgAggregate;
 import com.zyn.sys.domain.repository.OrgRepository;
 import com.zyn.sys.infrastructure.entity.SysOrganization;
+import com.zyn.sys.infrastructure.entity.SysUserOrg;
 import com.zyn.sys.infrastructure.mapper.SysOrganizationMapper;
+import com.zyn.sys.infrastructure.mapper.SysUserOrgMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +18,7 @@ import java.util.Optional;
 public class OrgRepositoryImpl implements OrgRepository {
 
     private final SysOrganizationMapper mapper;
+    private final SysUserOrgMapper userOrgMapper;
 
     @Override
     public Optional<OrgAggregate> findById(String id) {
@@ -47,6 +50,7 @@ public class OrgRepositoryImpl implements OrgRepository {
 
     @Override
     public void delete(String id) {
+        userOrgMapper.delete(new LambdaQueryWrapper<SysUserOrg>().eq(SysUserOrg::getOrgId, id));
         mapper.deleteById(id);
     }
 }

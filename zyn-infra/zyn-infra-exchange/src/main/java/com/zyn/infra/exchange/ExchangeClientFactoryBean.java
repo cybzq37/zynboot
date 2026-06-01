@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
 import org.springframework.web.service.invoker.HttpServiceArgumentResolver;
 
 import java.util.ArrayList;
@@ -15,18 +13,17 @@ import java.util.ServiceLoader;
 
 /**
  * FactoryBean：根据 @HttpExchange.url 创建 HTTP 客户端代理。
- * 支持 Spring 属性占位符（如 ${api.sys.base-url}）。
  * <p>
  * 自动通过 SPI 加载 {@link HttpServiceArgumentResolver} 实现。
  */
 @Slf4j
-public class ExchangeClientFactoryBean implements FactoryBean<Object>, EnvironmentAware, InitializingBean {
+public class ExchangeClientFactoryBean implements FactoryBean<Object>, InitializingBean {
 
     private final Class<?> clientType;
     private final String serviceName;
+    private ExchangeProperties properties;
     private ObjectMapper objectMapper;
 
-    private Environment environment;
     private Object proxy;
 
     public ExchangeClientFactoryBean(Class<?> clientType, String serviceName) {
@@ -34,31 +31,25 @@ public class ExchangeClientFactoryBean implements FactoryBean<Object>, Environme
         this.serviceName = serviceName;
     }
 
+    public void setProperties(ExchangeProperties properties) {
+        this.properties = properties;
+    }
+
     public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
     @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
-    }
-
-    @Override
     public void afterPropertiesSet() {
-        String url = environment.getProperty("zyn.exchange.services." + serviceName);
+        if (properties == null) {
+            throw new IllegalStateException("ExchangeProperties not injected into " + clientType.getSimpleName());
+        }
+
+        String url = properties.getServices().get(serviceName);
         if (url == null || url.isBlank()) {
             throw new IllegalStateException(
                     "Service URL not configured: zyn.exchange.services." + serviceName);
         }
-
-        long connectTimeoutMs = environment.getProperty(
-                "zyn.exchange.connect-timeout-ms", Long.class, 3000L);
-        long readTimeoutMs = environment.getProperty(
-                "zyn.exchange.read-timeout-ms", Long.class, 10000L);
-        boolean followRedirects = environment.getProperty(
-                "zyn.exchange.follow-redirects", Boolean.class, false);
-        boolean forwardAuth = environment.getProperty(
-                "zyn.exchange.forward-auth", Boolean.class, true);
 
         List<HttpServiceArgumentResolver> resolvers = new ArrayList<>();
         for (HttpServiceArgumentResolver resolver : ServiceLoader.load(HttpServiceArgumentResolver.class)) {
@@ -69,7 +60,10 @@ public class ExchangeClientFactoryBean implements FactoryBean<Object>, Environme
         }
 
         this.proxy = ServiceProxyBuilder.build(
-                clientType, url, connectTimeoutMs, readTimeoutMs, followRedirects, forwardAuth, resolvers);
+                clientType, url,
+                properties.getConnectTimeoutMs(), properties.getReadTimeoutMs(),
+                properties.isFollowRedirects(), properties.isForwardAuth(),
+                resolvers);
         log.info("Created service client: {} -> {} ({})", clientType.getSimpleName(), serviceName, url);
     }
 
