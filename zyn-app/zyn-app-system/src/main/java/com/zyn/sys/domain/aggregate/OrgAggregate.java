@@ -1,12 +1,10 @@
 package com.zyn.sys.domain.aggregate;
 
 import com.zyn.sys.infrastructure.entity.SysOrganization;
-import lombok.Getter;
 
 /**
  * 组织聚合根。
  */
-@Getter
 public class OrgAggregate {
 
     private final SysOrganization entity;
@@ -26,6 +24,35 @@ public class OrgAggregate {
         org.setOrgType(orgType);
         org.setStatus(1);
         return new OrgAggregate(org);
+    }
+
+    /** 供 Repository 层持久化使用。 */
+    public SysOrganization getEntity() {
+        return entity;
+    }
+
+    public String getId() {
+        return entity.getId();
+    }
+
+    public String getOrgCode() {
+        return entity.getOrgCode();
+    }
+
+    public String getOrgName() {
+        return entity.getOrgName();
+    }
+
+    public Integer getOrgType() {
+        return entity.getOrgType();
+    }
+
+    public Integer getSort() {
+        return entity.getSort();
+    }
+
+    public Integer getStatus() {
+        return entity.getStatus();
     }
 
     public void setParentId(String parentId) {

@@ -8,6 +8,7 @@ import com.zyn.sys.infrastructure.mapper.SysOrganizationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -27,6 +28,11 @@ public class OrgRepositoryImpl implements OrgRepository {
         SysOrganization entity = mapper.selectOne(
                 new LambdaQueryWrapper<SysOrganization>().eq(SysOrganization::getOrgCode, orgCode));
         return entity != null ? Optional.of(OrgAggregate.from(entity)) : Optional.empty();
+    }
+
+    @Override
+    public List<OrgAggregate> findAll() {
+        return mapper.selectList(null).stream().map(OrgAggregate::from).toList();
     }
 
     @Override

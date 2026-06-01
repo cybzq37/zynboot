@@ -1,16 +1,13 @@
 package com.zyn.sys.domain.aggregate;
 
-import com.zyn.sys.command.user.UserSaveCmd;
 import com.zyn.sys.domain.enums.UserStatus;
 import com.zyn.sys.infrastructure.entity.SysUser;
-import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 /**
  * 用户聚合根，封装用户相关的业务规则。
  */
-@Getter
 public class UserAggregate {
 
     private final SysUser entity;
@@ -32,14 +29,60 @@ public class UserAggregate {
         return new UserAggregate(user);
     }
 
-    public void updateProfile(UserSaveCmd cmd) {
-        if (cmd.getNickname() != null) entity.setNickname(cmd.getNickname());
-        if (cmd.getRealName() != null) entity.setRealName(cmd.getRealName());
-        if (cmd.getEmail() != null) entity.setEmail(cmd.getEmail());
-        if (cmd.getPhone() != null) entity.setPhone(cmd.getPhone());
-        if (cmd.getAvatar() != null) entity.setAvatar(cmd.getAvatar());
-        if (cmd.getGender() != null) entity.setGender(cmd.getGender());
-        if (cmd.getRemark() != null) entity.setRemark(cmd.getRemark());
+    /** 供 Repository 层持久化使用。 */
+    public SysUser getEntity() {
+        return entity;
+    }
+
+    public String getId() {
+        return entity.getId();
+    }
+
+    public String getUsername() {
+        return entity.getUsername();
+    }
+
+    public String getPassword() {
+        return entity.getPassword();
+    }
+
+    public String getNickname() {
+        return entity.getNickname();
+    }
+
+    public String getRealName() {
+        return entity.getRealName();
+    }
+
+    public String getEmail() {
+        return entity.getEmail();
+    }
+
+    public String getPhone() {
+        return entity.getPhone();
+    }
+
+    public String getAvatar() {
+        return entity.getAvatar();
+    }
+
+    public Integer getGender() {
+        return entity.getGender();
+    }
+
+    public Integer getStatus() {
+        return entity.getStatus();
+    }
+
+    public void updateProfile(String nickname, String realName, String email,
+                              String phone, String avatar, Integer gender, String remark) {
+        if (nickname != null) entity.setNickname(nickname);
+        if (realName != null) entity.setRealName(realName);
+        if (email != null) entity.setEmail(email);
+        if (phone != null) entity.setPhone(phone);
+        if (avatar != null) entity.setAvatar(avatar);
+        if (gender != null) entity.setGender(gender);
+        if (remark != null) entity.setRemark(remark);
     }
 
     public void updatePassword(String encodedPassword) {

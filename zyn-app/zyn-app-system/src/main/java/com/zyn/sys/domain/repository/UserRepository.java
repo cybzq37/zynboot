@@ -1,6 +1,8 @@
 package com.zyn.sys.domain.repository;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zyn.sys.domain.aggregate.UserAggregate;
+import com.zyn.sys.query.user.UserPageQuery;
 import java.util.Optional;
 
 /**
@@ -12,9 +14,14 @@ public interface UserRepository {
 
     Optional<UserAggregate> findByUsername(String username);
 
+    Page<UserAggregate> page(UserPageQuery query);
+
     void save(UserAggregate user);
 
     void update(UserAggregate user);
 
+    /**
+     * 删除用户及其关联数据（user_role、user_org 级联删除）。
+     */
     void delete(String id);
 }

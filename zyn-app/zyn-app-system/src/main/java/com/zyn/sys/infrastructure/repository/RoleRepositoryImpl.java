@@ -5,9 +5,12 @@ import com.zyn.sys.domain.aggregate.RoleAggregate;
 import com.zyn.sys.domain.repository.RoleRepository;
 import com.zyn.sys.infrastructure.entity.SysRole;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;
+import com.zyn.sys.query.role.RoleQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -27,6 +30,16 @@ public class RoleRepositoryImpl implements RoleRepository {
         SysRole entity = mapper.selectOne(
                 new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, roleCode));
         return entity != null ? Optional.of(RoleAggregate.from(entity)) : Optional.empty();
+    }
+
+    @Override
+    public List<RoleAggregate> findList(RoleQuery query) {
+        LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<SysRole>()
+                .like(StringUtils.hasText(query.getRoleCode()), SysRole::getRoleCode, query.getRoleCode())
+                .like(StringUtils.hasText(query.getRoleName()), SysRole::getRoleName, query.getRoleName())
+                .eq(query.getStatus() != null, SysRole::getStatus, query.getStatus())
+                .orderByAsc(SysRole::getSort);
+        return mapper.selectList(wrapper).stream().map(RoleAggregate::from).toList();
     }
 
     @Override

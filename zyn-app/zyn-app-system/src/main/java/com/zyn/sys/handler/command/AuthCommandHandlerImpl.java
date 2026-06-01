@@ -36,7 +36,7 @@ public class AuthCommandHandlerImpl implements AuthCommandHandler {
         UserAggregate user = userRepository.findByUsername(username)
                 .orElseThrow(() -> BaseException.badRequest("用户名或密码错误"));
 
-        if (!PasswordUtils.matches(password, user.getEntity().getPassword())) {
+        if (!PasswordUtils.matches(password, user.getPassword())) {
             throw BaseException.badRequest("用户名或密码错误");
         }
         if (user.isDisabled()) {
@@ -49,10 +49,10 @@ public class AuthCommandHandlerImpl implements AuthCommandHandler {
         user.recordLoginSuccess(null);
         userRepository.update(user);
 
-        LoginUserRes loginUser = userQueryHandler.getLoginUser(user.getEntity().getId());
-        LoginHelper.login(user.getEntity().getId(), null, loginUser);
+        LoginUserRes loginUser = userQueryHandler.getLoginUser(user.getId());
+        LoginHelper.login(user.getId(), null, loginUser);
 
-        UserRes userRes = BeanUtils.copy(user.getEntity(), UserRes.class);
+        UserRes userRes = BeanUtils.copy(user, UserRes.class);
         String token = cn.dev33.satoken.stp.StpUtil.getTokenValue();
         return LoginRes.builder().token(token).userInfo(userRes).build();
     }
@@ -66,7 +66,7 @@ public class AuthCommandHandlerImpl implements AuthCommandHandler {
 
         UserRes userRes = BeanUtils.copy(
                 userRepository.findById(loginUser.getUserId())
-                        .map(UserAggregate::getEntity)
+                        .map(u -> (Object) u)
                         .orElse(null),
                 UserRes.class);
 

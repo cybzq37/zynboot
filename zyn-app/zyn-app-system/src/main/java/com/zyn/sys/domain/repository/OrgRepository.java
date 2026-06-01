@@ -1,6 +1,7 @@
 package com.zyn.sys.domain.repository;
 
 import com.zyn.sys.domain.aggregate.OrgAggregate;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -11,6 +12,8 @@ public interface OrgRepository {
     Optional<OrgAggregate> findById(String id);
 
     Optional<OrgAggregate> findByCode(String orgCode);
+
+    List<OrgAggregate> findAll();
 
     void save(OrgAggregate org);
 

@@ -1,12 +1,10 @@
 package com.zyn.sys.domain.aggregate;
 
 import com.zyn.sys.infrastructure.entity.SysRole;
-import lombok.Getter;
 
 /**
  * 角色聚合根。
  */
-@Getter
 public class RoleAggregate {
 
     private final SysRole entity;
@@ -25,6 +23,39 @@ public class RoleAggregate {
         role.setRoleName(roleName);
         role.setStatus(1);
         return new RoleAggregate(role);
+    }
+
+    /** 供 Repository 层持久化使用。 */
+    public SysRole getEntity() {
+        return entity;
+    }
+
+    public String getId() {
+        return entity.getId();
+    }
+
+    public String getRoleCode() {
+        return entity.getRoleCode();
+    }
+
+    public String getRoleName() {
+        return entity.getRoleName();
+    }
+
+    public Integer getDataScope() {
+        return entity.getDataScope();
+    }
+
+    public Integer getSort() {
+        return entity.getSort();
+    }
+
+    public Integer getStatus() {
+        return entity.getStatus();
+    }
+
+    public String getRemark() {
+        return entity.getRemark();
     }
 
     public void updateInfo(String roleName, Integer dataScope, String remark) {

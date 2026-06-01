@@ -1,6 +1,5 @@
 package com.zyn.sys.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.kit.util.BeanUtils;
@@ -9,15 +8,10 @@ import com.zyn.sys.domain.aggregate.UserAggregate;
 import com.zyn.sys.domain.repository.UserRepository;
 import com.zyn.sys.handler.query.PermissionQueryHandler;
 import com.zyn.sys.handler.query.UserQueryHandler;
-import com.zyn.sys.infrastructure.entity.SysUser;
-import com.zyn.sys.infrastructure.entity.SysUserOrg;
-import com.zyn.sys.infrastructure.entity.SysUserRole;
-import com.zyn.sys.infrastructure.mapper.SysUserMapper;
-import com.zyn.sys.infrastructure.mapper.SysUserOrgMapper;
-import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zyn.sys.query.user.UserPageQuery;
 import com.zyn.sys.response.user.UserRes;
 import com.zyn.sys.util.PasswordUtils;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
@@ -32,20 +26,10 @@ public class SysUserController {
     private final UserQueryHandler userQueryHandler;
     private final PermissionQueryHandler permissionQueryHandler;
     private final UserRepository userRepository;
-    private final SysUserMapper userMapper;
-    private final SysUserRoleMapper userRoleMapper;
-    private final SysUserOrgMapper userOrgMapper;
 
     @GetMapping
     public ApiResponse<Map<String, Object>> page(UserPageQuery query) {
-        Page<SysUser> page = new Page<>(query.getPageNum(), query.getPageSize());
-        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<SysUser>()
-                .like(StringUtils.hasText(query.getUsername()), SysUser::getUsername, query.getUsername())
-                .like(StringUtils.hasText(query.getNickname()), SysUser::getNickname, query.getNickname())
-                .like(StringUtils.hasText(query.getPhone()), SysUser::getPhone, query.getPhone())
-                .eq(query.getStatus() != null, SysUser::getStatus, query.getStatus())
-                .orderByDesc(SysUser::getCreateTime);
-        Page<SysUser> result = userMapper.selectPage(page, wrapper);
+        Page<UserAggregate> result = userRepository.page(query);
         return ApiResponse.ok(Map.of(
                 "records", BeanUtils.copyList(result.getRecords(), UserRes.class),
                 "total", result.getTotal(),
@@ -60,21 +44,22 @@ public class SysUserController {
     }
 
     @PostMapping
-    public ApiResponse<Void> create(@RequestBody UserSaveCmd cmd) {
+    public ApiResponse<Void> create(@Valid @RequestBody UserSaveCmd cmd) {
         UserAggregate user = UserAggregate.create(cmd.getUsername(), PasswordUtils.encode(cmd.getPassword()));
-        user.updateProfile(cmd);
+        user.updateProfile(cmd.getNickname(), cmd.getRealName(), cmd.getEmail(),
+                cmd.getPhone(), cmd.getAvatar(), cmd.getGender(), cmd.getRemark());
         userRepository.save(user);
-        String userId = user.getEntity().getId();
-        userQueryHandler.clearCache(userId);
-        permissionQueryHandler.clearCache(userId);
+        userQueryHandler.clearCache(user.getId());
+        permissionQueryHandler.clearCache(user.getId());
         return ApiResponse.ok(null);
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> update(@PathVariable String id, @RequestBody UserSaveCmd cmd) {
+    public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody UserSaveCmd cmd) {
         UserAggregate user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
-        user.updateProfile(cmd);
+        user.updateProfile(cmd.getNickname(), cmd.getRealName(), cmd.getEmail(),
+                cmd.getPhone(), cmd.getAvatar(), cmd.getGender(), cmd.getRemark());
         if (StringUtils.hasText(cmd.getPassword())) {
             user.updatePassword(PasswordUtils.encode(cmd.getPassword()));
         }
@@ -86,9 +71,7 @@ public class SysUserController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, id));
-        userOrgMapper.delete(new LambdaQueryWrapper<SysUserOrg>().eq(SysUserOrg::getUserId, id));
-        userMapper.deleteById(id);
+        userRepository.delete(id);
         userQueryHandler.clearCache(id);
         permissionQueryHandler.clearCache(id);
         return ApiResponse.ok(null);

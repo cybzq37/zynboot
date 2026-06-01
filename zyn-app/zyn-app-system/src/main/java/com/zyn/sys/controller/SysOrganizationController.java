@@ -6,10 +6,9 @@ import com.zyn.sys.command.org.OrgSaveCmd;
 import com.zyn.sys.domain.aggregate.OrgAggregate;
 import com.zyn.sys.domain.repository.OrgRepository;
 import com.zyn.sys.handler.query.OrgQueryHandler;
-import com.zyn.sys.infrastructure.entity.SysOrganization;
-import com.zyn.sys.infrastructure.mapper.SysOrganizationMapper;
 import com.zyn.sys.response.org.OrgRes;
 import com.zyn.sys.response.org.OrgTreeRes;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +21,11 @@ public class SysOrganizationController {
 
     private final OrgQueryHandler orgQueryHandler;
     private final OrgRepository orgRepository;
-    private final SysOrganizationMapper orgMapper;
 
     @GetMapping
     public ApiResponse<List<OrgRes>> list() {
         return ApiResponse.ok(
-                orgMapper.selectList(null).stream()
+                orgRepository.findAll().stream()
                         .map(o -> BeanUtils.copy(o, OrgRes.class))
                         .toList()
         );
@@ -40,11 +38,13 @@ public class SysOrganizationController {
 
     @GetMapping("/{id}")
     public ApiResponse<OrgRes> getById(@PathVariable String id) {
-        return ApiResponse.ok(BeanUtils.copy(orgMapper.selectById(id), OrgRes.class));
+        OrgAggregate org = orgRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("组织不存在"));
+        return ApiResponse.ok(BeanUtils.copy(org, OrgRes.class));
     }
 
     @PostMapping
-    public ApiResponse<Void> create(@RequestBody OrgSaveCmd cmd) {
+    public ApiResponse<Void> create(@Valid @RequestBody OrgSaveCmd cmd) {
         OrgAggregate org = OrgAggregate.create(cmd.getOrgCode(), cmd.getOrgName(), cmd.getOrgType());
         org.setParentId(cmd.getParentId());
         org.updateInfo(cmd.getOrgName(), cmd.getPhone(), cmd.getEmail(), cmd.getRemark());
@@ -53,7 +53,7 @@ public class SysOrganizationController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> update(@PathVariable String id, @RequestBody OrgSaveCmd cmd) {
+    public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody OrgSaveCmd cmd) {
         OrgAggregate org = orgRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("组织不存在"));
         org.updateInfo(cmd.getOrgName(), cmd.getPhone(), cmd.getEmail(), cmd.getRemark());
@@ -63,7 +63,7 @@ public class SysOrganizationController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        orgMapper.deleteById(id);
+        orgRepository.delete(id);
         return ApiResponse.ok(null);
     }
 }

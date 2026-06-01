@@ -1,11 +1,19 @@
 package com.zyn.sys.infrastructure.repository;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zyn.sys.domain.aggregate.UserAggregate;
 import com.zyn.sys.domain.repository.UserRepository;
 import com.zyn.sys.infrastructure.entity.SysUser;
+import com.zyn.sys.infrastructure.entity.SysUserOrg;
+import com.zyn.sys.infrastructure.entity.SysUserRole;
 import com.zyn.sys.infrastructure.mapper.SysUserMapper;
+import com.zyn.sys.infrastructure.mapper.SysUserOrgMapper;
+import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
+import com.zyn.sys.query.user.UserPageQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -14,6 +22,8 @@ import java.util.Optional;
 public class UserRepositoryImpl implements UserRepository {
 
     private final SysUserMapper mapper;
+    private final SysUserRoleMapper userRoleMapper;
+    private final SysUserOrgMapper userOrgMapper;
 
     @Override
     public Optional<UserAggregate> findById(String id) {
@@ -24,9 +34,24 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<UserAggregate> findByUsername(String username) {
         SysUser entity = mapper.selectOne(
-                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<SysUser>()
-                        .eq(SysUser::getUsername, username));
+                new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username));
         return entity != null ? Optional.of(UserAggregate.from(entity)) : Optional.empty();
+    }
+
+    @Override
+    public Page<UserAggregate> page(UserPageQuery query) {
+        Page<SysUser> page = new Page<>(query.getPageNum(), query.getPageSize());
+        LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<SysUser>()
+                .like(StringUtils.hasText(query.getUsername()), SysUser::getUsername, query.getUsername())
+                .like(StringUtils.hasText(query.getNickname()), SysUser::getNickname, query.getNickname())
+                .like(StringUtils.hasText(query.getPhone()), SysUser::getPhone, query.getPhone())
+                .eq(query.getStatus() != null, SysUser::getStatus, query.getStatus())
+                .orderByDesc(SysUser::getCreateTime);
+        Page<SysUser> result = mapper.selectPage(page, wrapper);
+
+        Page<UserAggregate> aggPage = new Page<>(result.getCurrent(), result.getSize(), result.getTotal());
+        aggPage.setRecords(result.getRecords().stream().map(UserAggregate::from).toList());
+        return aggPage;
     }
 
     @Override
@@ -41,6 +66,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void delete(String id) {
+        userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, id));
+        userOrgMapper.delete(new LambdaQueryWrapper<SysUserOrg>().eq(SysUserOrg::getUserId, id));
         mapper.deleteById(id);
     }
 }
