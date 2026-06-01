@@ -4,11 +4,9 @@ import com.zyn.sys.response.user.LoginUserRes;
 import com.zyn.sys.response.user.UserRes;
 import com.zyn.sys.infrastructure.entity.SysRole;
 import com.zyn.sys.infrastructure.entity.SysUser;
-import com.zyn.sys.infrastructure.entity.SysUserRole;
 import com.zyn.sys.infrastructure.mapper.SysPermissionMapper;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;
 import com.zyn.sys.infrastructure.mapper.SysUserMapper;
-import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zyn.sys.util.CacheHelper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +32,6 @@ public class UserQueryHandler {
 
     private final SysUserMapper userMapper;
     private final SysRoleMapper roleMapper;
-    private final SysUserRoleMapper userRoleMapper;
     private final SysPermissionMapper permissionMapper;
     private final CacheHelper cacheHelper;
 
@@ -79,15 +75,10 @@ public class UserQueryHandler {
     }
 
     public Set<String> getRoleCodes(String userId) {
-        return cacheHelper.getOrLoad(CACHE_ROLE_KEY.formatted(userId), CACHE_TTL, () -> {
-            List<SysUserRole> userRoles = userRoleMapper.selectList(
-                    new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
-            return userRoles.stream()
-                    .map(ur -> roleMapper.selectById(ur.getRoleId()))
-                    .filter(r -> r != null)
-                    .map(SysRole::getRoleCode)
-                    .collect(Collectors.toSet());
-        });
+        return cacheHelper.getOrLoad(CACHE_ROLE_KEY.formatted(userId), CACHE_TTL, () ->
+                roleMapper.selectRolesByUserId(userId).stream()
+                        .map(SysRole::getRoleCode)
+                        .collect(Collectors.toSet()));
     }
 
     public void clearCache(String userId) {

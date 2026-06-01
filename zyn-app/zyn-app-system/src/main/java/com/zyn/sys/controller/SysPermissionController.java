@@ -57,11 +57,13 @@ public class SysPermissionController {
         SysPermission permission = BeanUtils.copy(cmd, SysPermission.class);
         permission.setId(id);
         permissionMapper.updateById(permission);
+        permissionQueryHandler.clearCacheByPermissionId(id);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
+        permissionQueryHandler.clearCacheByPermissionId(id);
         permissionMapper.deleteById(id);
         return ApiResponse.ok(null);
     }

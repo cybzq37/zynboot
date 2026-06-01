@@ -34,4 +34,5 @@ public class RoleSaveCmd {
 
     /** 备注。 */
     String remark;
+    Integer roleType;
 }

@@ -15,4 +15,6 @@ public interface UserRepository {
     void save(UserAggregate user);
 
     void update(UserAggregate user);
+
+    void delete(String id);
 }

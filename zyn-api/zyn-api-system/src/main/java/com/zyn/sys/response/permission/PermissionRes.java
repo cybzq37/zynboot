@@ -20,4 +20,5 @@ public class PermissionRes {
     Integer sort;
     Boolean visible;
     Integer status;
+    String remark;
 }

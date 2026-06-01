@@ -15,4 +15,6 @@ public interface OrgRepository {
     void save(OrgAggregate org);
 
     void update(OrgAggregate org);
+
+    void delete(String id);
 }

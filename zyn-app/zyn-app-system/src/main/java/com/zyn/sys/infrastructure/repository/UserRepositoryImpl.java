@@ -38,4 +38,9 @@ public class UserRepositoryImpl implements UserRepository {
     public void update(UserAggregate user) {
         mapper.updateById(user.getEntity());
     }
+
+    @Override
+    public void delete(String id) {
+        mapper.deleteById(id);
+    }
 }

@@ -33,6 +33,11 @@ public class CorsAutoConfiguration {
 
         @Override
         public void addCorsMappings(CorsRegistry registry) {
+            if (props.isAllowCredentials() && props.getAllowedOrigins().contains("*")) {
+                log.warn("CORS configuration invalid: allowCredentials=true cannot be combined with allowedOrigins=[*]. Forcing allowCredentials=false.");
+                props.setAllowCredentials(false);
+            }
+
             registry.addMapping("/**")
                     .allowedOrigins(props.getAllowedOrigins().toArray(new String[0]))
                     .allowedMethods(props.getAllowedMethods().toArray(new String[0]))

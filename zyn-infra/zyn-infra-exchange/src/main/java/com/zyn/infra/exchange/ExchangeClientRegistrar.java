@@ -30,7 +30,7 @@ public class ExchangeClientRegistrar implements BeanDefinitionRegistryPostProces
                 };
         scanner.addIncludeFilter(new AnnotationTypeFilter(ExchangeClient.class));
 
-        Set<BeanDefinition> candidates = scanner.findCandidateComponents("com");
+        Set<BeanDefinition> candidates = scanner.findCandidateComponents("com.zyn");
 
         for (BeanDefinition bd : candidates) {
             String className = bd.getBeanClassName();

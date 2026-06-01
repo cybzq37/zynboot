@@ -176,33 +176,27 @@ public class RedisClient {
     // ==================== Object 操作 ====================
 
     public void putObject(String key, Object value) {
-        if (objectRedisTemplate == null) return;
-        objectRedisTemplate.opsForValue().set(key, value);
+        requireObjectTemplate().opsForValue().set(key, value);
     }
 
     public void putObject(String key, Object value, Duration ttl) {
-        if (objectRedisTemplate == null) return;
-        objectRedisTemplate.opsForValue().set(key, value, ttl);
+        requireObjectTemplate().opsForValue().set(key, value, ttl);
     }
 
     public Object getObject(String key) {
-        if (objectRedisTemplate == null) return null;
-        return objectRedisTemplate.opsForValue().get(key);
+        return requireObjectTemplate().opsForValue().get(key);
     }
 
     public void deleteObject(String key) {
-        if (objectRedisTemplate == null) return;
-        objectRedisTemplate.delete(key);
+        requireObjectTemplate().delete(key);
     }
 
     public Long getObjectExpire(String key) {
-        if (objectRedisTemplate == null) return null;
-        return objectRedisTemplate.getExpire(key);
+        return requireObjectTemplate().getExpire(key);
     }
 
     public Boolean objectExpire(String key, Duration ttl) {
-        if (objectRedisTemplate == null) return null;
-        return objectRedisTemplate.expire(key, ttl);
+        return requireObjectTemplate().expire(key, ttl);
     }
 
     public void hashPut(String key, String hashKey, String value) {

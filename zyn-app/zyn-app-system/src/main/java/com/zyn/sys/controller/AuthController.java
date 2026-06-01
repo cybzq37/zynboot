@@ -1,6 +1,7 @@
 package com.zyn.sys.controller;
 
 import com.zyn.kit.response.ApiResponse;
+import com.zyn.sys.command.user.LoginCmd;
 import com.zyn.sys.handler.command.AuthCommandHandler;
 import com.zyn.sys.response.user.LoginRes;
 import com.zyn.sys.response.user.UserInfoRes;
@@ -16,8 +17,8 @@ public class AuthController {
     private final AuthCommandHandler authService;
 
     @PostMapping("/login")
-    public ApiResponse<LoginRes> login(@RequestParam String username, @RequestParam String password) {
-        return ApiResponse.ok(authService.login(username, password));
+    public ApiResponse<LoginRes> login(@RequestBody LoginCmd cmd) {
+        return ApiResponse.ok(authService.login(cmd.getUsername(), cmd.getPassword()));
     }
 
     @PostMapping("/logout")

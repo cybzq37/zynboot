@@ -46,6 +46,7 @@ public class SysOrganizationController {
     @PostMapping
     public ApiResponse<Void> create(@RequestBody OrgSaveCmd cmd) {
         OrgAggregate org = OrgAggregate.create(cmd.getOrgCode(), cmd.getOrgName(), cmd.getOrgType());
+        org.setParentId(cmd.getParentId());
         org.updateInfo(cmd.getOrgName(), cmd.getPhone(), cmd.getEmail(), cmd.getRemark());
         orgRepository.save(org);
         return ApiResponse.ok(null);

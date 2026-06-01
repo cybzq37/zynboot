@@ -40,7 +40,7 @@ if [ "$DEPLOY" = true ]; then
   echo "  部署 zyn-app-system :28081"
   echo "============================================"
   cd deploy/app
-  bash build.sh --jar zyn-app-system.jar --name sys --port 28081 --profile prod \
+  bash build.sh --jar zyn-app-system.jar --name sys --port 28081 --profile dev \
     $COMMON_ENV --env SYS_HOST=sys
   cd ../..
 
@@ -48,7 +48,7 @@ if [ "$DEPLOY" = true ]; then
   echo "  部署 zyn-app-demo :28080"
   echo "============================================"
   cd deploy/app
-  bash build.sh --jar zyn-app-demo.jar --name demo --port 28080 --profile prod \
+  bash build.sh --jar zyn-app-demo.jar --name demo --port 28080 --profile dev \
     $COMMON_ENV --env SYS_HOST=sys
   cd ../..
 

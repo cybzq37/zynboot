@@ -16,7 +16,15 @@ import java.util.Map;
  */
 public class HttpQueryArgumentResolver implements HttpServiceArgumentResolver {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private final ObjectMapper mapper;
+
+    public HttpQueryArgumentResolver() {
+        this(new ObjectMapper());
+    }
+
+    public HttpQueryArgumentResolver(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     @Override
     public boolean resolve(Object argument, MethodParameter parameter,
@@ -25,7 +33,7 @@ public class HttpQueryArgumentResolver implements HttpServiceArgumentResolver {
             return false;
         }
 
-        Map<String, Object> map = MAPPER.convertValue(argument, new TypeReference<>() {});
+        Map<String, Object> map = mapper.convertValue(argument, new TypeReference<>() {});
 
         map.forEach((key, value) -> {
             if (value == null) return;

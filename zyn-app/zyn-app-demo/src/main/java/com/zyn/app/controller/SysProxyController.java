@@ -2,6 +2,7 @@ package com.zyn.app.controller;
 
 import com.zyn.kit.response.ApiResponse;
 import com.zyn.sys.api.*;
+import com.zyn.sys.command.user.LoginCmd;
 import com.zyn.sys.command.org.OrgSaveCmd;
 import com.zyn.sys.command.permission.PermissionSaveCmd;
 import com.zyn.sys.command.resource.ResourceSaveCmd;
@@ -43,8 +44,8 @@ public class SysProxyController {
 
     // ── Auth ──────────────────────────────────────────────────
     @PostMapping("/auth/login")
-    public ApiResponse<LoginRes> login(@RequestParam String username, @RequestParam String password) {
-        return authApi.login(username, password);
+    public ApiResponse<LoginRes> login(@RequestBody LoginCmd cmd) {
+        return authApi.login(cmd);
     }
 
     @PostMapping("/auth/logout")

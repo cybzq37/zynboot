@@ -6,6 +6,7 @@ import com.zyn.kit.util.BeanUtils;
 import com.zyn.sys.command.role.RoleSaveCmd;
 import com.zyn.sys.domain.aggregate.RoleAggregate;
 import com.zyn.sys.domain.repository.RoleRepository;
+import com.zyn.sys.handler.query.PermissionQueryHandler;
 import com.zyn.sys.handler.query.RoleQueryHandler;
 import com.zyn.sys.infrastructure.entity.SysRole;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;
@@ -23,6 +24,7 @@ import java.util.List;
 public class SysRoleController {
 
     private final RoleQueryHandler roleQueryHandler;
+    private final PermissionQueryHandler permissionQueryHandler;
     private final RoleRepository roleRepository;
     private final SysRoleMapper roleMapper;
 
@@ -46,6 +48,7 @@ public class SysRoleController {
         RoleAggregate role = RoleAggregate.create(cmd.getRoleCode(), cmd.getRoleName());
         role.updateInfo(cmd.getRoleName(), cmd.getDataScope(), cmd.getRemark());
         roleRepository.save(role);
+        permissionQueryHandler.clearCacheByRoleId(role.getEntity().getId());
         return ApiResponse.ok(null);
     }
 
@@ -55,11 +58,13 @@ public class SysRoleController {
                 .orElseThrow(() -> new IllegalArgumentException("角色不存在"));
         role.updateInfo(cmd.getRoleName(), cmd.getDataScope(), cmd.getRemark());
         roleRepository.update(role);
+        permissionQueryHandler.clearCacheByRoleId(id);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
+        permissionQueryHandler.clearCacheByRoleId(id);
         roleMapper.deleteById(id);
         return ApiResponse.ok(null);
     }

@@ -20,4 +20,5 @@ public class UserRes {
     String avatar;
     Integer gender;
     Integer status;
+    String remark;
 }

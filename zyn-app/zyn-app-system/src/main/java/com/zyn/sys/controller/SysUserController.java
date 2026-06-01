@@ -7,9 +7,14 @@ import com.zyn.kit.util.BeanUtils;
 import com.zyn.sys.command.user.UserSaveCmd;
 import com.zyn.sys.domain.aggregate.UserAggregate;
 import com.zyn.sys.domain.repository.UserRepository;
+import com.zyn.sys.handler.query.PermissionQueryHandler;
 import com.zyn.sys.handler.query.UserQueryHandler;
 import com.zyn.sys.infrastructure.entity.SysUser;
+import com.zyn.sys.infrastructure.entity.SysUserOrg;
+import com.zyn.sys.infrastructure.entity.SysUserRole;
 import com.zyn.sys.infrastructure.mapper.SysUserMapper;
+import com.zyn.sys.infrastructure.mapper.SysUserOrgMapper;
+import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zyn.sys.query.user.UserPageQuery;
 import com.zyn.sys.response.user.UserRes;
 import com.zyn.sys.util.PasswordUtils;
@@ -25,8 +30,11 @@ import java.util.Map;
 public class SysUserController {
 
     private final UserQueryHandler userQueryHandler;
+    private final PermissionQueryHandler permissionQueryHandler;
     private final UserRepository userRepository;
     private final SysUserMapper userMapper;
+    private final SysUserRoleMapper userRoleMapper;
+    private final SysUserOrgMapper userOrgMapper;
 
     @GetMapping
     public ApiResponse<Map<String, Object>> page(UserPageQuery query) {
@@ -56,6 +64,9 @@ public class SysUserController {
         UserAggregate user = UserAggregate.create(cmd.getUsername(), PasswordUtils.encode(cmd.getPassword()));
         user.updateProfile(cmd);
         userRepository.save(user);
+        String userId = user.getEntity().getId();
+        userQueryHandler.clearCache(userId);
+        permissionQueryHandler.clearCache(userId);
         return ApiResponse.ok(null);
     }
 
@@ -68,12 +79,18 @@ public class SysUserController {
             user.updatePassword(PasswordUtils.encode(cmd.getPassword()));
         }
         userRepository.update(user);
+        userQueryHandler.clearCache(id);
+        permissionQueryHandler.clearCache(id);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
+        userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, id));
+        userOrgMapper.delete(new LambdaQueryWrapper<SysUserOrg>().eq(SysUserOrg::getUserId, id));
         userMapper.deleteById(id);
+        userQueryHandler.clearCache(id);
+        permissionQueryHandler.clearCache(id);
         return ApiResponse.ok(null);
     }
 }

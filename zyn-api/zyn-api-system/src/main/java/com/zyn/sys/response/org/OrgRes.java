@@ -21,4 +21,5 @@ public class OrgRes {
     String email;
     Integer sort;
     Integer status;
+    String remark;
 }

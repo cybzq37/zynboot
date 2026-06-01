@@ -24,6 +24,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -37,6 +38,7 @@ public class GlobalExceptionHandler {
     private static final String VALIDATION_FAILED_MESSAGE = "Validation failed";
     private static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal server error";
     private static final String MALFORMED_REQUEST_MESSAGE = "Malformed request body";
+    private static final String INVALID_REQUEST_PARAMETER_MESSAGE = "Invalid request parameter";
     private static final int MAX_STACK_TRACE_LINES = 20;
 
     private final GlobalExceptionProperties properties;
@@ -63,9 +65,17 @@ public class GlobalExceptionHandler {
             HttpMessageNotReadableException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex, WebRequest request) {
-        String message = ex instanceof HttpMessageNotReadableException
-                ? MALFORMED_REQUEST_MESSAGE
-                : ex.getMessage();
+        String message;
+        if (ex instanceof HttpMessageNotReadableException) {
+            message = MALFORMED_REQUEST_MESSAGE;
+        } else if (ex instanceof IllegalArgumentException
+                || ex instanceof MethodArgumentTypeMismatchException
+                || ex instanceof MissingServletRequestParameterException) {
+            log.warn("Bad request: {}", ex.getMessage());
+            message = INVALID_REQUEST_PARAMETER_MESSAGE;
+        } else {
+            message = ex.getMessage();
+        }
         return build(HttpStatus.BAD_REQUEST, BaseException.BAD_REQUEST_CODE, message, request, List.of());
     }
 
@@ -94,6 +104,19 @@ public class GlobalExceptionHandler {
                 .map(this::formatViolation)
                 .toList();
         return build(HttpStatus.BAD_REQUEST, BaseException.BAD_REQUEST_CODE, VALIDATION_FAILED_MESSAGE, request, details);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException ex, WebRequest request) {
+        HttpStatusCode status = ex.getStatusCode();
+        String reason = ex.getReason();
+        String message = reason != null ? reason : HttpStatus.valueOf(status.value()).getReasonPhrase();
+        if (status.is5xxServerError()) {
+            log.error("ResponseStatusException: {}", message, ex);
+        } else {
+            log.warn("ResponseStatusException: {}", message);
+        }
+        return build(status, BaseException.BAD_REQUEST_CODE, message, request, List.of());
     }
 
     @ExceptionHandler(Exception.class)

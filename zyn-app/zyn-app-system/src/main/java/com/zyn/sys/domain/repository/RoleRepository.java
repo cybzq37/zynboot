@@ -15,4 +15,6 @@ public interface RoleRepository {
     void save(RoleAggregate role);
 
     void update(RoleAggregate role);
+
+    void delete(String id);
 }

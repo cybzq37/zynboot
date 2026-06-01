@@ -2,7 +2,6 @@ package com.zyn.infra.redis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.zyn.kit.jackson.config.JacksonConfig;
 import org.springframework.boot.autoconfigure.AutoConfiguration;

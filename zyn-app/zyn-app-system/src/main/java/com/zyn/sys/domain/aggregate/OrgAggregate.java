@@ -28,6 +28,10 @@ public class OrgAggregate {
         return new OrgAggregate(org);
     }
 
+    public void setParentId(String parentId) {
+        entity.setParentId(parentId);
+    }
+
     public void updateInfo(String orgName, String phone, String email, String remark) {
         if (orgName != null) entity.setOrgName(orgName);
         if (phone != null) entity.setPhone(phone);

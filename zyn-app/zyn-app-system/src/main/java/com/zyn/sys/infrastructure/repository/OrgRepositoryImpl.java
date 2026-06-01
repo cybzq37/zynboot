@@ -38,4 +38,9 @@ public class OrgRepositoryImpl implements OrgRepository {
     public void update(OrgAggregate org) {
         mapper.updateById(org.getEntity());
     }
+
+    @Override
+    public void delete(String id) {
+        mapper.deleteById(id);
+    }
 }

@@ -3,13 +3,13 @@ package com.zyn.sys.handler.query;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zyn.sys.response.permission.MenuTreeRes;
 import com.zyn.sys.infrastructure.entity.SysPermission;
+import com.zyn.sys.infrastructure.entity.SysRole;
+import com.zyn.sys.infrastructure.entity.SysRolePermission;
+import com.zyn.sys.infrastructure.entity.SysUserRole;
 import com.zyn.sys.infrastructure.mapper.SysPermissionMapper;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;
-import com.zyn.sys.infrastructure.entity.SysRole;
-import com.zyn.sys.infrastructure.entity.SysUserRole;
-import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zyn.sys.infrastructure.mapper.SysRolePermissionMapper;
-import com.zyn.sys.infrastructure.entity.SysRolePermission;
+import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zyn.sys.util.CacheHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,15 +47,10 @@ public class PermissionQueryHandler {
     }
 
     public Set<String> getRoleCodes(String userId) {
-        return cacheHelper.getOrLoad(CACHE_ROLE_CODES_KEY.formatted(userId), CACHE_TTL, () -> {
-            List<SysUserRole> userRoles = userRoleMapper.selectList(
-                    new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
-            return userRoles.stream()
-                    .map(ur -> roleMapper.selectById(ur.getRoleId()))
-                    .filter(Objects::nonNull)
-                    .map(SysRole::getRoleCode)
-                    .collect(Collectors.toSet());
-        });
+        return cacheHelper.getOrLoad(CACHE_ROLE_CODES_KEY.formatted(userId), CACHE_TTL, () ->
+                roleMapper.selectRolesByUserId(userId).stream()
+                        .map(SysRole::getRoleCode)
+                        .collect(Collectors.toSet()));
     }
 
     public List<MenuTreeRes> getPermissionTree() {
@@ -92,5 +87,17 @@ public class PermissionQueryHandler {
         cacheHelper.evict(
                 CACHE_PERM_CODES_KEY.formatted(userId),
                 CACHE_ROLE_CODES_KEY.formatted(userId));
+    }
+
+    public void clearCacheByRoleId(String roleId) {
+        List<SysUserRole> userRoles = userRoleMapper.selectList(
+                new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, roleId));
+        userRoles.forEach(ur -> clearCache(ur.getUserId()));
+    }
+
+    public void clearCacheByPermissionId(String permissionId) {
+        List<SysRolePermission> rolePerms = rolePermissionMapper.selectList(
+                new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getPermissionId, permissionId));
+        rolePerms.forEach(rp -> clearCacheByRoleId(rp.getRoleId()));
     }
 }

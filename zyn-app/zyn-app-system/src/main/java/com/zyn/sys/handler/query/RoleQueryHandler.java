@@ -2,10 +2,7 @@ package com.zyn.sys.handler.query;
 
 import com.zyn.sys.response.role.RoleRes;
 import com.zyn.sys.infrastructure.entity.SysRole;
-import com.zyn.sys.infrastructure.entity.SysUserRole;
 import com.zyn.sys.infrastructure.mapper.SysRoleMapper;
-import com.zyn.sys.infrastructure.mapper.SysUserRoleMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +17,6 @@ import java.util.stream.Collectors;
 public class RoleQueryHandler {
 
     private final SysRoleMapper roleMapper;
-    private final SysUserRoleMapper userRoleMapper;
 
     public RoleRes findById(String id) {
         SysRole entity = roleMapper.selectById(id);
@@ -34,12 +30,7 @@ public class RoleQueryHandler {
     }
 
     public List<SysRole> getRolesByUserId(String userId) {
-        List<SysUserRole> userRoles = userRoleMapper.selectList(
-                new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, userId));
-        return userRoles.stream()
-                .map(ur -> roleMapper.selectById(ur.getRoleId()))
-                .filter(r -> r != null)
-                .collect(Collectors.toList());
+        return roleMapper.selectRolesByUserId(userId);
     }
 
     private RoleRes toRes(SysRole entity) {

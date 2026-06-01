@@ -6,10 +6,7 @@ import cn.dev33.satoken.session.SaSession;
 import cn.dev33.satoken.stp.SaLoginModel;
 import cn.dev33.satoken.stp.StpUtil;
 import com.zyn.infra.satoken.config.SaTokenProperties;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 登录鉴权助手
@@ -22,17 +19,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author lichunqing
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
-public final class LoginHelper {
+public class LoginHelper {
 
     private static final String LOGIN_USER_KEY = "loginUser";
     private static final String USER_ID_KEY = "userId";
 
-    private static SaTokenProperties properties;
+    private static volatile SaTokenProperties properties;
 
-    @Autowired
-    public void setProperties(SaTokenProperties properties) {
+    public static void setProperties(SaTokenProperties properties) {
         LoginHelper.properties = properties;
     }
 

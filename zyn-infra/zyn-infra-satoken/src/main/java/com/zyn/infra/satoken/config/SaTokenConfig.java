@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.StpLogic;
 import com.zyn.infra.redis.RedisClient;
 import com.zyn.infra.satoken.dao.RedisSaTokenDao;
 import com.zyn.infra.satoken.service.SaPermissionImpl;
+import com.zyn.infra.satoken.utils.LoginHelper;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -44,5 +45,11 @@ public class SaTokenConfig {
     @ConditionalOnMissingBean(SaTokenDao.class)
     public SaTokenDao saTokenDao(RedisClient redisTemplate) {
         return new RedisSaTokenDao(redisTemplate);
+    }
+
+    @Bean
+    LoginHelper loginHelperInitializer(SaTokenProperties properties) {
+        LoginHelper.setProperties(properties);
+        return new LoginHelper();
     }
 }

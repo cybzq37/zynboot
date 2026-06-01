@@ -38,4 +38,9 @@ public class RoleRepositoryImpl implements RoleRepository {
     public void update(RoleAggregate role) {
         mapper.updateById(role.getEntity());
     }
+
+    @Override
+    public void delete(String id) {
+        mapper.deleteById(id);
+    }
 }

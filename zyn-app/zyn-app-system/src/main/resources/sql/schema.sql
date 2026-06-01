@@ -6,7 +6,6 @@
 DROP TABLE IF EXISTS sys_user_org CASCADE;
 DROP TABLE IF EXISTS sys_role_permission CASCADE;
 DROP TABLE IF EXISTS sys_user_role CASCADE;
-DROP TABLE IF EXISTS sys_audit_log CASCADE;
 DROP TABLE IF EXISTS sys_resource CASCADE;
 DROP TABLE IF EXISTS sys_permission CASCADE;
 DROP TABLE IF EXISTS sys_organization CASCADE;
@@ -189,24 +188,3 @@ CREATE TABLE sys_user_org (
 
 CREATE INDEX idx_sys_user_org_user_id ON sys_user_org(user_id);
 CREATE INDEX idx_sys_user_org_org_id ON sys_user_org(org_id);
-
--- ------------------------------------------------
--- 审计日志表（只追加，不修改）
--- ------------------------------------------------
-CREATE TABLE sys_audit_log (
-    id             BIGSERIAL    PRIMARY KEY,         -- 自增主键
-    user_id        VARCHAR(64),                      -- 操作人 ID
-    username       VARCHAR(64),                      -- 操作人用户名
-    operation      VARCHAR(128),                     -- 操作描述
-    method         VARCHAR(256),                     -- 请求方法+路径
-    params         TEXT,                             -- 请求参数（JSON）
-    ip             VARCHAR(64),                      -- 客户端 IP
-    user_agent     VARCHAR(512),                     -- User-Agent
-    status         SMALLINT     DEFAULT 1,           -- 结果：0=失败 1=成功
-    error_msg      TEXT,                             -- 错误信息（失败时）
-    duration_ms    BIGINT,                           -- 请求耗时（毫秒）
-    create_time    TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- 创建时间
-);
-
-CREATE INDEX idx_audit_log_user_id ON sys_audit_log(user_id);
-CREATE INDEX idx_audit_log_create_time ON sys_audit_log(create_time);
