@@ -55,10 +55,6 @@
             <groupId>com.zyn</groupId>
             <artifactId>zyn-infra-web</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.zyn</groupId>
-            <artifactId>zyn-infra-satoken</artifactId>
-        </dependency>
 
         <!-- Spring Boot -->
         <dependency>
