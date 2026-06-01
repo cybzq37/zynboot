@@ -1,11 +1,5 @@
 package com.zyn.infra.mybatis.handler;
 
-import com.baomidou.mybatisplus.core.toolkit.Assert;
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 import org.apache.ibatis.type.BaseTypeHandler;
@@ -25,32 +19,25 @@ import java.sql.SQLException;
  * PostgreSQL JSONB 字段类型处理器。
  * <p>
  * 使用 Jackson 将 Java 对象与 PostgreSQL {@code jsonb} 列相互映射，
- * 写入时通过 {@link org.postgresql.util.PGobject} 设置类型为 {@code jsonb}。
- * <p>
- * 通过 {@link #setObjectMapper(ObjectMapper)} 可注入 Spring 容器中的 ObjectMapper，
- * 由 {@link com.zyn.infra.mybatis.config.MybatisAutoConfiguration} 自动完成。
+ * 写入时通过 {@link PGobject} 设置类型为 {@code jsonb}。
  */
 @MappedTypes({Object.class})
 @MappedJdbcTypes(JdbcType.VARCHAR)
 public class PgJsonbTypeHandler<T> extends BaseTypeHandler<T> {
 
-    protected final Log log = LogFactory.getLog(this.getClass());
+    private static final Log log = LogFactory.getLog(PgJsonbTypeHandler.class);
 
-    protected final Class<?> type;
-
-    /** @since 3.5.6 */
-    protected Type genericType;
-
-    private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final Class<?> type;
+    private final Type genericType;
 
     public PgJsonbTypeHandler(Class<?> clazz) {
         this.type = clazz;
-        Assert.notNull(type, "Type argument cannot be null");
+        this.genericType = clazz;
     }
 
     /** 自 3.5.6 版本开始支持泛型，需要加上此构造。 */
     public PgJsonbTypeHandler(Class<?> type, Field field) {
-        this(type);
+        this.type = type;
         this.genericType = field.getGenericType();
     }
 
@@ -58,7 +45,7 @@ public class PgJsonbTypeHandler<T> extends BaseTypeHandler<T> {
     public void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
         PGobject jsonbObject = new PGobject();
         jsonbObject.setType("jsonb");
-        jsonbObject.setValue(toJson(parameter));
+        jsonbObject.setValue(JacksonHandlerUtils.toJson(parameter, log));
         ps.setObject(i, jsonbObject);
     }
 
@@ -80,37 +67,7 @@ public class PgJsonbTypeHandler<T> extends BaseTypeHandler<T> {
         return json == null || json.isBlank() ? null : parse(json);
     }
 
-    public Type getFieldType() {
-        return this.genericType != null ? this.genericType : this.type;
-    }
-
-    public T parse(String json) {
-        ObjectMapper objectMapper = getObjectMapper();
-        TypeFactory typeFactory = objectMapper.getTypeFactory();
-        JavaType javaType = typeFactory.constructType(getFieldType());
-        try {
-            return objectMapper.readValue(json, javaType);
-        } catch (JacksonException e) {
-            log.error("deserialize json: " + json + " to " + javaType + " error", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String toJson(Object obj) {
-        try {
-            return getObjectMapper().writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            log.error("serialize " + obj + " to json error", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static ObjectMapper getObjectMapper() {
-        return OBJECT_MAPPER;
-    }
-
-    public static void setObjectMapper(ObjectMapper objectMapper) {
-        Assert.notNull(objectMapper, "ObjectMapper should not be null");
-        OBJECT_MAPPER = objectMapper;
+    private T parse(String json) {
+        return JacksonHandlerUtils.parse(json, genericType, log);
     }
 }

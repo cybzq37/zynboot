@@ -1,5 +1,6 @@
 package com.zyn.infra.kafka.config;
 
+import com.zyn.infra.kafka.KafkaConsumerSupport;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -37,5 +38,11 @@ public class KafkaConsumerAutoConfiguration {
             return new DefaultErrorHandler();
         }
         return new DefaultErrorHandler(recoverer);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public KafkaConsumerSupport kafkaConsumerSupport() {
+        return new KafkaConsumerSupport();
     }
 }

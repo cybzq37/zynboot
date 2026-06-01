@@ -21,7 +21,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldRespectBaseExceptionStatusAndDetails() {
         BaseException exception = new BaseException(
-                HttpStatus.UNPROCESSABLE_ENTITY,
+                422,
                 "BIZ-422",
                 "Rule violated",
                 null,

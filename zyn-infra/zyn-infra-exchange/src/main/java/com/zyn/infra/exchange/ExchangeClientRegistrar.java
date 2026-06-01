@@ -52,6 +52,7 @@ public class ExchangeClientRegistrar implements BeanDefinitionRegistryPostProces
                         .addConstructorArgValue(serviceName)
                         .setScope(BeanDefinition.SCOPE_SINGLETON)
                         .getBeanDefinition();
+                proxyBd.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
 
                 registry.registerBeanDefinition(beanName, proxyBd);
 

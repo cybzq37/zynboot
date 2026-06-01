@@ -1,8 +1,5 @@
 package com.zyn.kit.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-
 import java.util.List;
 
 public class BaseException extends RuntimeException {
@@ -14,37 +11,37 @@ public class BaseException extends RuntimeException {
     private static final String DEFAULT_INTERNAL_ERROR_MESSAGE = "Internal server error";
 
     private final String code;
-    private final HttpStatusCode status;
+    private final int statusCode;
     private final List<String> details;
 
     public BaseException(String message) {
-        this(HttpStatus.BAD_REQUEST, BAD_REQUEST_CODE, message);
+        this(400, BAD_REQUEST_CODE, message);
     }
 
     public BaseException(String code, String message) {
-        this(HttpStatus.BAD_REQUEST, code, message);
+        this(400, code, message);
     }
 
     public BaseException(String code, String message, Throwable cause) {
-        this(HttpStatus.BAD_REQUEST, code, message, cause);
+        this(400, code, message, cause);
     }
 
-    public BaseException(HttpStatusCode status, String code, String message) {
-        this(status, code, message, null, List.of());
+    public BaseException(int statusCode, String code, String message) {
+        this(statusCode, code, message, null, List.of());
     }
 
-    public BaseException(HttpStatusCode status, String code, String message, List<String> details) {
-        this(status, code, message, null, details);
+    public BaseException(int statusCode, String code, String message, List<String> details) {
+        this(statusCode, code, message, null, details);
     }
 
-    public BaseException(HttpStatusCode status, String code, String message, Throwable cause) {
-        this(status, code, message, cause, List.of());
+    public BaseException(int statusCode, String code, String message, Throwable cause) {
+        this(statusCode, code, message, cause, List.of());
     }
 
-    public BaseException(HttpStatusCode status, String code, String message, Throwable cause, List<String> details) {
-        super(normalizeMessage(message, status), cause);
-        this.status = status == null ? HttpStatus.BAD_REQUEST : status;
-        this.code = normalizeCode(code, this.status);
+    public BaseException(int statusCode, String code, String message, Throwable cause, List<String> details) {
+        super(normalizeMessage(message, statusCode), cause);
+        this.statusCode = statusCode <= 0 ? 400 : statusCode;
+        this.code = normalizeCode(code, this.statusCode);
         this.details = details == null ? List.of() : List.copyOf(details);
     }
 
@@ -57,45 +54,45 @@ public class BaseException extends RuntimeException {
     }
 
     public static BaseException badRequest(String code, String message, List<String> details) {
-        return new BaseException(HttpStatus.BAD_REQUEST, code, message, details);
+        return new BaseException(400, code, message, details);
     }
 
     public static BaseException internalError(String message, Throwable cause) {
-        return new BaseException(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_ERROR_CODE, message, cause);
+        return new BaseException(500, INTERNAL_ERROR_CODE, message, cause);
     }
 
     public static BaseException internalError(String code, String message, Throwable cause) {
-        return new BaseException(HttpStatus.INTERNAL_SERVER_ERROR, code, message, cause);
+        return new BaseException(500, code, message, cause);
     }
 
     public static BaseException internalError(String code, String message, Throwable cause, List<String> details) {
-        return new BaseException(HttpStatus.INTERNAL_SERVER_ERROR, code, message, cause, details);
+        return new BaseException(500, code, message, cause, details);
     }
 
     public String getCode() {
         return code;
     }
 
-    public HttpStatusCode getStatus() {
-        return status;
+    public int getStatus() {
+        return statusCode;
     }
 
     public List<String> getDetails() {
         return details;
     }
 
-    private static String normalizeCode(String code, HttpStatusCode status) {
+    private static String normalizeCode(String code, int statusCode) {
         if (code != null && !code.isBlank()) {
             return code;
         }
-        return status.is5xxServerError() ? INTERNAL_ERROR_CODE : BAD_REQUEST_CODE;
+        return statusCode >= 500 ? INTERNAL_ERROR_CODE : BAD_REQUEST_CODE;
     }
 
-    private static String normalizeMessage(String message, HttpStatusCode status) {
+    private static String normalizeMessage(String message, int statusCode) {
         if (message != null && !message.isBlank()) {
             return message;
         }
-        return status != null && status.is5xxServerError()
+        return statusCode >= 500
                 ? DEFAULT_INTERNAL_ERROR_MESSAGE
                 : DEFAULT_BAD_REQUEST_MESSAGE;
     }

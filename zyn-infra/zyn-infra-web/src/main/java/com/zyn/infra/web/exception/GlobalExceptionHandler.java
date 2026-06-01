@@ -50,12 +50,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ErrorResponse> handleBaseException(BaseException ex, WebRequest request) {
-        if (ex.getStatus().is5xxServerError()) {
+        if (ex.getStatus() >= 500) {
             log.error("Application exception, code={}, msg={}", ex.getCode(), ex.getMessage(), ex);
         } else if (properties.isLogWarnForBusiness()) {
             log.warn("Business exception, code={}, msg={}", ex.getCode(), ex.getMessage());
         }
-        return build(ex.getStatus(), ex.getCode(), ex.getMessage(), request, resolveDetails(ex.getDetails(), ex, ex.getStatus()));
+        HttpStatusCode status = HttpStatus.valueOf(ex.getStatus());
+        return build(status, ex.getCode(), ex.getMessage(), request, resolveDetails(ex.getDetails(), ex, status));
     }
 
     @ExceptionHandler({

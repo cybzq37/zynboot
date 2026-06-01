@@ -77,6 +77,7 @@ zyn:
     connect-timeout-ms: 3000
     read-timeout-ms: 10000
     follow-redirects: false
+    forward-auth: true
   satoken:
     enabled: true
     login-type: login
@@ -99,15 +100,14 @@ zyn:
       path-style-access: true
       access-key: ${S3_ACCESS_KEY:zynex}
       secret-key: ${S3_SECRET_KEY:Zyn@Secure#99}
-  global:
-    web:
-      exception:
-        enabled: true
-        include-stack-trace: false
-      response:
-        enabled: true
-        success-code: "0"
-        success-message: OK
+  web:
+    exception:
+      enabled: true
+      include-stack-trace: false
+    response:
+      enabled: true
+      success-code: "0"
+      success-message: OK
   kit:
     okhttp:
       connect-timeout-seconds: 5

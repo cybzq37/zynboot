@@ -9,14 +9,13 @@ import com.zyn.sys.domain.repository.UserRepository;
 import com.zyn.sys.handler.query.PermissionQueryHandler;
 import com.zyn.sys.handler.query.UserQueryHandler;
 import com.zyn.sys.query.user.UserPageQuery;
+import com.zyn.sys.response.PageRes;
 import com.zyn.sys.response.user.UserRes;
 import com.zyn.sys.util.PasswordUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,13 +27,13 @@ public class SysUserController {
     private final UserRepository userRepository;
 
     @GetMapping
-    public ApiResponse<Map<String, Object>> page(UserPageQuery query) {
+    public ApiResponse<PageRes<UserRes>> page(UserPageQuery query) {
         Page<UserAggregate> result = userRepository.page(query);
-        return ApiResponse.ok(Map.of(
-                "records", BeanUtils.copyList(result.getRecords(), UserRes.class),
-                "total", result.getTotal(),
-                "pageNum", result.getCurrent(),
-                "pageSize", result.getSize()
+        return ApiResponse.ok(new PageRes<>(
+                BeanUtils.copyList(result.getRecords(), UserRes.class),
+                result.getTotal(),
+                result.getCurrent(),
+                result.getSize()
         ));
     }
 

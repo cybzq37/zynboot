@@ -4,8 +4,7 @@ import com.baomidou.mybatisplus.autoconfigure.MybatisPlusAutoConfiguration;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zyn.infra.mybatis.handler.JsonTypeHandler;
-import com.zyn.infra.mybatis.handler.PgJsonbTypeHandler;
+import com.zyn.infra.mybatis.handler.JacksonHandlerUtils;
 import com.zyn.infra.mybatis.interceptor.PageableInterceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -67,8 +66,7 @@ public class MybatisAutoConfiguration {
 
     @Bean
     public TypeHandlerObjectMapperInjector typeHandlerObjectMapperInjector(ObjectMapper objectMapper) {
-        JsonTypeHandler.setObjectMapper(objectMapper);
-        PgJsonbTypeHandler.setObjectMapper(objectMapper);
+        JacksonHandlerUtils.setObjectMapper(objectMapper);
         return new TypeHandlerObjectMapperInjector();
     }
 

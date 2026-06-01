@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "zyn.global.web.response")
+@ConfigurationProperties(prefix = "zyn.web.response")
 public class ResponseProperties {
 
     private boolean enabled = true;

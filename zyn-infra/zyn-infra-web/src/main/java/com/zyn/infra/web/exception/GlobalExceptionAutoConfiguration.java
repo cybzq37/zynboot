@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableConfigurationProperties(GlobalExceptionProperties.class)
-@ConditionalOnProperty(prefix = "zyn.global.web.exception", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "zyn.web.exception", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class GlobalExceptionAutoConfiguration {
 
     @Bean

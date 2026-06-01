@@ -2,7 +2,6 @@ package com.zyn.kit.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.util.AntPathMatcher;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,8 +18,6 @@ import java.util.stream.Collectors;
 public final class StringUtils {
 
     public static final String SEPARATOR = ",";
-
-    private static final AntPathMatcher ANT_PATH_MATCHER = new AntPathMatcher();
 
     public static boolean isEmpty(String str) {
         return str == null || str.isEmpty();
@@ -195,7 +192,7 @@ public final class StringUtils {
             return false;
         }
         for (String pattern : patterns) {
-            if (ANT_PATH_MATCHER.match(pattern, str)) {
+            if (isMatch(pattern, str)) {
                 return true;
             }
         }
@@ -203,7 +200,32 @@ public final class StringUtils {
     }
 
     public static boolean isMatch(String pattern, String url) {
-        return ANT_PATH_MATCHER.match(pattern, url);
+        if (pattern == null || url == null) return false;
+        String regex = antPatternToRegex(pattern);
+        return url.matches(regex);
+    }
+
+    private static String antPatternToRegex(String pattern) {
+        StringBuilder sb = new StringBuilder("^");
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            if (c == '*') {
+                if (i + 1 < pattern.length() && pattern.charAt(i + 1) == '*') {
+                    sb.append(".*");
+                    i++;
+                } else {
+                    sb.append("[^/]*");
+                }
+            } else if (c == '?') {
+                sb.append('.');
+            } else if (".+^${}()|[]\\".indexOf(c) >= 0) {
+                sb.append('\\').append(c);
+            } else {
+                sb.append(c);
+            }
+        }
+        sb.append('$');
+        return sb.toString();
     }
 
     public static String truncate(String value, int maxLength) {

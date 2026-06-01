@@ -16,13 +16,17 @@ import java.util.Map;
  */
 public class HttpQueryArgumentResolver implements HttpServiceArgumentResolver {
 
-    private final ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     public HttpQueryArgumentResolver() {
         this(new ObjectMapper());
     }
 
     public HttpQueryArgumentResolver(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public void setObjectMapper(ObjectMapper mapper) {
         this.mapper = mapper;
     }
 

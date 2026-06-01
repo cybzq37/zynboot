@@ -2,18 +2,13 @@ package com.zyn.infra.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.Message;
-import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-@Component
-@ConditionalOnBean(ConsumerFactory.class)
 public class KafkaConsumerSupport {
 
     public boolean acknowledge(Acknowledgment acknowledgment) {

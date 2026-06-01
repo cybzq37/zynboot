@@ -24,6 +24,9 @@ public class ExchangeProperties {
     /** 是否跟随重定向（微服务内部一般 false）。 */
     private boolean followRedirects = false;
 
+    /** 是否转发当前请求的 Authorization header 到下游服务。 */
+    private boolean forwardAuth = true;
+
     /** 服务地址映射。 */
     private Map<String, String> services = new HashMap<>();
 

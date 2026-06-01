@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @Getter
 @Setter
-@ConfigurationProperties(prefix = "zyn.global.web.exception")
+@ConfigurationProperties(prefix = "zyn.web.exception")
 public class GlobalExceptionProperties {
 
     private boolean enabled = true;

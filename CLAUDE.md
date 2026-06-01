@@ -97,8 +97,8 @@ Key `zyn.*` configuration switches (all default to `true` / `matchIfMissing`):
 | `zyn.storage.enabled` | File storage (type: `LOCAL` or `S3`) |
 | `zyn.exchange.enabled` | Declarative HTTP client scanning |
 | `zyn.cors.enabled` | CORS configuration |
-| `zyn.global.web.exception.enabled` | Global exception handler |
-| `zyn.global.web.response.enabled` | Auto response wrapping (`ApiResponse`) |
+| `zyn.web.exception.enabled` | Global exception handler |
+| `zyn.web.response.enabled` | Auto response wrapping (`ApiResponse`) |
 | `zyn.exchange.services.<name>` | Service base URLs for `@ExchangeClient` |
 
 ## Database

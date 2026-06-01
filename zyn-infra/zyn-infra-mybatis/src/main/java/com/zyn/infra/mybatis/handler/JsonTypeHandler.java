@@ -1,12 +1,6 @@
 package com.zyn.infra.mybatis.handler;
 
-import com.baomidou.mybatisplus.core.toolkit.Assert;
 import com.baomidou.mybatisplus.extension.handlers.AbstractJsonTypeHandler;
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedJdbcTypes;
 import org.apache.ibatis.type.MappedTypes;
@@ -19,16 +13,10 @@ import java.sql.SQLException;
  * JSON 字段类型处理器（VARCHAR 存储）。
  * <p>
  * 使用 Jackson 将 Java 对象与数据库 {@code varchar}/{@code text} 列中存储的 JSON 字符串相互映射。
- * 适用于数据库不支持原生 JSON 类型、或以文本方式存储 JSON 的场景。
- * <p>
- * 通过 {@link #setObjectMapper(ObjectMapper)} 可注入 Spring 容器中的 ObjectMapper，
- * 由 {@link com.zyn.infra.mybatis.config.MybatisAutoConfiguration} 自动完成。
  */
 @MappedTypes({Object.class})
 @MappedJdbcTypes(JdbcType.VARCHAR)
 public class JsonTypeHandler<T> extends AbstractJsonTypeHandler<T> {
-
-    private static ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public JsonTypeHandler(Class<T> clazz) {
         super(clazz);
@@ -46,34 +34,11 @@ public class JsonTypeHandler<T> extends AbstractJsonTypeHandler<T> {
 
     @Override
     public T parse(String json) {
-        ObjectMapper objectMapper = getObjectMapper();
-        TypeFactory typeFactory = objectMapper.getTypeFactory();
-        JavaType javaType = typeFactory.constructType(getFieldType());
-        try {
-            return objectMapper.readValue(json, javaType);
-        } catch (JacksonException e) {
-            log.error("deserialize json: " + json + " to " + javaType + " error", e);
-            throw new RuntimeException(e);
-        }
+        return JacksonHandlerUtils.parse(json, getFieldType(), log);
     }
 
     @Override
     public String toJson(Object obj) {
-        try {
-            String str = getObjectMapper().writeValueAsString(obj);
-            return "null".equals(str) ? null : str;
-        } catch (JsonProcessingException e) {
-            log.error("serialize " + obj + " to json error", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static ObjectMapper getObjectMapper() {
-        return OBJECT_MAPPER;
-    }
-
-    public static void setObjectMapper(ObjectMapper objectMapper) {
-        Assert.notNull(objectMapper, "ObjectMapper should not be null");
-        OBJECT_MAPPER = objectMapper;
+        return JacksonHandlerUtils.toJson(obj, log);
     }
 }

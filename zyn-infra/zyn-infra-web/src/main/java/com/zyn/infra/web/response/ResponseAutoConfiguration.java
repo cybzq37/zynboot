@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 @AutoConfiguration
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @EnableConfigurationProperties(ResponseProperties.class)
-@ConditionalOnProperty(prefix = "zyn.global.web.response", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "zyn.web.response", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class ResponseAutoConfiguration {
 
     @Bean

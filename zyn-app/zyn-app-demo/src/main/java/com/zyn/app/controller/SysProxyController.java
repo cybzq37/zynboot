@@ -20,12 +20,12 @@ import com.zyn.sys.response.resource.ResourceRes;
 import com.zyn.sys.response.role.RoleRes;
 import com.zyn.sys.response.user.LoginRes;
 import com.zyn.sys.response.user.UserInfoRes;
+import com.zyn.sys.response.PageRes;
 import com.zyn.sys.response.user.UserRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 系统 API 代理端点 —— 用于验证跨服务 Remote 调用。
@@ -60,7 +60,7 @@ public class SysProxyController {
 
     // ── User ──────────────────────────────────────────────────
     @GetMapping("/user")
-    public ApiResponse<Map<String, Object>> userPage(UserPageQuery query) {
+    public ApiResponse<PageRes<UserRes>> userPage(UserPageQuery query) {
         return userApi.page(query);
     }
 

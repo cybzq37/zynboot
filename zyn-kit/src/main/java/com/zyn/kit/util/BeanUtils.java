@@ -2,11 +2,13 @@ package com.zyn.kit.util;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cglib.beans.BeanCopier;
 import org.springframework.cglib.beans.BeanMap;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class BeanUtils {
 
+    private static final Logger log = LoggerFactory.getLogger(BeanUtils.class);
     private static final Map<String, BeanCopier> COPIER_CACHE = new ConcurrentHashMap<>();
 
     // ==================== 拷贝 ====================
@@ -86,7 +89,8 @@ public class BeanUtils {
             if ("class".equals(key) || ignoreSet.contains(key) || !targetMap.containsKey(key)) continue;
             try {
                 targetMap.put(key, sourceMap.get(key));
-            } catch (RuntimeException ignored) {
+            } catch (RuntimeException e) {
+                log.debug("copyProperties: failed to set '{}': {}", key, e.getMessage());
             }
         }
     }
@@ -113,7 +117,8 @@ public class BeanUtils {
             if (value == null) continue;
             try {
                 targetMap.put(key, value);
-            } catch (RuntimeException ignored) {
+            } catch (RuntimeException e) {
+                log.debug("copyPropertiesIgnoreNull: failed to set '{}': {}", key, e.getMessage());
             }
         }
     }
@@ -207,13 +212,18 @@ public class BeanUtils {
      */
     public static void mapToBean(Map<String, ?> map, Object target) {
         if (map == null || map.isEmpty() || target == null) return;
-        BeanWrapper wrapper = new BeanWrapperImpl(target);
-        for (Map.Entry<String, ?> entry : map.entrySet()) {
-            if (!wrapper.isWritableProperty(entry.getKey())) continue;
-            try {
-                wrapper.setPropertyValue(entry.getKey(), entry.getValue());
-            } catch (RuntimeException ignored) {
+        try {
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(target.getClass()).getPropertyDescriptors()) {
+                String name = pd.getName();
+                if ("class".equals(name) || !map.containsKey(name) || pd.getWriteMethod() == null) continue;
+                try {
+                    pd.getWriteMethod().invoke(target, map.get(name));
+                } catch (Exception e) {
+                    log.debug("mapToBean: failed to set '{}': {}", name, e.getMessage());
+                }
             }
+        } catch (IntrospectionException e) {
+            log.debug("mapToBean: failed to introspect {}", target.getClass().getName(), e);
         }
     }
 
@@ -222,14 +232,20 @@ public class BeanUtils {
      */
     public static void mapToBeanIgnoreNull(Map<String, ?> map, Object target) {
         if (map == null || map.isEmpty() || target == null) return;
-        BeanWrapper wrapper = new BeanWrapperImpl(target);
-        for (Map.Entry<String, ?> entry : map.entrySet()) {
-            if (entry.getValue() == null) continue;
-            if (!wrapper.isWritableProperty(entry.getKey())) continue;
-            try {
-                wrapper.setPropertyValue(entry.getKey(), entry.getValue());
-            } catch (RuntimeException ignored) {
+        try {
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(target.getClass()).getPropertyDescriptors()) {
+                String name = pd.getName();
+                if ("class".equals(name) || !map.containsKey(name) || pd.getWriteMethod() == null) continue;
+                Object value = map.get(name);
+                if (value == null) continue;
+                try {
+                    pd.getWriteMethod().invoke(target, value);
+                } catch (Exception e) {
+                    log.debug("mapToBeanIgnoreNull: failed to set '{}': {}", name, e.getMessage());
+                }
             }
+        } catch (IntrospectionException e) {
+            log.debug("mapToBeanIgnoreNull: failed to introspect {}", target.getClass().getName(), e);
         }
     }
 
@@ -272,11 +288,14 @@ public class BeanUtils {
      */
     public static Set<String> getNullPropertyNames(Object source) {
         if (source == null) return Collections.emptySet();
-        BeanWrapper wrapper = new BeanWrapperImpl(source);
         Set<String> names = new HashSet<>();
-        for (PropertyDescriptor pd : wrapper.getPropertyDescriptors()) {
-            if ("class".equals(pd.getName())) continue;
-            if (wrapper.getPropertyValue(pd.getName()) == null) names.add(pd.getName());
+        try {
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(source.getClass()).getPropertyDescriptors()) {
+                if ("class".equals(pd.getName()) || pd.getReadMethod() == null) continue;
+                if (pd.getReadMethod().invoke(source) == null) names.add(pd.getName());
+            }
+        } catch (Exception e) {
+            log.debug("getNullPropertyNames: failed to introspect {}", source.getClass().getName(), e);
         }
         return names;
     }
@@ -286,9 +305,16 @@ public class BeanUtils {
      */
     public static Object getProperty(Object bean, String propertyName) {
         if (bean == null || propertyName == null) return null;
-        BeanWrapper wrapper = new BeanWrapperImpl(bean);
-        if (!wrapper.isReadableProperty(propertyName)) return null;
-        return wrapper.getPropertyValue(propertyName);
+        try {
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(bean.getClass()).getPropertyDescriptors()) {
+                if (pd.getName().equals(propertyName) && pd.getReadMethod() != null) {
+                    return pd.getReadMethod().invoke(bean);
+                }
+            }
+        } catch (Exception e) {
+            log.debug("getProperty: failed to read '{}': {}", propertyName, e.getMessage());
+        }
+        return null;
     }
 
     /**
@@ -296,9 +322,16 @@ public class BeanUtils {
      */
     public static void setProperty(Object bean, String propertyName, Object value) {
         if (bean == null || propertyName == null) return;
-        BeanWrapper wrapper = new BeanWrapperImpl(bean);
-        if (!wrapper.isWritableProperty(propertyName)) return;
-        wrapper.setPropertyValue(propertyName, value);
+        try {
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(bean.getClass()).getPropertyDescriptors()) {
+                if (pd.getName().equals(propertyName) && pd.getWriteMethod() != null) {
+                    pd.getWriteMethod().invoke(bean, value);
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            log.debug("setProperty: failed to write '{}': {}", propertyName, e.getMessage());
+        }
     }
 
     /**
@@ -306,10 +339,13 @@ public class BeanUtils {
      */
     public static Set<String> getPropertyNames(Object bean) {
         if (bean == null) return Collections.emptySet();
-        BeanWrapper wrapper = new BeanWrapperImpl(bean);
         Set<String> names = new LinkedHashSet<>();
-        for (PropertyDescriptor pd : wrapper.getPropertyDescriptors()) {
-            if (!"class".equals(pd.getName())) names.add(pd.getName());
+        try {
+            for (PropertyDescriptor pd : Introspector.getBeanInfo(bean.getClass()).getPropertyDescriptors()) {
+                if (!"class".equals(pd.getName())) names.add(pd.getName());
+            }
+        } catch (IntrospectionException e) {
+            log.debug("getPropertyNames: failed to introspect {}", bean.getClass().getName(), e);
         }
         return names;
     }

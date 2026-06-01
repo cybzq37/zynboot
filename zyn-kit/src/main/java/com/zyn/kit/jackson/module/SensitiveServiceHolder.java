@@ -1,17 +1,17 @@
 package com.zyn.kit.jackson.module;
 
 import com.zyn.kit.jackson.plugins.sensitive.SensitiveService;
-import org.springframework.beans.factory.InitializingBean;
+import jakarta.annotation.PostConstruct;
 
 /**
- * 持有 {@link SensitiveService} 的 Spring Bean 引用
+ * 持有 {@link SensitiveService} 的 Bean 引用。
  * <p>
  * 由于 Jackson 的 {@link SensitiveJsonSerializer} 由 Jackson 直接实例化，
- * 无法通过 Spring 依赖注入获取 SensitiveService，此类作为桥梁提供访问途径。
+ * 无法通过依赖注入获取 SensitiveService，此类作为桥梁提供访问途径。
  *
  * @author lichunqing
  */
-public class SensitiveServiceHolder implements InitializingBean {
+public class SensitiveServiceHolder {
 
     private static volatile SensitiveService instance;
 
@@ -21,15 +21,15 @@ public class SensitiveServiceHolder implements InitializingBean {
         this.sensitiveService = sensitiveService;
     }
 
-    @Override
-    public void afterPropertiesSet() {
+    @PostConstruct
+    public void init() {
         instance = this.sensitiveService;
     }
 
     /**
      * 获取 SensitiveService 实例
      *
-     * @return SensitiveService，如果 Spring 容器中不存在则返回 null
+     * @return SensitiveService，如果容器中不存在则返回 null
      */
     public static SensitiveService getInstance() {
         return instance;

@@ -1,7 +1,6 @@
 package com.zyn.kit.exception;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +14,10 @@ class BaseExceptionTest {
         List<String> details = new ArrayList<>();
         details.add("name: invalid");
 
-        BaseException exception = new BaseException(HttpStatus.UNPROCESSABLE_ENTITY, null, "Validation failed", null, details);
+        BaseException exception = new BaseException(422, null, "Validation failed", null, details);
         details.add("age: invalid");
 
-        assertThat(exception.getStatus().value()).isEqualTo(422);
+        assertThat(exception.getStatus()).isEqualTo(422);
         assertThat(exception.getCode()).isEqualTo(BaseException.BAD_REQUEST_CODE);
         assertThat(exception.getDetails()).containsExactly("name: invalid");
     }
@@ -28,9 +27,9 @@ class BaseExceptionTest {
         BaseException businessException = BaseException.badRequest("Duplicate name");
         BaseException systemException = BaseException.internalError("Serialize failed", new IllegalStateException("boom"));
 
-        assertThat(businessException.getStatus().value()).isEqualTo(400);
+        assertThat(businessException.getStatus()).isEqualTo(400);
         assertThat(businessException.getCode()).isEqualTo(BaseException.BAD_REQUEST_CODE);
-        assertThat(systemException.getStatus().value()).isEqualTo(500);
+        assertThat(systemException.getStatus()).isEqualTo(500);
         assertThat(systemException.getCode()).isEqualTo(BaseException.INTERNAL_ERROR_CODE);
     }
 

@@ -1,29 +1,30 @@
 package com.zyn.kit.util;
 
+import java.io.Closeable;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 /**
  * 本地 TTL 缓存（不依赖 Redis）。
  * <p>
- * 适用于配置缓存、热点数据缓存等场景。
+ * 适用于配置缓存、热点数据缓存等场景。实现 {@link Closeable} 以释放后台清理任务。
  *
  * <pre>
- * CacheUtils<String, String> cache = CacheUtils.of(Duration.ofMinutes(5));
- * cache.get("key", k -> expensiveLookup(k));
+ * try (CacheUtils<String, String> cache = CacheUtils.of(Duration.ofMinutes(5))) {
+ *     cache.get("key", k -> expensiveLookup(k));
+ * }
  * </pre>
  */
-public class CacheUtils<K, V> {
+public class CacheUtils<K, V> implements Closeable {
 
-    private final ConcurrentHashMap<K, Entry<V>> store = new ConcurrentHashMap<>();
-    private final Duration ttl;
-    private final int maxSize;
     private static final ScheduledExecutorService CLEANER =
             Executors.newSingleThreadScheduledExecutor(r -> {
                 Thread t = new Thread(r, "cache-cleaner");
@@ -31,10 +32,17 @@ public class CacheUtils<K, V> {
                 return t;
             });
 
+    private final ConcurrentHashMap<K, Entry<V>> store = new ConcurrentHashMap<>();
+    private final ConcurrentLinkedDeque<K> insertionOrder = new ConcurrentLinkedDeque<>();
+    private final Duration ttl;
+    private final int maxSize;
+    private final ScheduledFuture<?> cleanupTask;
+
     private CacheUtils(Duration ttl, int maxSize) {
         this.ttl = ttl;
         this.maxSize = maxSize;
-        CLEANER.scheduleWithFixedDelay(this::evictExpired, ttl.toSeconds(), ttl.toSeconds(), TimeUnit.SECONDS);
+        this.cleanupTask = CLEANER.scheduleWithFixedDelay(
+                this::evictExpired, ttl.toSeconds(), ttl.toSeconds(), TimeUnit.SECONDS);
     }
 
     /**
@@ -85,7 +93,10 @@ public class CacheUtils<K, V> {
         if (store.size() >= maxSize) {
             evictOldest();
         }
-        store.put(key, new Entry<>(value, System.nanoTime() + ttl.toNanos()));
+        Entry<V> prev = store.put(key, new Entry<>(value, System.nanoTime() + ttl.toNanos()));
+        if (prev == null) {
+            insertionOrder.addLast(key);
+        }
     }
 
     /**
@@ -100,6 +111,7 @@ public class CacheUtils<K, V> {
      */
     public void invalidateAll() {
         store.clear();
+        insertionOrder.clear();
     }
 
     /**
@@ -120,6 +132,14 @@ public class CacheUtils<K, V> {
         return map;
     }
 
+    /**
+     * 取消后台清理任务，释放资源。
+     */
+    @Override
+    public void close() {
+        cleanupTask.cancel(false);
+    }
+
     // ==================== 内部 ====================
 
     private void evictExpired() {
@@ -127,9 +147,12 @@ public class CacheUtils<K, V> {
     }
 
     private void evictOldest() {
-        store.entrySet().stream()
-                .min((a, b) -> Long.compare(a.getValue().expireAt, b.getValue().expireAt))
-                .ifPresent(e -> store.remove(e.getKey()));
+        while (!insertionOrder.isEmpty()) {
+            K oldest = insertionOrder.pollFirst();
+            if (oldest != null && store.remove(oldest) != null) {
+                return;
+            }
+        }
     }
 
     private record Entry<V>(V value, long expireAt) {

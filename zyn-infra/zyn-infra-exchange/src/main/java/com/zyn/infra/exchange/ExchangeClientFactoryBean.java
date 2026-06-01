@@ -1,5 +1,7 @@
 package com.zyn.infra.exchange;
 
+import com.zyn.infra.exchange.query.HttpQueryArgumentResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -22,6 +24,7 @@ public class ExchangeClientFactoryBean implements FactoryBean<Object>, Environme
 
     private final Class<?> clientType;
     private final String serviceName;
+    private ObjectMapper objectMapper;
 
     private Environment environment;
     private Object proxy;
@@ -29,6 +32,10 @@ public class ExchangeClientFactoryBean implements FactoryBean<Object>, Environme
     public ExchangeClientFactoryBean(Class<?> clientType, String serviceName) {
         this.clientType = clientType;
         this.serviceName = serviceName;
+    }
+
+    public void setObjectMapper(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -50,14 +57,19 @@ public class ExchangeClientFactoryBean implements FactoryBean<Object>, Environme
                 "zyn.exchange.read-timeout-ms", Long.class, 10000L);
         boolean followRedirects = environment.getProperty(
                 "zyn.exchange.follow-redirects", Boolean.class, false);
+        boolean forwardAuth = environment.getProperty(
+                "zyn.exchange.forward-auth", Boolean.class, true);
 
         List<HttpServiceArgumentResolver> resolvers = new ArrayList<>();
         for (HttpServiceArgumentResolver resolver : ServiceLoader.load(HttpServiceArgumentResolver.class)) {
+            if (resolver instanceof HttpQueryArgumentResolver queryResolver && objectMapper != null) {
+                queryResolver.setObjectMapper(objectMapper);
+            }
             resolvers.add(resolver);
         }
 
         this.proxy = ServiceProxyBuilder.build(
-                clientType, url, connectTimeoutMs, readTimeoutMs, followRedirects, resolvers);
+                clientType, url, connectTimeoutMs, readTimeoutMs, followRedirects, forwardAuth, resolvers);
         log.info("Created service client: {} -> {} ({})", clientType.getSimpleName(), serviceName, url);
     }
 

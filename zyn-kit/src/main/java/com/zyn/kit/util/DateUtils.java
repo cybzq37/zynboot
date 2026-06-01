@@ -40,15 +40,19 @@ public class DateUtils {
 
     public static final String YYYY_MM_DD_HH_MM_SS_SSS = "yyyy-MM-dd HH:mm:ss.SSS";
 
-    private static final ZoneId SYSTEM_ZONE = ZoneId.of("Asia/Shanghai");
+    private static final ZoneId SYSTEM_ZONE = ZoneId.systemDefault();
 
     private static final Map<String, DateTimeFormatter> FORMATTER_CACHE = new ConcurrentHashMap<>();
 
     private static final String[] DATE_TIME_PATTERNS = {
         "yyyy-MM-dd HH:mm:ss",
-        "yyyy-MM-dd HH:mm",
+        "yyyy-MM-dd'T'HH:mm:ss",
         "yyyy-MM-dd HH:mm:ss.SSS",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS",
+        "yyyy-MM-dd HH:mm",
+        "yyyy-MM-dd'T'HH:mm",
         "yyyy/MM/dd HH:mm:ss",
+        "yyyy/MM/dd'T'HH:mm:ss",
         "yyyy/MM/dd HH:mm",
         "yyyy.MM.dd HH:mm:ss",
         "yyyy.MM.dd HH:mm",
@@ -60,7 +64,10 @@ public class DateUtils {
         "yyyy-MM-dd",
         "yyyy/MM/dd",
         "yyyy.MM.dd",
-        "yyyyMMdd"
+        "yyyyMMdd",
+        "yyyy年MM月dd日",
+        "dd/MM/yyyy",
+        "MM/dd/yyyy"
     };
 
 

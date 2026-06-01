@@ -41,7 +41,7 @@ class GlobalResponseBodyAdviceTest {
                 .isInstanceOf(BaseException.class)
                 .satisfies(throwable -> {
                     BaseException exception = (BaseException) throwable;
-                    assertThat(exception.getStatus().value()).isEqualTo(500);
+                    assertThat(exception.getStatus()).isEqualTo(500);
                     assertThat(exception.getCode()).isEqualTo(BaseException.INTERNAL_ERROR_CODE);
                 });
 
