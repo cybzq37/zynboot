@@ -88,15 +88,16 @@ bash tests/deploy.sh --test      # 仅运行测试
 
 ```bash
 # 登录获取 token
-TOKEN=$(curl -s -X POST 'http://192.168.1.3:28081/api/v1/auth/login' \
-  -d 'username=root&password=Zyn@Secure#99' \
+TOKEN=$(curl -s -X POST 'http://localhost:28081/sys/api/v1/auth/login' \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"root","password":"Zyn@Secure#99"}' \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['token'])")
 
 # 直连: system API
-curl -s -H "Authorization: $TOKEN" http://192.168.1.3:28081/api/v1/user | python3 -m json.tool
+curl -s -H "Authorization: $TOKEN" http://localhost:28081/sys/api/v1/user | python3 -m json.tool
 
 # 代理: demo → system
-curl -s -H "Authorization: $TOKEN" http://192.168.1.3:28080/api/v1/sys-proxy/user | python3 -m json.tool
+curl -s -H "Authorization: $TOKEN" http://localhost:28080/demo/api/v1/sys-proxy/user | python3 -m json.tool
 ```
 
 ## 测试数据
