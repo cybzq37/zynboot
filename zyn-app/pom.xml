@@ -17,7 +17,6 @@
 
     <modules>
         <module>zyn-app-system</module>
-        <module>zyn-app-netty</module>
         <module>zyn-app-demo</module>
     </modules>
 </project>
