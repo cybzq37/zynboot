@@ -24,6 +24,7 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.PrintWriter;
@@ -104,6 +105,12 @@ public class GlobalExceptionHandler {
                 .map(this::formatViolation)
                 .toList();
         return build(HttpStatus.BAD_REQUEST, BaseException.BAD_REQUEST_CODE, VALIDATION_FAILED_MESSAGE, request, details);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(NoResourceFoundException ex, WebRequest request) {
+        log.warn("Resource not found: {}", ex.getMessage());
+        return build(HttpStatus.NOT_FOUND, BaseException.BAD_REQUEST_CODE, ex.getMessage(), request, List.of());
     }
 
     @ExceptionHandler(ResponseStatusException.class)
