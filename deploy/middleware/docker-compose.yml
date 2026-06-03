@@ -26,6 +26,7 @@ services:
 
   postgres:
     <<: *common
+    container_name: postgres
     image: ${POSTGRES_IMAGE}
     environment:
       POSTGRES_DB: zyn_base
@@ -74,6 +75,7 @@ services:
 
   redis:
     <<: *common
+    container_name: redis
     image: redis:7.4-alpine
     environment:
       TZ: Asia/Shanghai
@@ -114,6 +116,7 @@ services:
 
   kafka:
     <<: *common
+    container_name: kafka
     image: apache/kafka:3.7.1
     environment:
       KAFKA_NODE_ID: 0
@@ -164,6 +167,7 @@ services:
 
   elasticsearch:
     <<: *common
+    container_name: elasticsearch
     build: ./elasticsearch
     image: zyn-elasticsearch:8.15.3
     environment:
@@ -207,6 +211,7 @@ services:
 
   seaweedfs-master:
     <<: *common
+    container_name: seaweedfs-master
     image: chrislusf/seaweedfs:4.29
     environment:
       TZ: Asia/Shanghai
@@ -234,6 +239,7 @@ services:
 
   seaweedfs-volume:
     <<: *common
+    container_name: seaweedfs-volume
     image: chrislusf/seaweedfs:4.29
     environment:
       TZ: Asia/Shanghai
@@ -268,6 +274,7 @@ services:
 
   seaweedfs-filer:
     <<: *common
+    container_name: seaweedfs-filer
     image: chrislusf/seaweedfs:4.29
     environment:
       TZ: Asia/Shanghai
@@ -299,6 +306,7 @@ services:
 
   seaweedfs-s3:
     <<: *common
+    container_name: seaweedfs-s3
     image: chrislusf/seaweedfs:4.29
     environment:
       TZ: Asia/Shanghai
@@ -351,6 +359,7 @@ services:
 
   nacos:
     <<: *common
+    container_name: nacos
     image: nacos/nacos-server:v2.4.3
     environment:
       MODE: standalone
@@ -387,6 +396,7 @@ services:
 
   infini-console:
     <<: *common
+    container_name: infini-console
     image: infinilabs/console:1.30.2-2396
     ports:
       - "9000:9000"

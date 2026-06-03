@@ -26,7 +26,7 @@ for arg in "$@"; do
 done
 
 # Docker 网络中的中间件容器名
-COMMON_ENV="--env DB_HOST=zyn-postgres-1 --env REDIS_HOST=zyn-redis-1 --env ES_HOST=zyn-elasticsearch-1 --env KAFKA_HOST=zyn-kafka-1 --env S3_HOST=zyn-seaweedfs-s3-1 --env SYS_BASE_URL=http://sys:28081"
+COMMON_ENV="--env DB_HOST=postgres --env REDIS_HOST=redis --env ES_HOST=elasticsearch --env KAFKA_HOST=kafka --env S3_HOST=seaweedfs-s3 --env SYS_BASE_URL=http://sys:28081"
 
 # ── 部署 ──────────────────────────────────────────────────────
 if [ "$DEPLOY" = true ]; then

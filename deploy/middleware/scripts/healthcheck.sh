@@ -23,39 +23,39 @@ info() { echo -e "${YELLOW}[$1]${NC}"; }
 # PostgreSQL
 # ----------------------------------------------------------
 info "PostgreSQL"
-result=$(docker exec zyn-postgres-1 psql -U postgres -d zyn_base -t -c "SELECT 1;" 2>/dev/null | tr -d ' ')
+result=$(docker exec postgres psql -U postgres -d zyn_base -t -c "SELECT 1;" 2>/dev/null | tr -d ' ')
 [ "$result" = "1" ] && pass "连接查询: SELECT 1" || fail "连接查询失败"
 
-docker exec zyn-postgres-1 psql -U postgres -d zyn_base -c "CREATE EXTENSION IF NOT EXISTS postgis;" > /dev/null 2>&1
-result=$(docker exec zyn-postgres-1 psql -U postgres -d zyn_base -t -c "SELECT PostGIS_Version();" 2>/dev/null | tr -d ' ')
+docker exec postgres psql -U postgres -d zyn_base -c "CREATE EXTENSION IF NOT EXISTS postgis;" > /dev/null 2>&1
+result=$(docker exec postgres psql -U postgres -d zyn_base -t -c "SELECT PostGIS_Version();" 2>/dev/null | tr -d ' ')
 [ -n "$result" ] && pass "PostGIS: $result" || fail "PostGIS 未安装"
 
 # ----------------------------------------------------------
 # Redis
 # ----------------------------------------------------------
 info "Redis"
-docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' SET zyn:test "hello" > /dev/null 2>&1
-result=$(docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' GET zyn:test 2>/dev/null)
+docker exec redis redis-cli -a 'Zyn@secure#99' SET zyn:test "hello" > /dev/null 2>&1
+result=$(docker exec redis redis-cli -a 'Zyn@secure#99' GET zyn:test 2>/dev/null)
 [ "$result" = "hello" ] && pass "读写: SET/GET" || fail "读写失败"
-docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' DEL zyn:test > /dev/null 2>&1
+docker exec redis redis-cli -a 'Zyn@secure#99' DEL zyn:test > /dev/null 2>&1
 
-result=$(docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' PING 2>/dev/null)
+result=$(docker exec redis redis-cli -a 'Zyn@secure#99' PING 2>/dev/null)
 [ "$result" = "PONG" ] && pass "PING: PONG" || fail "PING 失败"
 
 # ----------------------------------------------------------
 # Kafka
 # ----------------------------------------------------------
 info "Kafka"
-echo "zyn-test-message" | docker exec -i zyn-kafka-1 /opt/kafka/bin/kafka-console-producer.sh \
+echo "zyn-test-message" | docker exec -i kafka /opt/kafka/bin/kafka-console-producer.sh \
   --bootstrap-server localhost:9092 --topic zyn-test-topic > /dev/null 2>&1 && \
   pass "生产消息" || fail "生产消息失败"
 
 sleep 1
-result=$(docker exec zyn-kafka-1 /opt/kafka/bin/kafka-console-consumer.sh \
+result=$(docker exec kafka /opt/kafka/bin/kafka-console-consumer.sh \
   --bootstrap-server localhost:9092 --topic zyn-test-topic --from-beginning --timeout-ms 5000 2>/dev/null)
 echo "$result" | grep -q "zyn-test-message" && pass "消费消息" || fail "消费消息失败"
 
-docker exec zyn-kafka-1 /opt/kafka/bin/kafka-topics.sh \
+docker exec kafka /opt/kafka/bin/kafka-topics.sh \
   --bootstrap-server localhost:9092 --delete --topic zyn-test-topic > /dev/null 2>&1
 
 # ----------------------------------------------------------
