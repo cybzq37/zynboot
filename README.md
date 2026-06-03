@@ -103,7 +103,7 @@ bash tests/deploy.sh
 ### zyn-api-system 包结构
 
 ```
-com.zyn.sys/
+com.zynboot.sys/
 ├── api/               ← ExchangeClient 接口（服务端路由 + 客户端代理）
 │   ├── SysAuthApi.java
 │   ├── SysUserApi.java
@@ -175,7 +175,7 @@ zyn:
 
 ```
 ① ExchangeClientRegistrar
-   ↓ 扫描 com.zyn 下所有 @ExchangeClient 接口
+   ↓ 扫描 com.zynboot 下所有 @ExchangeClient 接口
    ↓ 注册 ExchangeClientFactoryBean
 
 ② ExchangeClientFactoryBean

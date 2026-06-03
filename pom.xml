@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.zyn</groupId>
+    <groupId>com.zynboot</groupId>
     <artifactId>zyn</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -89,72 +89,72 @@
                 <version>${dynamic-datasource.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-conf</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-kit</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-exchange</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-redis</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-es</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-mybatis</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-storage</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-geo</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-web</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-infra-satoken</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-api-system</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.zyn</groupId>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-app-system</artifactId>
                 <version>${project.version}</version>
             </dependency>

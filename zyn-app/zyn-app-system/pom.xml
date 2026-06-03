@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.zyn</groupId>
+        <groupId>com.zynboot</groupId>
         <artifactId>zyn</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
@@ -16,31 +16,31 @@
     <dependencies>
         <!-- Internal -->
         <dependency>
-            <groupId>com.zyn</groupId>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-api-system</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zyn</groupId>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-kit</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zyn</groupId>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-conf</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zyn</groupId>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-infra-mybatis</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zyn</groupId>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-infra-redis</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zyn</groupId>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-infra-satoken</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.zyn</groupId>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-infra-web</artifactId>
         </dependency>
 
