@@ -95,7 +95,7 @@ SELECT PostGIS_Version();
 ### Redis
 
 ```bash
-docker-compose exec redis redis-cli -a 'Zyn@Secure#99' ping
+docker-compose exec redis redis-cli -a 'Zyn@secure#99' ping
 # 返回 PONG 表示正常
 ```
 

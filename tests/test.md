@@ -90,7 +90,7 @@ bash tests/deploy.sh --test      # 仅运行测试
 # 登录获取 token
 TOKEN=$(curl -s -X POST 'http://localhost:28081/sys/api/v1/auth/login' \
   -H 'Content-Type: application/json' \
-  -d '{"username":"root","password":"Zyn@Secure#99"}' \
+  -d '{"username":"root","password":"Zyn@secure#99"}' \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['token'])")
 
 # 直连: system API
@@ -102,7 +102,7 @@ curl -s -H "Authorization: $TOKEN" http://localhost:28080/demo/api/v1/sys-proxy/
 
 ## 测试数据
 
-seed 用户（密码均为 `Zyn@Secure#99`）：
+seed 用户（密码均为 `Zyn@secure#99`）：
 
 | 用户名 | 角色 | 说明 |
 |---|---|---|

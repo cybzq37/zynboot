@@ -92,7 +92,7 @@ zyn:
       region: cn-north-1
       path-style-access: true
       access-key: ${S3_ACCESS_KEY:zynex}
-      secret-key: ${S3_SECRET_KEY:Zyn@Secure#99}
+      secret-key: ${S3_SECRET_KEY:Zyn@secure#99}
   web:
     cors:
       enabled: true

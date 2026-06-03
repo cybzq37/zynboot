@@ -71,9 +71,9 @@ Middleware is deployed in WSL (already set up). Default dev connection addresses
 
 | Service | Address | Default Credentials |
 |---------|---------|-------------------|
-| PostgreSQL + PostGIS | `localhost:5432/zyn_base` | `postgres` / `Zyn@Secure#99` |
-| Redis | `localhost:6379` | password: `Zyn@Secure#99` |
-| Elasticsearch | `localhost:9200` | `elastic` / `Zyn@Secure#99` |
+| PostgreSQL + PostGIS | `localhost:5432/zyn_base` | `postgres` / `Zyn@secure#99` |
+| Redis | `localhost:6379` | password: `Zyn@secure#99` |
+| Elasticsearch | `localhost:9200` | `elastic` / `Zyn@secure#99` |
 | Kafka | `localhost:9092` | — |
 | SeaweedFS (S3) | `localhost:8333` | — |
 

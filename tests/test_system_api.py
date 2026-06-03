@@ -17,7 +17,7 @@ AUTH_HEADER = "Authorization"
 def sys_token():
     """通过 system 服务直连登录获取 token"""
     r = requests.post(f"{SYS_BASE}/api/v1/auth/login",
-                      json={"username": "root", "password": "Zyn@Secure#99"})
+                      json={"username": "root", "password": "Zyn@secure#99"})
     assert r.status_code == 200, f"登录失败: {r.text}"
     data = r.json()
     assert data["code"] == "0", f"登录失败: {data}"
@@ -29,7 +29,7 @@ def sys_token():
 def demo_token():
     """通过 demo 代理登录获取 token"""
     r = requests.post(f"{DEMO_BASE}/api/v1/sys-proxy/auth/login",
-                      json={"username": "root", "password": "Zyn@Secure#99"},
+                      json={"username": "root", "password": "Zyn@secure#99"},
                       headers={AUTH_HEADER: ""})
     assert r.status_code == 200, f"代理登录失败: {r.text}"
     data = r.json()
@@ -52,7 +52,7 @@ def demo_headers(demo_token):
 class TestAuthDirect:
     def test_login(self):
         r = requests.post(f"{SYS_BASE}/api/v1/auth/login",
-                          json={"username": "root", "password": "Zyn@Secure#99"})
+                          json={"username": "root", "password": "Zyn@secure#99"})
         data = r.json()
         assert data["code"] == "0"
         assert "token" in data["data"]
@@ -280,7 +280,7 @@ class TestOrgDirect:
 class TestProxyAuth:
     def test_login(self):
         r = requests.post(f"{DEMO_BASE}/api/v1/sys-proxy/auth/login",
-                          json={"username": "root", "password": "Zyn@Secure#99"})
+                          json={"username": "root", "password": "Zyn@secure#99"})
         data = r.json()
         assert data["code"] == "0"
         assert "token" in data["data"]

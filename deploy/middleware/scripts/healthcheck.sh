@@ -12,7 +12,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-AWS_ENV="-e AWS_ACCESS_KEY_ID=zynex -e AWS_SECRET_ACCESS_KEY=Zyn@Secure#99 -e AWS_DEFAULT_REGION=cn-north-1"
+AWS_ENV="-e AWS_ACCESS_KEY_ID=zynex -e AWS_SECRET_ACCESS_KEY=Zyn@secure#99 -e AWS_DEFAULT_REGION=cn-north-1"
 S3_ENDPOINT="http://seaweedfs-s3:8333"
 
 pass() { ((PASS++)); echo -e "  ${GREEN}✓${NC} $1"; }
@@ -34,12 +34,12 @@ result=$(docker exec zyn-postgres-1 psql -U postgres -d zyn_base -t -c "SELECT P
 # Redis
 # ----------------------------------------------------------
 info "Redis"
-docker exec zyn-redis-1 redis-cli -a 'Zyn@Secure#99' SET zyn:test "hello" > /dev/null 2>&1
-result=$(docker exec zyn-redis-1 redis-cli -a 'Zyn@Secure#99' GET zyn:test 2>/dev/null)
+docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' SET zyn:test "hello" > /dev/null 2>&1
+result=$(docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' GET zyn:test 2>/dev/null)
 [ "$result" = "hello" ] && pass "读写: SET/GET" || fail "读写失败"
-docker exec zyn-redis-1 redis-cli -a 'Zyn@Secure#99' DEL zyn:test > /dev/null 2>&1
+docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' DEL zyn:test > /dev/null 2>&1
 
-result=$(docker exec zyn-redis-1 redis-cli -a 'Zyn@Secure#99' PING 2>/dev/null)
+result=$(docker exec zyn-redis-1 redis-cli -a 'Zyn@secure#99' PING 2>/dev/null)
 [ "$result" = "PONG" ] && pass "PING: PONG" || fail "PING 失败"
 
 # ----------------------------------------------------------
@@ -62,7 +62,7 @@ docker exec zyn-kafka-1 /opt/kafka/bin/kafka-topics.sh \
 # Elasticsearch
 # ----------------------------------------------------------
 info "Elasticsearch"
-ES_AUTH="-u elastic:Zyn@Secure#99"
+ES_AUTH="-u elastic:Zyn@secure#99"
 result=$(curl -sf $ES_AUTH http://localhost:9200/_cluster/health 2>/dev/null | python3 -c "import sys,json;print(json.load(sys.stdin)['status'])" 2>/dev/null)
 [ "$result" = "green" ] || [ "$result" = "yellow" ] && pass "集群状态: $result" || fail "集群状态异常: $result"
 

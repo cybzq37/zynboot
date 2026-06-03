@@ -42,18 +42,18 @@ spring:
         master:
           url: jdbc:postgresql://${DB_HOST:localhost}:5432/zyn_base
           username: postgres
-          password: ${POSTGRES_PASSWORD:Zyn@Secure#99}
+          password: ${POSTGRES_PASSWORD:Zyn@secure#99}
           driver-class-name: org.postgresql.Driver
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: 6379
-      password: ${REDIS_PASSWORD:Zyn@Secure#99}
+      password: ${REDIS_PASSWORD:Zyn@secure#99}
       database: 0
     elasticsearch:
       uris: http://${ES_HOST:localhost}:9200
       username: elastic
-      password: ${ELASTIC_PASSWORD:Zyn@Secure#99}
+      password: ${ELASTIC_PASSWORD:Zyn@secure#99}
   kafka:
     bootstrap-servers: ${KAFKA_HOST:localhost}:9092
 

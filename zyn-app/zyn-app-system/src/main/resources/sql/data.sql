@@ -9,12 +9,12 @@ INSERT INTO sys_role (id, role_code, role_name, role_type, sort, status, data_sc
 ('699ba2e9da5d44f1bd06440d22be651a', 'user',  '普通用户', 2, 2, 1, 4);
 
 -- 超级用户（root，绕过权限检查）
--- 密码: Zyn@Secure#99 (BCrypt)
+-- 密码: Zyn@secure#99 (BCrypt)
 INSERT INTO sys_user (id, username, password, nickname, real_name, status) VALUES
 ('3c3be4ff7b1b41989494ce19eb90e3fe', 'root', '$2b$12$/qn3u239f7ewxZLVKaNkt.TYMloWwIyDz5b1.rx/VdqIrqYc0pQa2', '超级用户', 'Root', 1);
 
 -- 管理员（走 RBAC）
--- 密码: Zyn@Secure#99 (BCrypt)
+-- 密码: Zyn@secure#99 (BCrypt)
 INSERT INTO sys_user (id, username, password, nickname, real_name, status) VALUES
 ('4eb17ac5fed3474aa0aa8ec492533667', 'admin', '$2b$12$/qn3u239f7ewxZLVKaNkt.TYMloWwIyDz5b1.rx/VdqIrqYc0pQa2', '管理员', 'Admin', 1);
 
