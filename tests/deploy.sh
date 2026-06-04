@@ -1,10 +1,10 @@
 #!/bin/bash
 # ============================================================
-# 部署 & 测试 zyn-app-system + zyn-app-demo（WSL 内执行）
+# 部署 & 测试 zyn-app-gateway + zyn-app-system + zyn-app-demo（WSL 内执行）
 #
 # 前置条件:
 #   1. 宿主机已完成 Maven 构建（见 README.md）
-#   2. WSL 中间件已启动
+#   2. WSL 中间件已启动（含 Nacos）
 #   3. Python3 + pytest 已安装: pip3 install pytest requests
 #
 # 用法:
@@ -26,7 +26,7 @@ for arg in "$@"; do
 done
 
 # Docker 网络中的中间件容器名
-COMMON_ENV="--env DB_HOST=postgres --env REDIS_HOST=redis --env ES_HOST=elasticsearch --env KAFKA_HOST=kafka --env S3_HOST=seaweedfs-s3 --env SYS_BASE_URL=http://sys:28081"
+COMMON_ENV="--env DB_HOST=postgres --env REDIS_HOST=redis --env ES_HOST=elasticsearch --env KAFKA_HOST=kafka --env S3_HOST=seaweedfs-s3 --env NACOS_ADDR=nacos:8848"
 
 # ── 部署 ──────────────────────────────────────────────────────
 if [ "$DEPLOY" = true ]; then
@@ -41,6 +41,7 @@ if [ "$DEPLOY" = true ]; then
   echo "============================================"
   cd deploy/app
   bash build.sh --jar zyn-app-system.jar --name sys --port 28081 --profile dev \
+    --sw-name zyn-sys \
     $COMMON_ENV --env SYS_HOST=sys
   cd ../..
 
@@ -49,7 +50,19 @@ if [ "$DEPLOY" = true ]; then
   echo "============================================"
   cd deploy/app
   bash build.sh --jar zyn-app-demo.jar --name demo --port 28080 --profile dev \
+    --sw-name zyn-demo \
     $COMMON_ENV --env SYS_HOST=sys
+  cd ../..
+
+  echo "============================================"
+  echo "  部署 zyn-app-gateway :28000"
+  echo "============================================"
+  cd deploy/app
+  bash build.sh --jar zyn-app-gateway.jar --name gateway --port 28000 --profile dev \
+    --sw-name zyn-gateway \
+    --env REDIS_HOST=redis \
+    --env SYS_BASE_URL=http://sys:28081 \
+    --env DEMO_BASE_URL=http://demo:28080
   cd ../..
 
   echo ""

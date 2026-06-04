@@ -41,6 +41,8 @@ SPRING_PROFILE="prod"
 JVM_XMS="512m"
 JVM_XMX="512m"
 EXTRA_ENV=""
+SW_SERVICE_NAME=""
+OAP_ADDRESS="skywalking-oap:11800"
 
 # ── 解析参数 ─────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -52,10 +54,17 @@ while [[ $# -gt 0 ]]; do
     --profile)  SPRING_PROFILE="$2"; shift 2 ;;
     --jvm-xms)  JVM_XMS="$2";       shift 2 ;;
     --jvm-xmx)  JVM_XMX="$2";       shift 2 ;;
+    --sw-name)  SW_SERVICE_NAME="$2"; shift 2 ;;
+    --oap-addr) OAP_ADDRESS="$2";    shift 2 ;;
     --env)      EXTRA_ENV="${EXTRA_ENV} -e $2"; shift 2 ;;
     *)          JAR_FILE="$1";       shift   ;;
   esac
 done
+
+# 默认 SW_SERVICE_NAME 为镜像名
+if [ -z "$SW_SERVICE_NAME" ]; then
+  SW_SERVICE_NAME="$IMAGE_NAME"
+fi
 
 # ── 自动检测 JAR ────────────────────────────────────────────
 if [ -z "$JAR_FILE" ]; then
@@ -117,6 +126,8 @@ docker run -d \
   -e SPRING_ACTIVE_PROFILES="$SPRING_PROFILE" \
   -e JVM_XMS="$JVM_XMS" \
   -e JVM_XMX="$JVM_XMX" \
+  -e SW_SERVICE_NAME="$SW_SERVICE_NAME" \
+  -e OAP_ADDRESS="$OAP_ADDRESS" \
   $EXTRA_ENV \
   --restart unless-stopped \
   "$FULL_IMAGE"

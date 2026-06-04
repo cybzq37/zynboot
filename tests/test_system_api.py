@@ -6,8 +6,9 @@ import pytest
 import requests
 import time
 
-SYS_BASE = "http://localhost:28081/sys"
-DEMO_BASE = "http://localhost:28080/demo"
+SYS_BASE = "http://localhost:28081"
+DEMO_BASE = "http://localhost:28080"
+GW_BASE = "http://localhost:28000"
 AUTH_HEADER = "Authorization"
 
 

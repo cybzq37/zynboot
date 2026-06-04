@@ -1,3 +1,5 @@
+FROM apache/skywalking-java-agent:9.6.0-java21 AS skywalking
+
 FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="zyn"
@@ -15,6 +17,8 @@ RUN apk add --no-cache \
     echo "Asia/Shanghai" > /etc/timezone && \
     addgroup -g 1000 app && \
     adduser -u 1000 -G app -s /bin/sh -D app
+
+COPY --from=skywalking /skywalking/agent /app/skywalking-agent/agent
 
 WORKDIR /app
 

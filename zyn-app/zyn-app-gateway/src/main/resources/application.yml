@@ -13,23 +13,16 @@ spring:
       password: ${REDIS_PASSWORD:Zyn@secure#99}
       database: 0
   cloud:
-    nacos:
-      server-addr: ${NACOS_ADDR:localhost:8848}
-      username: nacos
-      password: ${NACOS_PASSWORD:Zyn@secure#99}
-      discovery:
-        enabled: true
-        service-name: ${spring.application.name}
     gateway:
       routes:
         - id: system
-          uri: lb://zyn-sys
+          uri: ${SYS_BASE_URL:http://localhost:28081}
           predicates:
             - Path=/sys/**
           filters:
             - StripPrefix=1
         - id: demo
-          uri: lb://zyn-demo
+          uri: ${DEMO_BASE_URL:http://localhost:28080}
           predicates:
             - Path=/demo/**
           filters:

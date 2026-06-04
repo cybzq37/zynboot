@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "sys", path = "/api/v1/permission")
+@FeignClient(name = "sys", contextId = "SysPermissionApi", path = "/api/v1/permission")
 public interface SysPermissionApi {
 
     @GetMapping

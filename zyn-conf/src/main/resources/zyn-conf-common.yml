@@ -10,6 +10,16 @@ spring:
       max-file-size: 500MB
       max-request-size: 500MB
       file-size-threshold: 2MB
+  cloud:
+    nacos:
+      server-addr: ${NACOS_ADDR:localhost:8848}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:Zyn@secure#99}
+      discovery:
+        enabled: ${zyn.nacos.enabled:false}
+      config:
+        enabled: ${zyn.nacos.enabled:false}
+        file-extension: yml
 
 # Server 安全加固
 server:
@@ -114,16 +124,4 @@ zyn:
       enable-log-interceptor: false
   nacos:
     enabled: false
-
-spring:
-  cloud:
-    nacos:
-      server-addr: ${NACOS_ADDR:localhost:8848}
-      username: ${NACOS_USERNAME:nacos}
-      password: ${NACOS_PASSWORD:Zyn@secure#99}
-      discovery:
-        enabled: ${zyn.nacos.enabled:false}
-      config:
-        enabled: ${zyn.nacos.enabled:false}
-        file-extension: yml
 
