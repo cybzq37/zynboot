@@ -43,6 +43,14 @@
             <groupId>com.zynboot</groupId>
             <artifactId>zyn-infra-web</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.zynboot</groupId>
+            <artifactId>zyn-infra-nacos</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
 
         <!-- Spring Boot -->
         <dependency>

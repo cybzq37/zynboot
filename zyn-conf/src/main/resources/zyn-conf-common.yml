@@ -66,11 +66,8 @@ management:
 
 # Zyn
 zyn:
-  exchange:
-    connect-timeout-ms: 3000
-    read-timeout-ms: 10000
-    follow-redirects: false
-    forward-auth: true
+  feign:
+    enabled: true
   satoken:
     enabled: true
     login-type: login
@@ -115,4 +112,18 @@ zyn:
       write-timeout-seconds: 10
       call-timeout-seconds: 30
       enable-log-interceptor: false
+  nacos:
+    enabled: false
+
+spring:
+  cloud:
+    nacos:
+      server-addr: ${NACOS_ADDR:localhost:8848}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:Zyn@secure#99}
+      discovery:
+        enabled: ${zyn.nacos.enabled:false}
+      config:
+        enabled: ${zyn.nacos.enabled:false}
+        file-extension: yml
 

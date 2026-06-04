@@ -37,18 +37,18 @@ cd deploy/app
 
 ## Architecture Overview
 
-This is a Java 21 / Spring Boot 3.5.x multi-module framework. Dependencies flow strictly downward — each layer only depends on layers below it:
+This is a Java 21 / Spring Boot 3.5.x multi-module microservice framework with Spring Cloud 2025.0.x and Spring Cloud Alibaba 2025.1.x. Dependencies flow strictly downward — each layer only depends on layers below it:
 
 ```
 zyn-kit          (utilities: Jackson, OkHttp, tree builders, ApiResponse, exceptions)
    ↓
 zyn-conf         (shared YAML config, no code — imported via spring.config.import)
    ↓
-zyn-infra        (infrastructure: redis, es, kafka, mybatis, storage, geo, web, satoken, exchange)
+zyn-infra        (infrastructure: redis, es, kafka, mybatis, storage, geo, web, satoken, exchange, nacos)
    ↓
 zyn-api          (API contracts: ExchangeClient interfaces, Cmd/Query/Res DTOs)
    ↓
-zyn-app          (deployable Spring Boot apps: zyn-app-system, zyn-app-demo)
+zyn-app          (deployable apps: zyn-app-gateway, zyn-app-system, zyn-app-demo)
 ```
 
 Infra sub-modules are independent of each other.
@@ -76,6 +76,7 @@ Middleware is deployed in WSL (already set up). Default dev connection addresses
 | Elasticsearch | `localhost:9200` | `elastic` / `Zyn@secure#99` |
 | Kafka | `localhost:9092` | — |
 | SeaweedFS (S3) | `localhost:8333` | — |
+| Nacos | `localhost:8848` | `nacos` / `Zyn@secure#99` |
 
 Credentials are overridable via environment variables (`POSTGRES_PASSWORD`, `REDIS_PASSWORD`, `ELASTIC_PASSWORD`). Most infra modules can be individually disabled via `zyn.<module>.enabled: false` — the app will start without them (e.g., disable Kafka/ES if not needed).
 
@@ -100,6 +101,7 @@ Key `zyn.*` configuration switches (all default to `true` / `matchIfMissing`):
 | `zyn.web.exception.enabled` | Global exception handler |
 | `zyn.web.response.enabled` | Auto response wrapping (`ApiResponse`) |
 | `zyn.exchange.services.<name>` | Service base URLs for `@ExchangeClient` |
+| `zyn.nacos.enabled` | Nacos service discovery and config center |
 
 ## Database
 
@@ -123,10 +125,11 @@ When creating `zyn-infra-<name>`:
 
 ## Apps
 
-| App | Port | Context Path | Purpose |
-|-----|------|-------------|---------|
-| zyn-app-system | 28081 | /sys | System management (users, roles, permissions, orgs) |
-| zyn-app-demo | 28080 | /demo | Showcase of all infra modules |
+| App | Port | Purpose |
+|-----|------|---------|
+| zyn-app-gateway | 28000 | API Gateway (routing + Sa-Token auth) |
+| zyn-app-system | 28081 | System management (users, roles, permissions, orgs) |
+| zyn-app-demo | 28080 | Showcase of all infra modules |
 
 ## Naming Conventions
 

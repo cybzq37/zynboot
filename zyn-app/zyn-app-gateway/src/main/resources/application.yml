@@ -1,0 +1,57 @@
+server:
+  port: 28000
+
+spring:
+  application:
+    name: zyn-gateway
+  profiles:
+    active: @spring.profiles.active@
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: 6379
+      password: ${REDIS_PASSWORD:Zyn@secure#99}
+      database: 0
+  cloud:
+    nacos:
+      server-addr: ${NACOS_ADDR:localhost:8848}
+      username: nacos
+      password: ${NACOS_PASSWORD:Zyn@secure#99}
+      discovery:
+        enabled: true
+        service-name: ${spring.application.name}
+    gateway:
+      routes:
+        - id: system
+          uri: lb://zyn-sys
+          predicates:
+            - Path=/sys/**
+          filters:
+            - StripPrefix=1
+        - id: demo
+          uri: lb://zyn-demo
+          predicates:
+            - Path=/demo/**
+          filters:
+            - StripPrefix=1
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowed-origins: "*"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            max-age: 3600
+
+sa-token:
+  token-name: Authorization
+  timeout: 2592000
+  active-timeout: -1
+  is-concurrent: true
+  is-share: false
+  token-style: uuid
+  is-log: true
+
+logging:
+  level:
+    com.zynboot: debug
+    org.springframework.cloud.gateway: debug

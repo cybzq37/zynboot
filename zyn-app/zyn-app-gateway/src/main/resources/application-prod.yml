@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.zynboot: info
+    org.springframework.cloud.gateway: warn

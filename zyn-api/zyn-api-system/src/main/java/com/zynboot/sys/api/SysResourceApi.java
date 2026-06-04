@@ -1,31 +1,28 @@
 package com.zynboot.sys.api;
-import com.zynboot.infra.exchange.ExchangeClient;
 
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.sys.command.resource.ResourceSaveCmd;
 import com.zynboot.sys.response.resource.ResourceRes;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.service.annotation.*;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@ExchangeClient("sys")
-@HttpExchange("/sys/api/v1/resource")
+@FeignClient(name = "sys", path = "/api/v1/resource")
 public interface SysResourceApi {
 
-    @GetExchange
+    @GetMapping
     ApiResponse<List<ResourceRes>> list();
 
-    @GetExchange("/{id}")
+    @GetMapping("/{id}")
     ApiResponse<ResourceRes> getById(@PathVariable String id);
 
-    @PostExchange
+    @PostMapping
     ApiResponse<Void> create(@RequestBody ResourceSaveCmd cmd);
 
-    @PutExchange("/{id}")
+    @PutMapping("/{id}")
     ApiResponse<Void> update(@PathVariable String id, @RequestBody ResourceSaveCmd cmd);
 
-    @DeleteExchange("/{id}")
+    @DeleteMapping("/{id}")
     ApiResponse<Void> delete(@PathVariable String id);
 }

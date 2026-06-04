@@ -22,6 +22,7 @@
     <properties>
         <java.version>21</java.version>
         <spring-boot.version>3.5.0</spring-boot.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
         <aws-sdk2.version>2.26.28</aws-sdk2.version>
         <mybatis-plus.version>3.5.7</mybatis-plus.version>
         <sa-token.version>1.39.0</sa-token.version>
@@ -79,6 +80,20 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>2025.1.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
@@ -105,7 +120,7 @@
             </dependency>
             <dependency>
                 <groupId>com.zynboot</groupId>
-                <artifactId>zyn-infra-exchange</artifactId>
+                <artifactId>zyn-infra-feign</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -150,7 +165,17 @@
             </dependency>
             <dependency>
                 <groupId>com.zynboot</groupId>
+                <artifactId>zyn-infra-nacos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zynboot</groupId>
                 <artifactId>zyn-api-system</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zynboot</groupId>
+                <artifactId>zyn-app-gateway</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -161,6 +186,16 @@
             <dependency>
                 <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-spring-boot3-starter</artifactId>
+                <version>${sa-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-reactor-spring-boot3-starter</artifactId>
+                <version>${sa-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>cn.dev33</groupId>
+                <artifactId>sa-token-redis-jackson</artifactId>
                 <version>${sa-token.version}</version>
             </dependency>
             <dependency>
@@ -241,6 +276,16 @@
             <id>osgeo</id>
             <name>OSGeo Release Repository</name>
             <url>https://repo.osgeo.org/repository/release/</url>
+        </repository>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/alibaba/spring-cloud-alibaba</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 

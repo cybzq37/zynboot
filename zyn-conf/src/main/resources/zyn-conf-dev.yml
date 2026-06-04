@@ -58,10 +58,8 @@ spring:
     bootstrap-servers: ${KAFKA_HOST:localhost}:9092
 
 zyn:
-  exchange:
-    services:
-      sys: ${SYS_BASE_URL:http://localhost:28081}
-      netty: http://localhost:28082
+  nacos:
+    enabled: true
   kit:
     okhttp:
       enable-log-interceptor: true

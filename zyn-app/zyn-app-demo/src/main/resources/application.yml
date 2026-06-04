@@ -1,7 +1,5 @@
 server:
   port: 28080
-  servlet:
-    context-path: /demo
 
 spring:
   application:
@@ -12,3 +10,5 @@ spring:
     import:
       - classpath:zyn-conf-common.yml
       - classpath:zyn-conf-@spring.profiles.active@.yml
+      - optional:nacos:zyn-conf-common.yml
+      - optional:nacos:zyn-conf-@spring.profiles.active@.yml

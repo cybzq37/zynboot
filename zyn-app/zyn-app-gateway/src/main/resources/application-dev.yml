@@ -1,0 +1,4 @@
+logging:
+  level:
+    com.zynboot: debug
+    org.springframework.cloud.gateway: debug

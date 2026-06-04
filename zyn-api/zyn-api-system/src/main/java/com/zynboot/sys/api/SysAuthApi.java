@@ -1,25 +1,23 @@
 package com.zynboot.sys.api;
 
-import com.zynboot.infra.exchange.ExchangeClient;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.sys.command.user.LoginCmd;
 import com.zynboot.sys.response.user.LoginRes;
 import com.zynboot.sys.response.user.UserInfoRes;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.service.annotation.GetExchange;
-import org.springframework.web.service.annotation.HttpExchange;
-import org.springframework.web.service.annotation.PostExchange;
 
-@ExchangeClient("sys")
-@HttpExchange("/sys/api/v1/auth")
+@FeignClient(name = "sys", path = "/api/v1/auth")
 public interface SysAuthApi {
 
-    @PostExchange("/login")
+    @PostMapping("/login")
     ApiResponse<LoginRes> login(@RequestBody LoginCmd cmd);
 
-    @PostExchange("/logout")
+    @PostMapping("/logout")
     ApiResponse<Void> logout();
 
-    @GetExchange("/info")
+    @GetMapping("/info")
     ApiResponse<UserInfoRes> info();
 }
