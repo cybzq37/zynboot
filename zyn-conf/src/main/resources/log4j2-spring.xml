@@ -4,7 +4,7 @@
     <Properties>
         <Property name="APP_NAME">${sys:APPLICATION_NAME:-zyn-app}</Property>
         <Property name="LOG_PATH">logs/${APP_NAME}</Property>
-        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level [%tid] %logger{36} - %msg%n</Property>
     </Properties>
 
     <Appenders>
@@ -20,7 +20,7 @@
                 <TimeBasedTriggeringPolicy interval="1"/>
                 <SizeBasedTriggeringPolicy size="50 MB"/>
             </Policies>
-            <DefaultRolloverStrategy max="20"/>
+            <DefaultRolloverStrategy max="30"/>
         </RollingFile>
     </Appenders>
 

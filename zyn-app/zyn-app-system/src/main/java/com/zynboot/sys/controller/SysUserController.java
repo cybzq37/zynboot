@@ -1,6 +1,7 @@
 package com.zynboot.sys.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.zynboot.kit.exception.BizException;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.kit.util.BeanUtils;
 import com.zynboot.sys.command.user.UserSaveCmd;
@@ -32,8 +33,8 @@ public class SysUserController {
         return ApiResponse.ok(new PageRes<>(
                 BeanUtils.copyList(result.getRecords(), UserRes.class),
                 result.getTotal(),
-                result.getCurrent(),
-                result.getSize()
+                (int) result.getCurrent(),
+                (int) result.getSize()
         ));
     }
 
@@ -56,7 +57,7 @@ public class SysUserController {
     @PutMapping("/{id}")
     public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody UserSaveCmd cmd) {
         UserAggregate user = userRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+                .orElseThrow(() -> BizException.notFound("用户"));
         user.updateProfile(cmd.getNickname(), cmd.getRealName(), cmd.getEmail(),
                 cmd.getPhone(), cmd.getAvatar(), cmd.getGender(), cmd.getRemark());
         if (StringUtils.hasText(cmd.getPassword())) {

@@ -10,11 +10,11 @@ import lombok.EqualsAndHashCode;
 public class SysPermission extends BaseEntity {
 
     private String parentId;
-    private String permCode;
-    private String permName;
-    private Integer permType;
+    private String code;
+    private String name;
+    private Integer type;
     private String path;
-    private Integer sort;
+    private Integer sortOrder;
     private Boolean visible;
     private Integer status;
     private String remark;

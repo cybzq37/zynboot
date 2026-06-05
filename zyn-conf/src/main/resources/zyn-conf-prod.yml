@@ -1,5 +1,6 @@
 # ──────────────────────────────────────────────────────────────
 # 生产环境（Docker/K8s 内部通信）
+# 所有密码和地址通过环境变量注入，无默认值——未配置则启动失败
 # ──────────────────────────────────────────────────────────────
 
 spring:
@@ -7,24 +8,27 @@ spring:
     dynamic:
       datasource:
         master:
-          url: jdbc:postgresql://${DB_HOST:192.168.1.3}:5432/zyn_base
-          username: postgres
-          password: ${POSTGRES_PASSWORD:Zyn@secure#99}
+          url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME:zyn_base}
+          username: ${DB_USERNAME:postgres}
+          password: ${POSTGRES_PASSWORD}
           driver-class-name: org.postgresql.Driver
   data:
     redis:
-      host: ${REDIS_HOST:192.168.1.3}
-      port: 6379
-      password: ${REDIS_PASSWORD:Zyn@secure#99}
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
       database: 0
     elasticsearch:
-      uris: http://${ES_HOST:192.168.1.3}:9200
-      username: elastic
-      password: ${ELASTIC_PASSWORD:Zyn@secure#99}
+      uris: http://${ES_HOST}:${ES_PORT:9200}
+      username: ${ELASTIC_USERNAME:elastic}
+      password: ${ELASTIC_PASSWORD}
   kafka:
-    bootstrap-servers: ${KAFKA_HOST:192.168.1.3}:9092
+    bootstrap-servers: ${KAFKA_HOST}:${KAFKA_PORT:9092}
 
 zyn:
   storage:
     s3:
-      endpoint: http://${S3_HOST:192.168.1.3}:8333
+      endpoint: http://${S3_HOST}:${S3_PORT:8333}
+  web:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost}

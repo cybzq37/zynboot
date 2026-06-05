@@ -49,6 +49,10 @@
         </dependency>
         <dependency>
             <groupId>com.zynboot</groupId>
+            <artifactId>zyn-infra-storage</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zynboot</groupId>
             <artifactId>zyn-infra-seata</artifactId>
         </dependency>
         <dependency>

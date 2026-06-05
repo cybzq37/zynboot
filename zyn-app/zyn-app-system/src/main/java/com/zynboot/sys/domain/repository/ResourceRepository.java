@@ -1,19 +1,19 @@
 package com.zynboot.sys.domain.repository;
 
-import com.zynboot.sys.infrastructure.entity.SysResource;
+import com.zynboot.sys.domain.aggregate.ResourceAggregate;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface ResourceRepository {
 
-    List<SysResource> findAll();
+    List<ResourceAggregate> findAll();
 
-    Optional<SysResource> findById(String id);
+    Optional<ResourceAggregate> findById(String id);
 
-    void save(SysResource resource);
+    void save(ResourceAggregate resource);
 
-    void update(SysResource resource);
+    void update(ResourceAggregate resource);
 
     void delete(String id);
 }

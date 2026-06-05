@@ -12,6 +12,7 @@ import com.zynboot.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zynboot.sys.query.role.RoleQuery;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -32,19 +33,19 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
-    public Optional<RoleAggregate> findByCode(String roleCode) {
+    public Optional<RoleAggregate> findByCode(String code) {
         SysRole entity = mapper.selectOne(
-                new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, roleCode));
+                new LambdaQueryWrapper<SysRole>().eq(SysRole::getCode, code));
         return entity != null ? Optional.of(RoleAggregate.from(entity)) : Optional.empty();
     }
 
     @Override
     public List<RoleAggregate> findList(RoleQuery query) {
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<SysRole>()
-                .like(StringUtils.hasText(query.getRoleCode()), SysRole::getRoleCode, query.getRoleCode())
-                .like(StringUtils.hasText(query.getRoleName()), SysRole::getRoleName, query.getRoleName())
+                .like(StringUtils.hasText(query.getCode()), SysRole::getCode, query.getCode())
+                .like(StringUtils.hasText(query.getName()), SysRole::getName, query.getName())
                 .eq(query.getStatus() != null, SysRole::getStatus, query.getStatus())
-                .orderByAsc(SysRole::getSort);
+                .orderByAsc(SysRole::getSortOrder);
         return mapper.selectList(wrapper).stream().map(RoleAggregate::from).toList();
     }
 
@@ -59,6 +60,7 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
+    @Transactional
     public void delete(String id) {
         userRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getRoleId, id));
         rolePermissionMapper.delete(new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getRoleId, id));

@@ -9,47 +9,31 @@ import com.zynboot.infra.satoken.config.SaTokenProperties;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 登录鉴权助手
+ * 登录鉴权助手（静态工具类）。
  * <p>
- * 支持多用户体系和多设备类型：
- * <ul>
- *   <li>userType - 用户类型（如：pc、app）</li>
- *   <li>device - 设备类型（如：web、ios）</li>
- * </ul>
- *
- * @author lichunqing
+ * 通过 {@link com.zynboot.infra.satoken.config.SaTokenConfig} 在启动时注入配置。
  */
 @Slf4j
-public class LoginHelper {
+public final class LoginHelper {
 
     private static final String LOGIN_USER_KEY = "loginUser";
     private static final String USER_ID_KEY = "userId";
 
     private static volatile SaTokenProperties properties;
 
-    public static void setProperties(SaTokenProperties properties) {
-        LoginHelper.properties = properties;
+    private LoginHelper() {}
+
+    public static void init(SaTokenProperties props) {
+        if (props == null) {
+            throw new IllegalArgumentException("SaTokenProperties must not be null");
+        }
+        LoginHelper.properties = props;
     }
 
-    /**
-     * 用户登录
-     *
-     * @param loginId   登录ID
-     * @param userId    用户ID
-     * @param loginUser 登录用户对象
-     */
     public static void login(Object loginId, Long userId, Object loginUser) {
         loginByDevice(loginId, userId, loginUser, null);
     }
 
-    /**
-     * 用户登录（指定设备类型）
-     *
-     * @param loginId   登录ID
-     * @param userId    用户ID
-     * @param loginUser 登录用户对象
-     * @param device    设备类型
-     */
     public static void loginByDevice(Object loginId, Long userId, Object loginUser, String device) {
         if (loginId == null) {
             throw new IllegalArgumentException("loginId must not be null");
@@ -68,9 +52,6 @@ public class LoginHelper {
         StpUtil.getTokenSession().set(LOGIN_USER_KEY, loginUser);
     }
 
-    /**
-     * 获取当前登录用户（多级缓存：Request -> TokenSession）
-     */
     @SuppressWarnings("unchecked")
     public static <T> T getLoginUser() {
         T loginUser = (T) SaHolder.getStorage().get(LOGIN_USER_KEY);
@@ -88,18 +69,12 @@ public class LoginHelper {
         return loginUser;
     }
 
-    /**
-     * 根据 Token 获取登录用户
-     */
     @SuppressWarnings("unchecked")
     public static <T> T getLoginUser(String token) {
         SaSession session = StpUtil.getTokenSessionByToken(token);
         return session == null ? null : (T) session.get(LOGIN_USER_KEY);
     }
 
-    /**
-     * 获取当前用户ID
-     */
     public static Long getUserId() {
         Object userId = SaHolder.getStorage().get(USER_ID_KEY);
         if (userId == null) {
@@ -114,17 +89,11 @@ public class LoginHelper {
         return parseUserId(userId);
     }
 
-    /**
-     * 判断是否为超级管理员
-     */
     public static boolean isRoot(Long userId) {
-        return userId != null && properties != null
-                && userId.equals(properties.getRootUserId());
+        SaTokenProperties props = properties;
+        return userId != null && props != null && userId.equals(props.getRootUserId());
     }
 
-    /**
-     * 判断当前用户是否为超级管理员
-     */
     public static boolean isRoot() {
         return isRoot(getUserId());
     }

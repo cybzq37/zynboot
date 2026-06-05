@@ -11,11 +11,11 @@ import com.zynboot.sys.infrastructure.mapper.SysRoleMapper;
 import com.zynboot.sys.infrastructure.mapper.SysRolePermissionMapper;
 import com.zynboot.sys.infrastructure.mapper.SysUserRoleMapper;
 import com.zynboot.sys.util.CacheHelper;
+import com.zynboot.sys.util.CacheKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,10 +27,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PermissionQueryHandler {
 
-    private static final String CACHE_PERM_CODES_KEY = "sys:perm:user:%s";
-    private static final String CACHE_ROLE_CODES_KEY = "sys:role:user:%s";
-    private static final Duration CACHE_TTL = Duration.ofMinutes(30);
-
     private final SysPermissionMapper permissionMapper;
     private final SysRoleMapper roleMapper;
     private final SysUserRoleMapper userRoleMapper;
@@ -38,7 +34,7 @@ public class PermissionQueryHandler {
     private final CacheHelper cacheHelper;
 
     public Set<String> getPermCodes(String userId) {
-        return cacheHelper.getOrLoad(CACHE_PERM_CODES_KEY.formatted(userId), CACHE_TTL, () ->
+        return cacheHelper.getOrLoad(CacheKeys.USER_PERM_CODES.formatted(userId), CacheKeys.DEFAULT_TTL, () ->
                 new HashSet<>(permissionMapper.selectPermCodesByUserId(userId)));
     }
 
@@ -47,36 +43,39 @@ public class PermissionQueryHandler {
     }
 
     public Set<String> getRoleCodes(String userId) {
-        return cacheHelper.getOrLoad(CACHE_ROLE_CODES_KEY.formatted(userId), CACHE_TTL, () ->
+        return cacheHelper.getOrLoad(CacheKeys.USER_ROLE_CODES.formatted(userId), CacheKeys.DEFAULT_TTL, () ->
                 roleMapper.selectRolesByUserId(userId).stream()
-                        .map(SysRole::getRoleCode)
+                        .map(SysRole::getCode)
                         .collect(Collectors.toSet()));
     }
 
     public List<MenuTreeRes> getPermissionTree() {
-        List<SysPermission> all = permissionMapper.selectList(
-                new LambdaQueryWrapper<SysPermission>()
-                        .in(SysPermission::getPermType, 1, 2)
-                        .eq(SysPermission::getStatus, 1)
-                        .orderByAsc(SysPermission::getSort)
-        );
-        return buildTree(all, "0");
+        return cacheHelper.getOrLoad(CacheKeys.PERM_TREE, CacheKeys.TREE_TTL, () -> {
+            List<SysPermission> all = permissionMapper.selectList(
+                    new LambdaQueryWrapper<SysPermission>()
+                            .in(SysPermission::getType, 1, 2)
+                            .eq(SysPermission::getStatus, 1)
+                            .orderByAsc(SysPermission::getSortOrder)
+            );
+            return buildTree(all, null);
+        });
     }
 
     private List<MenuTreeRes> buildTree(List<SysPermission> all, String parentId) {
         Map<String, List<SysPermission>> parentMap = all.stream()
                 .collect(Collectors.groupingBy(
-                        p -> p.getParentId() == null ? "0" : p.getParentId(),
+                        p -> p.getParentId() == null ? "__root__" : p.getParentId(),
                         Collectors.toList()
                 ));
-        return parentMap.getOrDefault(parentId, List.of()).stream()
+        String key = parentId == null ? "__root__" : parentId;
+        return parentMap.getOrDefault(key, List.of()).stream()
                 .map(p -> MenuTreeRes.builder()
                         .id(p.getId())
                         .parentId(p.getParentId())
-                        .permName(p.getPermName())
-                        .permType(p.getPermType())
+                        .name(p.getName())
+                        .type(p.getType())
                         .path(p.getPath())
-                        .sort(p.getSort())
+                        .sortOrder(p.getSortOrder())
                         .visible(p.getVisible())
                         .children(buildTree(all, p.getId()))
                         .build())
@@ -85,8 +84,8 @@ public class PermissionQueryHandler {
 
     public void clearCache(String userId) {
         cacheHelper.evict(
-                CACHE_PERM_CODES_KEY.formatted(userId),
-                CACHE_ROLE_CODES_KEY.formatted(userId));
+                CacheKeys.USER_PERM_CODES.formatted(userId),
+                CacheKeys.USER_ROLE_CODES.formatted(userId));
     }
 
     public void clearCacheByRoleId(String roleId) {
@@ -96,6 +95,7 @@ public class PermissionQueryHandler {
     }
 
     public void clearCacheByPermissionId(String permissionId) {
+        cacheHelper.evict(CacheKeys.PERM_TREE);
         List<SysRolePermission> rolePerms = rolePermissionMapper.selectList(
                 new LambdaQueryWrapper<SysRolePermission>().eq(SysRolePermission::getPermissionId, permissionId));
         rolePerms.forEach(rp -> clearCacheByRoleId(rp.getRoleId()));

@@ -13,9 +13,9 @@ public class OrgTreeRes {
 
     String id;
     String parentId;
-    String orgCode;
-    String orgName;
-    Integer orgType;
-    Integer sort;
+    String code;
+    String name;
+    Integer type;
+    Integer sortOrder;
     List<OrgTreeRes> children;
 }

@@ -2,21 +2,19 @@ package com.zynboot.sys.response.resource;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import lombok.NoArgsConstructor;
 
-@Data
+@Value
 @Jacksonized
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class ResourceRes {
 
     String id;
     String permissionId;
-    String resName;
-    Integer resType;
+    String name;
+    Integer type;
     String requestMethod;
     String requestPath;
     Integer status;

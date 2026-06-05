@@ -1,10 +1,11 @@
 package com.zynboot.sys.controller;
 
+import com.zynboot.kit.exception.BizException;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.kit.util.BeanUtils;
 import com.zynboot.sys.command.resource.ResourceSaveCmd;
+import com.zynboot.sys.domain.aggregate.ResourceAggregate;
 import com.zynboot.sys.domain.repository.ResourceRepository;
-import com.zynboot.sys.infrastructure.entity.SysResource;
 import com.zynboot.sys.response.resource.ResourceRes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,21 +27,26 @@ public class SysResourceController {
 
     @GetMapping("/{id}")
     public ApiResponse<ResourceRes> getById(@PathVariable String id) {
-        SysResource resource = resourceRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("资源不存在"));
-        return ApiResponse.ok(BeanUtils.copy(resource, ResourceRes.class));
+        ResourceAggregate resource = resourceRepository.findById(id)
+                .orElseThrow(() -> BizException.notFound("资源"));
+        return ApiResponse.ok(BeanUtils.copy(resource.getEntity(), ResourceRes.class));
     }
 
     @PostMapping
     public ApiResponse<Void> create(@Valid @RequestBody ResourceSaveCmd cmd) {
-        resourceRepository.save(BeanUtils.copy(cmd, SysResource.class));
+        ResourceAggregate resource = ResourceAggregate.create(
+                cmd.getPermissionId(), cmd.getName(), cmd.getType(),
+                cmd.getRequestMethod(), cmd.getRequestPath());
+        resourceRepository.save(resource);
         return ApiResponse.ok(null);
     }
 
     @PutMapping("/{id}")
     public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody ResourceSaveCmd cmd) {
-        SysResource resource = BeanUtils.copy(cmd, SysResource.class);
-        resource.setId(id);
+        ResourceAggregate resource = resourceRepository.findById(id)
+                .orElseThrow(() -> BizException.notFound("资源"));
+        resource.updateInfo(cmd.getName(), cmd.getRequestMethod(), cmd.getRequestPath(),
+                cmd.getStatus(), cmd.getRemark());
         resourceRepository.update(resource);
         return ApiResponse.ok(null);
     }

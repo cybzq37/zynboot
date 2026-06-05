@@ -2,6 +2,7 @@ package com.zynboot.sys.command.role;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import com.zynboot.kit.jackson.plugins.xss.Xss;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,26 +21,29 @@ public class RoleSaveCmd {
     String id;
 
     /** 角色编码。 */
+    @Xss
     @NotBlank(message = "角色编码不能为空")
     @Size(max = 50, message = "角色编码长度不能超过50")
-    String roleCode;
+    String code;
 
     /** 角色名称。 */
+    @Xss
     @NotBlank(message = "角色名称不能为空")
     @Size(max = 50, message = "角色名称长度不能超过50")
-    String roleName;
+    String name;
 
     /** 数据范围：1=全部 2=本部门及子部门 3=本部门 4=仅本人。 */
     Integer dataScope;
 
     /** 排序。 */
-    Integer sort;
+    Integer sortOrder;
 
     /** 状态：0=禁用 1=启用。 */
     Integer status;
 
     /** 备注。 */
+    @Xss
     @Size(max = 500, message = "备注长度不能超过500")
     String remark;
-    Integer roleType;
+    Integer type;
 }

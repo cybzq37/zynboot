@@ -34,15 +34,15 @@ public class RoleQueryHandler {
     }
 
     private RoleRes toRes(SysRole entity) {
-        RoleRes res = new RoleRes();
-        res.setId(entity.getId());
-        res.setRoleCode(entity.getRoleCode());
-        res.setRoleName(entity.getRoleName());
-        res.setRoleType(entity.getRoleType());
-        res.setDataScope(entity.getDataScope());
-        res.setSort(entity.getSort());
-        res.setStatus(entity.getStatus());
-        res.setRemark(entity.getRemark());
-        return res;
+        return RoleRes.builder()
+                .id(entity.getId())
+                .code(entity.getCode())
+                .name(entity.getName())
+                .type(entity.getType())
+                .dataScope(entity.getDataScope())
+                .sortOrder(entity.getSortOrder())
+                .status(entity.getStatus())
+                .remark(entity.getRemark())
+                .build();
     }
 }

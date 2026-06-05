@@ -3,6 +3,7 @@ package com.zynboot.sys.command.resource;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import com.zynboot.kit.jackson.plugins.xss.Xss;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,13 +26,14 @@ public class ResourceSaveCmd {
     String permissionId;
 
     /** 资源名称。 */
+    @Xss
     @NotBlank(message = "资源名称不能为空")
     @Size(max = 100, message = "资源名称长度不能超过100")
-    String resName;
+    String name;
 
     /** 资源类型：1=API 2=文件 3=数据。 */
     @NotNull(message = "资源类型不能为空")
-    Integer resType;
+    Integer type;
 
     /** 请求方法（GET/POST/PUT/DELETE）。 */
     @NotBlank(message = "请求方法不能为空")
@@ -39,6 +41,7 @@ public class ResourceSaveCmd {
     String requestMethod;
 
     /** 请求路径。 */
+    @Xss
     @NotBlank(message = "请求路径不能为空")
     @Size(max = 200, message = "请求路径长度不能超过200")
     String requestPath;
@@ -47,6 +50,7 @@ public class ResourceSaveCmd {
     Integer status;
 
     /** 备注。 */
+    @Xss
     @Size(max = 500, message = "备注长度不能超过500")
     String remark;
 }

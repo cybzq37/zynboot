@@ -2,14 +2,15 @@ package com.zynboot.sys.response.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import lombok.NoArgsConstructor;
 
-@Data
+/**
+ * 用户信息响应（不可变）。
+ */
+@Value
 @Jacksonized
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class UserRes {
 

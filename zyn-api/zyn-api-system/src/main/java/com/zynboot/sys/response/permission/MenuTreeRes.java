@@ -13,10 +13,10 @@ public class MenuTreeRes {
 
     String id;
     String parentId;
-    String permName;
-    Integer permType;
+    String name;
+    Integer type;
     String path;
-    Integer sort;
+    Integer sortOrder;
     Boolean visible;
     List<MenuTreeRes> children;
 }

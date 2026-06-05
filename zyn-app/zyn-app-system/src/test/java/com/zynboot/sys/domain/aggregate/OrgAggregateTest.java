@@ -8,25 +8,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OrgAggregateTest {
 
     @Test
-    void shouldCreateOrgWithDefaultStatus() {
+    void shouldCreateOrgWithDefaults() {
         OrgAggregate org = OrgAggregate.create("TECH", "技术部", 1);
 
-        assertThat(org.getOrgCode()).isEqualTo("TECH");
-        assertThat(org.getOrgName()).isEqualTo("技术部");
-        assertThat(org.getOrgType()).isEqualTo(1);
+        assertThat(org.getCode()).isEqualTo("TECH");
+        assertThat(org.getName()).isEqualTo("技术部");
+        assertThat(org.getType()).isEqualTo(1);
         assertThat(org.getStatus()).isEqualTo(1);
     }
 
     @Test
-    void shouldReconstituteFromExistingEntity() {
+    void shouldReconstituteFromEntity() {
         SysOrganization entity = new SysOrganization();
         entity.setId("o-001");
-        entity.setOrgCode("HR");
+        entity.setCode("HR");
 
         OrgAggregate org = OrgAggregate.from(entity);
 
         assertThat(org.getId()).isEqualTo("o-001");
-        assertThat(org.getOrgCode()).isEqualTo("HR");
+        assertThat(org.getCode()).isEqualTo("HR");
     }
 
     @Test
@@ -44,20 +44,20 @@ class OrgAggregateTest {
 
         org.updateInfo("研发中心", "123456", "a@b.com", "备注");
 
-        assertThat(org.getOrgName()).isEqualTo("研发中心");
+        assertThat(org.getName()).isEqualTo("研发中心");
         assertThat(org.getEntity().getPhone()).isEqualTo("123456");
         assertThat(org.getEntity().getEmail()).isEqualTo("a@b.com");
         assertThat(org.getEntity().getRemark()).isEqualTo("备注");
     }
 
     @Test
-    void shouldNotOverwriteWithNullOnUpdateInfo() {
+    void shouldNotOverwriteWithNullOnUpdate() {
         OrgAggregate org = OrgAggregate.create("TECH", "技术部", 1);
         org.updateInfo("研发中心", "123456", "a@b.com", "备注");
 
         org.updateInfo("新名称", null, null, "新备注");
 
-        assertThat(org.getOrgName()).isEqualTo("新名称");
+        assertThat(org.getName()).isEqualTo("新名称");
         assertThat(org.getEntity().getPhone()).isEqualTo("123456");
         assertThat(org.getEntity().getEmail()).isEqualTo("a@b.com");
         assertThat(org.getEntity().getRemark()).isEqualTo("新备注");

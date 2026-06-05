@@ -36,6 +36,7 @@
         <commons-compress.version>1.27.1</commons-compress.version>
         <commons-io.version>2.17.0</commons-io.version>
         <tinypinyin.version>2.0.3</tinypinyin.version>
+        <caffeine.version>3.1.8</caffeine.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
@@ -190,6 +191,11 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
+                <groupId>com.zynboot</groupId>
+                <artifactId>zyn-app-map</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-spring-boot3-starter</artifactId>
                 <version>${sa-token.version}</version>
@@ -273,6 +279,11 @@
                 <groupId>com.github.promeg</groupId>
                 <artifactId>tinypinyin</artifactId>
                 <version>${tinypinyin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <version>${caffeine.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

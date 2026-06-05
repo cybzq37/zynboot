@@ -1,5 +1,6 @@
 package com.zynboot.sys.controller;
 
+import com.zynboot.kit.exception.BizException;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.kit.util.BeanUtils;
 import com.zynboot.sys.command.role.RoleSaveCmd;
@@ -36,8 +37,8 @@ public class SysRoleController {
 
     @PostMapping
     public ApiResponse<Void> create(@Valid @RequestBody RoleSaveCmd cmd) {
-        RoleAggregate role = RoleAggregate.create(cmd.getRoleCode(), cmd.getRoleName());
-        role.updateInfo(cmd.getRoleName(), cmd.getDataScope(), cmd.getRemark());
+        RoleAggregate role = RoleAggregate.create(cmd.getCode(), cmd.getName());
+        role.updateInfo(cmd.getName(), cmd.getDataScope(), cmd.getRemark());
         roleRepository.save(role);
         permissionQueryHandler.clearCacheByRoleId(role.getId());
         return ApiResponse.ok(null);
@@ -46,8 +47,8 @@ public class SysRoleController {
     @PutMapping("/{id}")
     public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody RoleSaveCmd cmd) {
         RoleAggregate role = roleRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("角色不存在"));
-        role.updateInfo(cmd.getRoleName(), cmd.getDataScope(), cmd.getRemark());
+                .orElseThrow(() -> BizException.notFound("角色"));
+        role.updateInfo(cmd.getName(), cmd.getDataScope(), cmd.getRemark());
         roleRepository.update(role);
         permissionQueryHandler.clearCacheByRoleId(id);
         return ApiResponse.ok(null);

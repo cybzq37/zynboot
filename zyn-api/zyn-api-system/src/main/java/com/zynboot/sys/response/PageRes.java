@@ -16,6 +16,6 @@ public class PageRes<T> {
 
     private List<T> records;
     private long total;
-    private long pageNum;
-    private long pageSize;
+    private int pageNum;
+    private int pageSize;
 }

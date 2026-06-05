@@ -8,7 +8,6 @@ import com.zynboot.sys.command.permission.PermissionSaveCmd;
 import com.zynboot.sys.command.resource.ResourceSaveCmd;
 import com.zynboot.sys.command.role.RoleSaveCmd;
 import com.zynboot.sys.command.user.UserSaveCmd;
-import com.zynboot.sys.query.org.OrgQuery;
 import com.zynboot.sys.query.permission.PermissionQuery;
 import com.zynboot.sys.query.role.RoleQuery;
 import com.zynboot.sys.query.user.UserPageQuery;
@@ -169,7 +168,7 @@ public class SysProxyController {
 
     // ── Organization ──────────────────────────────────────────
     @GetMapping("/org")
-    public ApiResponse<List<OrgRes>> orgList(OrgQuery query) {
+    public ApiResponse<List<OrgRes>> orgList() {
         return orgApi.list();
     }
 

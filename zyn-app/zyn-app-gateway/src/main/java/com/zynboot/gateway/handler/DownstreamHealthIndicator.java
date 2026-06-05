@@ -1,6 +1,7 @@
 package com.zynboot.gateway.handler;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
 import org.springframework.boot.actuate.health.Status;
@@ -10,8 +11,8 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Gateway 下游服务健康检查聚合。
@@ -22,12 +23,17 @@ public class DownstreamHealthIndicator implements ReactiveHealthIndicator {
 
     private final WebClient.Builder webClientBuilder;
 
+    @Value("${zyn.gateway.health.system-url:http://localhost:28081}")
+    private String systemUrl;
+
+    @Value("${zyn.gateway.health.demo-url:http://localhost:28080}")
+    private String demoUrl;
+
     @Override
     public Mono<Health> health() {
-        Map<String, String> services = Map.of(
-                "system", "http://localhost:28081",
-                "demo", "http://localhost:28080"
-        );
+        Map<String, String> services = new LinkedHashMap<>();
+        services.put("system", systemUrl);
+        services.put("demo", demoUrl);
 
         return Flux.fromIterable(services.entrySet())
                 .flatMap(e -> checkService(e.getKey(), e.getValue()))

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class PermissionQuery {
 
-    private String permName;
-    private Integer permType;
+    private String name;
+    private Integer type;
     private Integer status;
 }

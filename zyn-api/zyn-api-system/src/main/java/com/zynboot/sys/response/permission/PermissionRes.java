@@ -2,24 +2,22 @@ package com.zynboot.sys.response.permission;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import lombok.NoArgsConstructor;
 
-@Data
+@Value
 @Jacksonized
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class PermissionRes {
 
     String id;
     String parentId;
-    String permCode;
-    String permName;
-    Integer permType;
+    String code;
+    String name;
+    Integer type;
     String path;
-    Integer sort;
+    Integer sortOrder;
     Boolean visible;
     Integer status;
     String remark;

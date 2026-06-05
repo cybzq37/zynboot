@@ -8,7 +8,6 @@ import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -19,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-@Component
+@Getter
 public class RedisClient {
 
     private static final DefaultRedisScript<Long> UNLOCK_SCRIPT = new DefaultRedisScript<>(

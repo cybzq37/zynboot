@@ -8,6 +8,8 @@ import java.time.Instant;
 
 /**
  * 系统事件基类。
+ * <p>
+ * 通过 {@link #schemaVersion} 支持消费端版本兼容。
  */
 @Data
 @NoArgsConstructor
@@ -26,7 +28,16 @@ public class SysEvent {
     /** 事件时间。 */
     private Instant timestamp;
 
+    /** 事件 Schema 版本，用于消费端兼容。 */
+    private Integer schemaVersion;
+
+    public static final int CURRENT_SCHEMA_VERSION = 1;
+
     public static SysEvent of(String type, String source, String data) {
-        return new SysEvent(type, source, data, Instant.now());
+        return new SysEvent(type, source, data, Instant.now(), CURRENT_SCHEMA_VERSION);
+    }
+
+    public static SysEvent of(EventType type, String source, String data) {
+        return new SysEvent(type.getCode(), source, data, Instant.now(), CURRENT_SCHEMA_VERSION);
     }
 }

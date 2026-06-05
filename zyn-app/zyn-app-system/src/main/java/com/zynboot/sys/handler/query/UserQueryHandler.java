@@ -8,12 +8,12 @@ import com.zynboot.sys.infrastructure.mapper.SysPermissionMapper;
 import com.zynboot.sys.infrastructure.mapper.SysRoleMapper;
 import com.zynboot.sys.infrastructure.mapper.SysUserMapper;
 import com.zynboot.sys.util.CacheHelper;
+import com.zynboot.sys.util.CacheKeys;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,11 +24,6 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class UserQueryHandler {
-
-    private static final String CACHE_USER_KEY = "sys:user:login:%s";
-    private static final String CACHE_PERM_KEY = "sys:perm:user:%s";
-    private static final String CACHE_ROLE_KEY = "sys:role:user:%s";
-    private static final Duration CACHE_TTL = Duration.ofMinutes(30);
 
     private final SysUserMapper userMapper;
     private final SysRoleMapper roleMapper;
@@ -47,7 +42,7 @@ public class UserQueryHandler {
     }
 
     public LoginUserRes getLoginUser(String userId) {
-        return cacheHelper.getOrLoad(CACHE_USER_KEY.formatted(userId), CACHE_TTL, () -> {
+        return cacheHelper.getOrLoad(CacheKeys.USER_LOGIN.formatted(userId), CacheKeys.DEFAULT_TTL, () -> {
             SysUser user = userMapper.selectById(userId);
             if (user == null) return null;
 
@@ -70,35 +65,35 @@ public class UserQueryHandler {
     }
 
     public Set<String> getPermCodes(String userId) {
-        return cacheHelper.getOrLoad(CACHE_PERM_KEY.formatted(userId), CACHE_TTL, () ->
+        return cacheHelper.getOrLoad(CacheKeys.USER_PERM_CODES.formatted(userId), CacheKeys.DEFAULT_TTL, () ->
                 new java.util.HashSet<>(permissionMapper.selectPermCodesByUserId(userId)));
     }
 
     public Set<String> getRoleCodes(String userId) {
-        return cacheHelper.getOrLoad(CACHE_ROLE_KEY.formatted(userId), CACHE_TTL, () ->
+        return cacheHelper.getOrLoad(CacheKeys.USER_ROLE_CODES.formatted(userId), CacheKeys.DEFAULT_TTL, () ->
                 roleMapper.selectRolesByUserId(userId).stream()
-                        .map(SysRole::getRoleCode)
+                        .map(SysRole::getCode)
                         .collect(Collectors.toSet()));
     }
 
     public void clearCache(String userId) {
         cacheHelper.evict(
-                CACHE_USER_KEY.formatted(userId),
-                CACHE_PERM_KEY.formatted(userId),
-                CACHE_ROLE_KEY.formatted(userId));
+                CacheKeys.USER_LOGIN.formatted(userId),
+                CacheKeys.USER_PERM_CODES.formatted(userId),
+                CacheKeys.USER_ROLE_CODES.formatted(userId));
     }
 
     private UserRes toRes(SysUser entity) {
-        UserRes res = new UserRes();
-        res.setId(entity.getId());
-        res.setUsername(entity.getUsername());
-        res.setNickname(entity.getNickname());
-        res.setRealName(entity.getRealName());
-        res.setEmail(entity.getEmail());
-        res.setPhone(entity.getPhone());
-        res.setAvatar(entity.getAvatar());
-        res.setGender(entity.getGender());
-        res.setStatus(entity.getStatus());
-        return res;
+        return UserRes.builder()
+                .id(entity.getId())
+                .username(entity.getUsername())
+                .nickname(entity.getNickname())
+                .realName(entity.getRealName())
+                .email(entity.getEmail())
+                .phone(entity.getPhone())
+                .avatar(entity.getAvatar())
+                .gender(entity.getGender())
+                .status(entity.getStatus())
+                .build();
     }
 }

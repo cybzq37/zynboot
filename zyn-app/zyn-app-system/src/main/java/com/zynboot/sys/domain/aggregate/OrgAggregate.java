@@ -17,11 +17,11 @@ public class OrgAggregate {
         return new OrgAggregate(entity);
     }
 
-    public static OrgAggregate create(String orgCode, String orgName, Integer orgType) {
+    public static OrgAggregate create(String code, String name, Integer type) {
         SysOrganization org = new SysOrganization();
-        org.setOrgCode(orgCode);
-        org.setOrgName(orgName);
-        org.setOrgType(orgType);
+        org.setCode(code);
+        org.setName(name);
+        org.setType(type);
         org.setStatus(1);
         return new OrgAggregate(org);
     }
@@ -35,20 +35,20 @@ public class OrgAggregate {
         return entity.getId();
     }
 
-    public String getOrgCode() {
-        return entity.getOrgCode();
+    public String getCode() {
+        return entity.getCode();
     }
 
-    public String getOrgName() {
-        return entity.getOrgName();
+    public String getName() {
+        return entity.getName();
     }
 
-    public Integer getOrgType() {
-        return entity.getOrgType();
+    public Integer getType() {
+        return entity.getType();
     }
 
-    public Integer getSort() {
-        return entity.getSort();
+    public Integer getSortOrder() {
+        return entity.getSortOrder();
     }
 
     public Integer getStatus() {
@@ -59,8 +59,8 @@ public class OrgAggregate {
         entity.setParentId(parentId);
     }
 
-    public void updateInfo(String orgName, String phone, String email, String remark) {
-        if (orgName != null) entity.setOrgName(orgName);
+    public void updateInfo(String name, String phone, String email, String remark) {
+        if (name != null) entity.setName(name);
         if (phone != null) entity.setPhone(phone);
         if (email != null) entity.setEmail(email);
         if (remark != null) entity.setRemark(remark);

@@ -30,7 +30,7 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowed-origins: "*"
+            allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
             allowed-methods: "*"
             allowed-headers: "*"
             max-age: 3600
@@ -62,6 +62,19 @@ sa-token:
   is-share: false
   token-style: uuid
   is-log: true
+
+zyn:
+  gateway:
+    auth:
+      exclude-paths:
+        - /sys/api/v1/auth/login
+        - /actuator/**
+        - /v3/api-docs/**
+        - /swagger-ui/**
+        - /swagger-ui.html
+    health:
+      system-url: ${SYSTEM_BASE_URL:http://localhost:28081}
+      demo-url: ${DEMO_BASE_URL:http://localhost:28080}
 
 springdoc:
   swagger-ui:

@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class OrgQuery {
 
-    private String orgName;
-    private Integer orgType;
+    private String name;
+    private Integer type;
     private Integer status;
 }

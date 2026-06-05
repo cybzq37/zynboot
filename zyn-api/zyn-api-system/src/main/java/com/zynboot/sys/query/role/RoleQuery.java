@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class RoleQuery {
 
-    private String roleCode;
-    private String roleName;
+    private String code;
+    private String name;
     private Integer status;
 }

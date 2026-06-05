@@ -2,22 +2,23 @@ package com.zynboot.sys.response.role;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import lombok.NoArgsConstructor;
 
-@Data
+/**
+ * 角色信息响应（不可变）。
+ */
+@Value
 @Jacksonized
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class RoleRes {
 
     String id;
-    String roleCode;
-    String roleName;
-    Integer roleType;
-    Integer sort;
+    String code;
+    String name;
+    Integer type;
+    Integer sortOrder;
     Integer status;
     Integer dataScope;
     String remark;

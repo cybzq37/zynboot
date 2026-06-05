@@ -3,10 +3,10 @@
 -- ============================================================
 
 -- 内置角色
-INSERT INTO sys_role (id, role_code, role_name, role_type, sort, status, data_scope) VALUES
-('ae41e0470af04c7a8e3b3352bcf33afb', 'root',  '超级用户', 2, 0, 1, 1),
-('cb05b80a47244344a812c33c3356ed4f', 'admin', '管理员',   2, 1, 1, 1),
-('699ba2e9da5d44f1bd06440d22be651a', 'user',  '普通用户', 2, 2, 1, 4);
+INSERT INTO sys_role (id, code, name, type, sort_order, status, data_scope) VALUES
+('ae41e0470af04c7a8e3b3352bcf33afb', 'root',  '超级用户', 0, 0, 1, 1),
+('cb05b80a47244344a812c33c3356ed4f', 'admin', '管理员',   0, 1, 1, 1),
+('699ba2e9da5d44f1bd06440d22be651a', 'user',  '普通用户', 0, 2, 1, 4);
 
 -- 超级用户（root，绕过权限检查）
 -- 密码: Zyn@secure#99 (BCrypt)
@@ -24,8 +24,8 @@ INSERT INTO sys_user_role (id, user_id, role_id) VALUES
 ('58eac589bcdd4c0c9ea967d2fea05e2e', '4eb17ac5fed3474aa0aa8ec492533667', 'cb05b80a47244344a812c33c3356ed4f');
 
 -- 根组织
-INSERT INTO sys_organization (id, parent_id, org_code, org_name, org_type, status) VALUES
-('27d0599f983d47ed850b038a60b928ad', '0', 'root', '总公司', 1, 1);
+INSERT INTO sys_organization (id, parent_id, code, name, type, status) VALUES
+('27d0599f983d47ed850b038a60b928ad', NULL, 'root', '总公司', 1, 1);
 
 -- 用户组织关联
 INSERT INTO sys_user_org (id, user_id, org_id) VALUES
@@ -33,8 +33,8 @@ INSERT INTO sys_user_org (id, user_id, org_id) VALUES
 ('02a8704f6642458c845148119bbdf69f', '4eb17ac5fed3474aa0aa8ec492533667', '27d0599f983d47ed850b038a60b928ad');
 
 -- 基础权限
-INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, path, sort, status) VALUES
-('65e2290d58b84b0eb97103c19cc401c4', '0',                                   'system',           '系统管理', 1, '/system',         1, 1),
+INSERT INTO sys_permission (id, parent_id, code, name, type, path, sort_order, status) VALUES
+('65e2290d58b84b0eb97103c19cc401c4', NULL,                                 'system',           '系统管理', 1, '/system',         1, 1),
 ('6f6050cf57074542bc4eca8f0784d8ce', '65e2290d58b84b0eb97103c19cc401c4',    'system:user',      '用户管理', 2, '/system/user',    1, 1),
 ('edf4690044cf421c92607055f7f24541', '65e2290d58b84b0eb97103c19cc401c4',    'system:role',      '角色管理', 2, '/system/role',    2, 1),
 ('f0bda573e8304f75a83afff6847c556a', '65e2290d58b84b0eb97103c19cc401c4',    'system:perm',      '权限管理', 2, '/system/perm',    3, 1),
@@ -42,28 +42,28 @@ INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, path
 ('e65bac1ec4a64059942389660785f12d', '65e2290d58b84b0eb97103c19cc401c4',    'system:log',       '审计日志', 2, '/system/log',     5, 1);
 
 -- 用户管理按钮
-INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, status) VALUES
+INSERT INTO sys_permission (id, parent_id, code, name, type, status) VALUES
 ('8b5c94abe9874f5e829677223eacc151', '6f6050cf57074542bc4eca8f0784d8ce', 'system:user:query',  '用户查询', 3, 1),
 ('677f536d877443f48aa1032c58de4ad3', '6f6050cf57074542bc4eca8f0784d8ce', 'system:user:create', '用户新增', 3, 1),
 ('4f2c3cf194cd4f44a51ac749e6681658', '6f6050cf57074542bc4eca8f0784d8ce', 'system:user:update', '用户编辑', 3, 1),
 ('c6aadda6730b476bb14492059ef2bfa4', '6f6050cf57074542bc4eca8f0784d8ce', 'system:user:delete', '用户删除', 3, 1);
 
 -- 角色管理按钮
-INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, status) VALUES
+INSERT INTO sys_permission (id, parent_id, code, name, type, status) VALUES
 ('4895a00293df4903832014607fb3a614', 'edf4690044cf421c92607055f7f24541', 'system:role:query',  '角色查询', 3, 1),
 ('5cf4e7970a1743ccae59226881a09252', 'edf4690044cf421c92607055f7f24541', 'system:role:create', '角色新增', 3, 1),
 ('fdc03412b19546bcba5800bbfad14472', 'edf4690044cf421c92607055f7f24541', 'system:role:update', '角色编辑', 3, 1),
 ('2ab8635ed1b542518670e7be1fff91c6', 'edf4690044cf421c92607055f7f24541', 'system:role:delete', '角色删除', 3, 1);
 
 -- 权限管理按钮
-INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, status) VALUES
+INSERT INTO sys_permission (id, parent_id, code, name, type, status) VALUES
 ('1f88ca9877884a9d84fdc3b9f4896fbb', 'f0bda573e8304f75a83afff6847c556a', 'system:perm:query',  '权限查询', 3, 1),
 ('95902a44f6ff45ecb127729bc21b858d', 'f0bda573e8304f75a83afff6847c556a', 'system:perm:create', '权限新增', 3, 1),
 ('e487edbbff05404a9ca8e3e47208ee7a', 'f0bda573e8304f75a83afff6847c556a', 'system:perm:update', '权限编辑', 3, 1),
 ('7b2fe3d1155e415a8799e9b4d40455ec', 'f0bda573e8304f75a83afff6847c556a', 'system:perm:delete', '权限删除', 3, 1);
 
 -- 组织管理按钮
-INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, status) VALUES
+INSERT INTO sys_permission (id, parent_id, code, name, type, status) VALUES
 ('f0c6dbc597a241c1b53940eb8d64c587', 'dae64518f2a8424a94fe57d87ff44618', 'system:org:query',  '组织查询', 3, 1),
 ('fae3b236392c40689c198cf20ac9d575', 'dae64518f2a8424a94fe57d87ff44618', 'system:org:create', '组织新增', 3, 1),
 ('bfc26fad4bf740dd814c601f3b9ee311', 'dae64518f2a8424a94fe57d87ff44618', 'system:org:update', '组织编辑', 3, 1),

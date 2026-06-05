@@ -119,6 +119,29 @@ code=$(curl -sf -o /dev/null -w '%{http_code}' \
 info "Nacos 服务注册"
 echo -e "  ${YELLOW}⚠${NC} Nacos 3.x API 不兼容，暂未集成服务注册，跳过"
 
+info "Kafka 事件流 (Spring Cloud Stream)"
+# 通过 Demo 服务发送事件
+event_resp=$(curl -sf -X POST "http://localhost:28080/api/v1/demo/event/send?type=TEST&data=integration-test" \
+  -H "Authorization: $token" 2>/dev/null || echo '')
+if echo "$event_resp" | grep -q "event sent"; then
+  pass "事件发送成功"
+  sleep 2
+  # 查询已接收事件
+  events=$(curl -sf "http://localhost:28080/api/v1/demo/event/list" \
+    -H "Authorization: $token" 2>/dev/null || echo '')
+  echo "$events" | grep -q "integration-test" && pass "事件消费成功" || fail "事件消费失败"
+else
+  fail "事件发送失败"
+fi
+
+info "Sentinel Dashboard"
+code=$(curl -sf -o /dev/null -w '%{http_code}' http://localhost:8858/ 2>/dev/null || echo '000')
+[ "$code" = "200" ] && pass "Dashboard 可访问: $code" || fail "Dashboard 不可访问: $code"
+
+info "Seata Server"
+code=$(curl -sf -o /dev/null -w '%{http_code}' http://localhost:7091/health 2>/dev/null || echo '000')
+[ "$code" = "200" ] && pass "Seata 健康: $code" || fail "Seata 健康检查失败: $code"
+
 fi
 
 # ============================================================

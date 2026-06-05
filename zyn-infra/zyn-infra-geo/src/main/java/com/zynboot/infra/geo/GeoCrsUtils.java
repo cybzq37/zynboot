@@ -1,25 +1,42 @@
 package com.zynboot.infra.geo;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.time.Duration;
 
 public final class GeoCrsUtils {
 
-    private static final Map<String, CoordinateReferenceSystem> CRS_CACHE = new ConcurrentHashMap<>();
-    private static final Map<String, MathTransform> TRANSFORM_CACHE = new ConcurrentHashMap<>();
+    private static final int MAX_CACHE_SIZE = 256;
+
+    private static final LoadingCache<String, CoordinateReferenceSystem> CRS_CACHE = Caffeine.newBuilder()
+            .maximumSize(MAX_CACHE_SIZE)
+            .expireAfterAccess(Duration.ofHours(1))
+            .build(epsgCode -> CRS.decode(epsgCode, true));
+
+    private static final LoadingCache<String, MathTransform> TRANSFORM_CACHE = Caffeine.newBuilder()
+            .maximumSize(MAX_CACHE_SIZE)
+            .expireAfterAccess(Duration.ofHours(1))
+            .build(key -> {
+                String[] parts = key.split("->", 2);
+                return CRS.findMathTransform(CRS_CACHE.get(parts[0]), CRS_CACHE.get(parts[1]), true);
+            });
 
     private GeoCrsUtils() {
     }
 
-    public static CoordinateReferenceSystem decode(String epsgCode) throws Exception {
+    public static CoordinateReferenceSystem decode(String epsgCode) {
         requireEpsgCode(epsgCode, "epsgCode");
-        return CRS_CACHE.computeIfAbsent(epsgCode, GeoCrsUtils::decodeUnchecked);
+        try {
+            return CRS_CACHE.get(epsgCode);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid EPSG code: " + epsgCode, e);
+        }
     }
 
     public static int toSrid(String epsgCode) {
@@ -33,11 +50,15 @@ public final class GeoCrsUtils {
         return decode(epsgCode).toWKT();
     }
 
-    public static MathTransform createTransform(String sourceEpsg, String targetEpsg) throws Exception {
+    public static MathTransform createTransform(String sourceEpsg, String targetEpsg) {
         requireEpsgCode(sourceEpsg, "sourceEpsg");
         requireEpsgCode(targetEpsg, "targetEpsg");
         String cacheKey = sourceEpsg + "->" + targetEpsg;
-        return TRANSFORM_CACHE.computeIfAbsent(cacheKey, key -> createTransformUnchecked(sourceEpsg, targetEpsg));
+        try {
+            return TRANSFORM_CACHE.get(cacheKey);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed to create CRS transform from " + sourceEpsg + " to " + targetEpsg, e);
+        }
     }
 
     public static Geometry transform(Geometry geometry, String sourceEpsg, String targetEpsg) throws Exception {
@@ -72,22 +93,6 @@ public final class GeoCrsUtils {
     private static void requireEpsgCode(String epsgCode, String paramName) {
         if (epsgCode == null || epsgCode.isBlank()) {
             throw new IllegalArgumentException(paramName + " must not be blank");
-        }
-    }
-
-    private static CoordinateReferenceSystem decodeUnchecked(String epsgCode) {
-        try {
-            return CRS.decode(epsgCode, true);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid EPSG code: " + epsgCode, e);
-        }
-    }
-
-    private static MathTransform createTransformUnchecked(String sourceEpsg, String targetEpsg) {
-        try {
-            return CRS.findMathTransform(decode(sourceEpsg), decode(targetEpsg), true);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to create CRS transform from " + sourceEpsg + " to " + targetEpsg, e);
         }
     }
 }

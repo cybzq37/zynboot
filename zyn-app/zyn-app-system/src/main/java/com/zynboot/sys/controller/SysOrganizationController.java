@@ -1,5 +1,6 @@
 package com.zynboot.sys.controller;
 
+import com.zynboot.kit.exception.BizException;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.kit.util.BeanUtils;
 import com.zynboot.sys.command.org.OrgSaveCmd;
@@ -39,15 +40,15 @@ public class SysOrganizationController {
     @GetMapping("/{id}")
     public ApiResponse<OrgRes> getById(@PathVariable String id) {
         OrgAggregate org = orgRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("组织不存在"));
+                .orElseThrow(() -> BizException.notFound("组织"));
         return ApiResponse.ok(BeanUtils.copy(org, OrgRes.class));
     }
 
     @PostMapping
     public ApiResponse<Void> create(@Valid @RequestBody OrgSaveCmd cmd) {
-        OrgAggregate org = OrgAggregate.create(cmd.getOrgCode(), cmd.getOrgName(), cmd.getOrgType());
+        OrgAggregate org = OrgAggregate.create(cmd.getCode(), cmd.getName(), cmd.getType());
         org.setParentId(cmd.getParentId());
-        org.updateInfo(cmd.getOrgName(), cmd.getPhone(), cmd.getEmail(), cmd.getRemark());
+        org.updateInfo(cmd.getName(), cmd.getPhone(), cmd.getEmail(), cmd.getRemark());
         orgRepository.save(org);
         return ApiResponse.ok(null);
     }
@@ -55,8 +56,8 @@ public class SysOrganizationController {
     @PutMapping("/{id}")
     public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody OrgSaveCmd cmd) {
         OrgAggregate org = orgRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("组织不存在"));
-        org.updateInfo(cmd.getOrgName(), cmd.getPhone(), cmd.getEmail(), cmd.getRemark());
+                .orElseThrow(() -> BizException.notFound("组织"));
+        org.updateInfo(cmd.getName(), cmd.getPhone(), cmd.getEmail(), cmd.getRemark());
         orgRepository.update(org);
         return ApiResponse.ok(null);
     }

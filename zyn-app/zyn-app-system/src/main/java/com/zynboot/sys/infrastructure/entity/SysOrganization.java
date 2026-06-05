@@ -10,13 +10,13 @@ import lombok.EqualsAndHashCode;
 public class SysOrganization extends BaseEntity {
 
     private String parentId;
-    private String orgCode;
-    private String orgName;
-    private Integer orgType;
+    private String code;
+    private String name;
+    private Integer type;
     private String leaderId;
     private String phone;
     private String email;
-    private Integer sort;
+    private Integer sortOrder;
     private Integer status;
     private String remark;
 }

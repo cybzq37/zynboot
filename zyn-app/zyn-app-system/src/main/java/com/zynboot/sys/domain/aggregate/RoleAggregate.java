@@ -17,10 +17,10 @@ public class RoleAggregate {
         return new RoleAggregate(entity);
     }
 
-    public static RoleAggregate create(String roleCode, String roleName) {
+    public static RoleAggregate create(String code, String name) {
         SysRole role = new SysRole();
-        role.setRoleCode(roleCode);
-        role.setRoleName(roleName);
+        role.setCode(code);
+        role.setName(name);
         role.setStatus(1);
         return new RoleAggregate(role);
     }
@@ -34,20 +34,20 @@ public class RoleAggregate {
         return entity.getId();
     }
 
-    public String getRoleCode() {
-        return entity.getRoleCode();
+    public String getCode() {
+        return entity.getCode();
     }
 
-    public String getRoleName() {
-        return entity.getRoleName();
+    public String getName() {
+        return entity.getName();
     }
 
     public Integer getDataScope() {
         return entity.getDataScope();
     }
 
-    public Integer getSort() {
-        return entity.getSort();
+    public Integer getSortOrder() {
+        return entity.getSortOrder();
     }
 
     public Integer getStatus() {
@@ -58,8 +58,8 @@ public class RoleAggregate {
         return entity.getRemark();
     }
 
-    public void updateInfo(String roleName, Integer dataScope, String remark) {
-        if (roleName != null) entity.setRoleName(roleName);
+    public void updateInfo(String name, Integer dataScope, String remark) {
+        if (name != null) entity.setName(name);
         if (dataScope != null) entity.setDataScope(dataScope);
         if (remark != null) entity.setRemark(remark);
     }

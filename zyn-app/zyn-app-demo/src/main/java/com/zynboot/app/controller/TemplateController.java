@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.zynboot.app.dto.HealthDto;
 import com.zynboot.kit.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +16,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/template")
+@Profile("dev")
 public class TemplateController {
 
     @GetMapping("/ping")

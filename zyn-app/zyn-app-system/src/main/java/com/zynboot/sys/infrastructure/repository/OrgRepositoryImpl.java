@@ -9,6 +9,7 @@ import com.zynboot.sys.infrastructure.mapper.SysOrganizationMapper;
 import com.zynboot.sys.infrastructure.mapper.SysUserOrgMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,9 +28,9 @@ public class OrgRepositoryImpl implements OrgRepository {
     }
 
     @Override
-    public Optional<OrgAggregate> findByCode(String orgCode) {
+    public Optional<OrgAggregate> findByCode(String code) {
         SysOrganization entity = mapper.selectOne(
-                new LambdaQueryWrapper<SysOrganization>().eq(SysOrganization::getOrgCode, orgCode));
+                new LambdaQueryWrapper<SysOrganization>().eq(SysOrganization::getCode, code));
         return entity != null ? Optional.of(OrgAggregate.from(entity)) : Optional.empty();
     }
 
@@ -49,6 +50,7 @@ public class OrgRepositoryImpl implements OrgRepository {
     }
 
     @Override
+    @Transactional
     public void delete(String id) {
         userOrgMapper.delete(new LambdaQueryWrapper<SysUserOrg>().eq(SysUserOrg::getOrgId, id));
         mapper.deleteById(id);

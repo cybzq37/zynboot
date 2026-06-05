@@ -1,6 +1,6 @@
 package com.zynboot.sys.domain.repository;
 
-import com.zynboot.sys.infrastructure.entity.SysPermission;
+import com.zynboot.sys.domain.aggregate.PermissionAggregate;
 import com.zynboot.sys.query.permission.PermissionQuery;
 
 import java.util.List;
@@ -8,13 +8,13 @@ import java.util.Optional;
 
 public interface PermissionRepository {
 
-    List<SysPermission> findList(PermissionQuery query);
+    List<PermissionAggregate> findList(PermissionQuery query);
 
-    Optional<SysPermission> findById(String id);
+    Optional<PermissionAggregate> findById(String id);
 
-    void save(SysPermission permission);
+    void save(PermissionAggregate permission);
 
-    void update(SysPermission permission);
+    void update(PermissionAggregate permission);
 
     void delete(String id);
 }

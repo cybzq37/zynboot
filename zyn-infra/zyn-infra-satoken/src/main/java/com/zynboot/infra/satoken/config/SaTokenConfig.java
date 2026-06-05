@@ -49,7 +49,7 @@ public class SaTokenConfig {
 
     @Bean
     LoginHelper loginHelperInitializer(SaTokenProperties properties) {
-        LoginHelper.setProperties(properties);
+        LoginHelper.init(properties);
         return new LoginHelper();
     }
 }

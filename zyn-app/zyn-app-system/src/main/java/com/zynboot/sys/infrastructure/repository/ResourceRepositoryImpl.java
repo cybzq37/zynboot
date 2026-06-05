@@ -1,5 +1,6 @@
 package com.zynboot.sys.infrastructure.repository;
 
+import com.zynboot.sys.domain.aggregate.ResourceAggregate;
 import com.zynboot.sys.domain.repository.ResourceRepository;
 import com.zynboot.sys.infrastructure.entity.SysResource;
 import com.zynboot.sys.infrastructure.mapper.SysResourceMapper;
@@ -16,24 +17,24 @@ public class ResourceRepositoryImpl implements ResourceRepository {
     private final SysResourceMapper mapper;
 
     @Override
-    public List<SysResource> findAll() {
-        return mapper.selectList(null);
+    public List<ResourceAggregate> findAll() {
+        return mapper.selectList(null).stream().map(ResourceAggregate::from).toList();
     }
 
     @Override
-    public Optional<SysResource> findById(String id) {
+    public Optional<ResourceAggregate> findById(String id) {
         SysResource entity = mapper.selectById(id);
-        return Optional.ofNullable(entity);
+        return entity != null ? Optional.of(ResourceAggregate.from(entity)) : Optional.empty();
     }
 
     @Override
-    public void save(SysResource resource) {
-        mapper.insert(resource);
+    public void save(ResourceAggregate resource) {
+        mapper.insert(resource.getEntity());
     }
 
     @Override
-    public void update(SysResource resource) {
-        mapper.updateById(resource);
+    public void update(ResourceAggregate resource) {
+        mapper.updateById(resource.getEntity());
     }
 
     @Override

@@ -2,26 +2,24 @@ package com.zynboot.sys.response.org;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import lombok.NoArgsConstructor;
 
-@Data
+@Value
 @Jacksonized
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class OrgRes {
 
     String id;
     String parentId;
-    String orgCode;
-    String orgName;
-    Integer orgType;
+    String code;
+    String name;
+    Integer type;
     String leaderId;
     String phone;
     String email;
-    Integer sort;
+    Integer sortOrder;
     Integer status;
     String remark;
 }

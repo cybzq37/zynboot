@@ -10,8 +10,8 @@ import lombok.EqualsAndHashCode;
 public class SysResource extends BaseEntity {
 
     private String permissionId;
-    private String resName;
-    private Integer resType;
+    private String name;
+    private Integer type;
     private String requestMethod;
     private String requestPath;
     private Integer status;
