@@ -19,3 +19,14 @@ spring:
           default:
             connect-timeout: 5000
             read-timeout: 10000
+    stream:
+      bindings:
+        event-out-0:
+          destination: zyn-event
+          content-type: application/json
+        event-in-0:
+          destination: zyn-event
+          content-type: application/json
+          group: demo-group
+      function:
+        definition: eventIn

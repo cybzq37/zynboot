@@ -48,6 +48,10 @@
             <artifactId>zyn-infra-nacos</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.zynboot</groupId>
+            <artifactId>zyn-infra-seata</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>

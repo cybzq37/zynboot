@@ -1,10 +1,13 @@
 package com.zynboot.infra.kafka.config;
 
 import com.zynboot.infra.kafka.KafkaClient;
+import com.zynboot.infra.kafka.MessageClient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaOperations;
 
@@ -19,5 +22,12 @@ public class KafkaAutoConfiguration {
         KafkaClient client = new KafkaClient();
         client.setOperations(operations);
         return client;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    @ConditionalOnClass(StreamBridge.class)
+    public MessageClient messageClient(StreamBridge streamBridge) {
+        return new MessageClient(streamBridge);
     }
 }

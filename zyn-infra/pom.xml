@@ -26,5 +26,6 @@
         <module>zyn-infra-web</module>
         <module>zyn-infra-satoken</module>
         <module>zyn-infra-nacos</module>
+        <module>zyn-infra-seata</module>
     </modules>
 </project>

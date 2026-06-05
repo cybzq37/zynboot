@@ -26,5 +26,6 @@
 |--------|------|
 | **分布式事务** | Seata（AT/TCC 模式），跨服务写操作一致性 |
 | **消息驱动** | Kafka + Spring Cloud Stream，服务间异步通信 |
-| **灰度发布** | Sentinel + Nacos 元数据，按比例/标签路由 |
 | **API 版本控制** | `/api/v1/` vs `/api/v2/` 路由策略 |
+| **灰度发布** | Sentinel + Nacos 元数据，按比例/标签路由 |
+

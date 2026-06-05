@@ -124,4 +124,32 @@ zyn:
       enable-log-interceptor: false
   nacos:
     enabled: false
+  seata:
+    enabled: false
+
+# Seata 分布式事务（默认关闭，zyn.seata.enabled=true 时生效）
+seata:
+  enabled: ${zyn.seata.enabled:false}
+  application-id: ${spring.application.name}
+  tx-service-group: zyn-tx-group
+  registry:
+    type: nacos
+    nacos:
+      server-addr: ${NACOS_ADDR:localhost:8848}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:Zyn@secure#99}
+      group: SEATA_GROUP
+  config:
+    type: nacos
+    nacos:
+      server-addr: ${NACOS_ADDR:localhost:8848}
+      username: ${NACOS_USERNAME:nacos}
+      password: ${NACOS_PASSWORD:Zyn@secure#99}
+      group: SEATA_GROUP
+  client:
+    rm:
+      report-success-enable: false
+    tm:
+      commit-retry-count: 3
+      rollback-retry-count: 3
 
