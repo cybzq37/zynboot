@@ -103,7 +103,7 @@ class TestUserDirect:
         assert TestUserDirect.created_id
         r = requests.put(f"{SYS_BASE}/api/v1/user/{TestUserDirect.created_id}",
                          headers=sys_headers,
-                         json={"nickname": "已更新"})
+                         json={"username": "testuser", "nickname": "已更新"})
         assert r.json()["code"] == "0"
         # 验证更新
         r2 = requests.get(f"{SYS_BASE}/api/v1/user/{TestUserDirect.created_id}",
@@ -143,7 +143,7 @@ class TestRoleDirect:
     def test_update(self, sys_headers):
         assert TestRoleDirect.created_id
         r = requests.put(f"{SYS_BASE}/api/v1/role/{TestRoleDirect.created_id}",
-                         headers=sys_headers, json={"roleName": "已更新角色"})
+                         headers=sys_headers, json={"roleCode": "test_role", "roleName": "已更新角色"})
         assert r.json()["code"] == "0"
 
     def test_delete(self, sys_headers):
@@ -188,7 +188,7 @@ class TestPermissionDirect:
         if not TestPermissionDirect.created_id:
             pytest.skip("未创建成功")
         r = requests.put(f"{SYS_BASE}/api/v1/permission/{TestPermissionDirect.created_id}",
-                         headers=sys_headers, json={"permName": "已更新权限"})
+                         headers=sys_headers, json={"permCode": "test:perm", "permName": "已更新权限", "permType": 2})
         assert r.json()["code"] == "0"
 
     def test_delete(self, sys_headers):
@@ -211,6 +211,7 @@ class TestResourceDirect:
     def test_create(self, sys_headers):
         r = requests.post(f"{SYS_BASE}/api/v1/resource", headers=sys_headers,
                           json={"resName": "test_resource", "resType": 1,
+                                "permissionId": "65e2290d58b84b0eb97103c19cc401c4",
                                 "requestMethod": "GET", "requestPath": "/test",
                                 "status": 1})
         assert r.json()["code"] == "0"
@@ -225,7 +226,9 @@ class TestResourceDirect:
         if not TestResourceDirect.created_id:
             pytest.skip("未创建成功")
         r = requests.put(f"{SYS_BASE}/api/v1/resource/{TestResourceDirect.created_id}",
-                         headers=sys_headers, json={"resName": "updated_resource"})
+                         headers=sys_headers, json={"resName": "updated_resource", "resType": 1,
+                                                   "permissionId": "65e2290d58b84b0eb97103c19cc401c4",
+                                                   "requestMethod": "GET", "requestPath": "/test"})
         assert r.json()["code"] == "0"
 
     def test_delete(self, sys_headers):
@@ -265,7 +268,7 @@ class TestOrgDirect:
         if not TestOrgDirect.created_id:
             pytest.skip("未创建成功")
         r = requests.put(f"{SYS_BASE}/api/v1/org/{TestOrgDirect.created_id}",
-                         headers=sys_headers, json={"orgName": "已更新部门"})
+                         headers=sys_headers, json={"orgCode": "test_dept", "orgName": "已更新部门"})
         assert r.json()["code"] == "0"
 
     def test_delete(self, sys_headers):

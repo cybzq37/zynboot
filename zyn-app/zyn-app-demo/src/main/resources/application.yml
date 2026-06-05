@@ -12,3 +12,10 @@ spring:
       - classpath:zyn-conf-@spring.profiles.active@.yml
       - optional:nacos:zyn-conf-common.yml
       - optional:nacos:zyn-conf-@spring.profiles.active@.yml
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 5000
+            read-timeout: 10000

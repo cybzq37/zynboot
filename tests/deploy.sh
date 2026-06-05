@@ -51,7 +51,7 @@ if [ "$DEPLOY" = true ]; then
   cd deploy/app
   bash build.sh --jar zyn-app-demo.jar --name demo --port 28080 --profile dev \
     --sw-name zyn-demo \
-    $COMMON_ENV --env SYS_HOST=sys
+    $COMMON_ENV --env SYS_HOST=sys --env SYS_BASE_URL=http://sys:28081
   cd ../..
 
   echo "============================================"

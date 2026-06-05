@@ -473,3 +473,27 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+
+  # --- 流量治理 ----------------------------------------------
+
+  sentinel-dashboard:
+    <<: *common
+    container_name: sentinel-dashboard
+    image: bladex/sentinel-dashboard:1.8.8
+    environment:
+      JAVA_OPT: "-Dserver.port=8858 -Dcsp.sentinel.dashboard.server=localhost:8858 -Dsentinel.dashboard.auth.username=sentinel -Dsentinel.dashboard.auth.password=Zyn@secure#99"
+      TZ: Asia/Shanghai
+      LANG: C.UTF-8
+    ports:
+      - "8858:8858"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8858/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s

@@ -3,12 +3,14 @@ package com.zynboot.sys.response.user;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Set;
 
 @Data
+@Jacksonized
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

@@ -1,5 +1,8 @@
 package com.zynboot.kit.response;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.Instant;
 
 public final class ApiResponse<T> {
@@ -14,7 +17,12 @@ public final class ApiResponse<T> {
     private final String path;
     private final T data;
 
-    private ApiResponse(String code, String message, Instant timestamp, String path, T data) {
+    @JsonCreator
+    public ApiResponse(@JsonProperty("code") String code,
+                       @JsonProperty("message") String message,
+                       @JsonProperty("timestamp") Instant timestamp,
+                       @JsonProperty("path") String path,
+                       @JsonProperty("data") T data) {
         this.code = code;
         this.message = message;
         this.timestamp = timestamp;

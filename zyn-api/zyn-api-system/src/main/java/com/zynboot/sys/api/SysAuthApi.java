@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "sys", contextId = "SysAuthApi", path = "/api/v1/auth")
+@FeignClient(name = "zyn-sys", contextId = "SysAuthApi", path = "/api/v1/auth")
 public interface SysAuthApi {
 
     @PostMapping("/login")

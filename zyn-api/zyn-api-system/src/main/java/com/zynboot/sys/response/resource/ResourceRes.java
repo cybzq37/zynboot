@@ -3,9 +3,11 @@ package com.zynboot.sys.response.resource;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.extern.jackson.Jacksonized;
 import lombok.NoArgsConstructor;
 
 @Data
+@Jacksonized
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
