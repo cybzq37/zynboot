@@ -8,9 +8,6 @@ import org.apache.ibatis.annotations.Select;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 空间查询 Mapper（MyBatis XML 实现 PostGIS 函数）。
- */
 @Mapper
 public interface MapSpatialMapper {
 
@@ -43,4 +40,46 @@ public interface MapSpatialMapper {
 
     @Select("SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(geometry))) as center, COUNT(*) as count FROM (SELECT geometry, ST_ClusterKMeans(geometry, #{k}) OVER () AS cluster_id FROM map_feature WHERE layer_id = #{layerId}) t GROUP BY cluster_id")
     List<Map<String, Object>> cluster(@Param("layerId") String layerId, @Param("k") int k);
+
+    @Select("SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(geometry))) as center, COUNT(*) as count FROM (SELECT geometry, ST_ClusterKMeans(geometry, #{k}) OVER () AS cluster_id FROM map_feature WHERE layer_id = #{layerId} AND geometry && ST_MakeEnvelope(CAST(#{minX} AS DOUBLE PRECISION), CAST(#{minY} AS DOUBLE PRECISION), CAST(#{maxX} AS DOUBLE PRECISION), CAST(#{maxY} AS DOUBLE PRECISION), 4326)) t GROUP BY cluster_id")
+    List<Map<String, Object>> clusterWithBbox(@Param("layerId") String layerId, @Param("k") int k, @Param("minX") String minX, @Param("minY") String minY, @Param("maxX") String maxX, @Param("maxY") String maxY);
+
+    // ── BM25 全文搜索 ──────────────────────────────────────
+
+    @org.apache.ibatis.annotations.Select({
+        "<script>",
+        "SELECT id, layer_id, source_id, properties, ST_AsGeoJSON(geometry) as geometry,",
+        "       paradedb.score(id) AS relevance",
+        "FROM map_feature",
+        "WHERE layer_id = #{layerId}",
+        "  AND properties @@@ #{query}",
+        "ORDER BY relevance DESC",
+        "LIMIT #{limit} OFFSET #{offset}",
+        "</script>"
+    })
+    List<Map<String, Object>> searchBm25(@Param("layerId") String layerId,
+                                          @Param("query") String query,
+                                          @Param("limit") int limit,
+                                          @Param("offset") int offset);
+
+    @org.apache.ibatis.annotations.Select({
+        "<script>",
+        "SELECT id, layer_id, source_id, properties, ST_AsGeoJSON(geometry) as geometry,",
+        "       paradedb.score(id) AS relevance",
+        "FROM map_feature",
+        "WHERE layer_id = #{layerId}",
+        "  AND properties @@@ #{query}",
+        "  AND geometry &amp;&amp; ST_MakeEnvelope(CAST(#{minX} AS DOUBLE PRECISION), CAST(#{minY} AS DOUBLE PRECISION), CAST(#{maxX} AS DOUBLE PRECISION), CAST(#{maxY} AS DOUBLE PRECISION), 4326)",
+        "ORDER BY relevance DESC",
+        "LIMIT #{limit} OFFSET #{offset}",
+        "</script>"
+    })
+    List<Map<String, Object>> searchBm25WithBbox(@Param("layerId") String layerId,
+                                                  @Param("query") String query,
+                                                  @Param("minX") String minX,
+                                                  @Param("minY") String minY,
+                                                  @Param("maxX") String maxX,
+                                                  @Param("maxY") String maxY,
+                                                  @Param("limit") int limit,
+                                                  @Param("offset") int offset);
 }

@@ -5,6 +5,7 @@ import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.map.infrastructure.entity.MapFeature;
 import com.zynboot.map.infrastructure.mapper.MapFeatureMapper;
 import com.zynboot.map.infrastructure.mapper.MapSpatialMapper;
+import com.zynboot.map.service.MvtService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 要素 CRUD + 空间查询 + 聚类 + GeoJSON 导出。
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/map")
@@ -22,6 +20,7 @@ public class FeatureController {
 
     private final MapFeatureMapper featureMapper;
     private final MapSpatialMapper spatialMapper;
+    private final MvtService mvtService;
 
     // ── CRUD ───────────────────────────────────────────────
 
@@ -34,7 +33,6 @@ public class FeatureController {
             @RequestParam(defaultValue = "20") int pageSize) {
 
         if (bbox != null && !bbox.isBlank()) {
-            // bbox 空间查询：minx,miny,maxx,maxy
             String[] parts = bbox.split(",");
             if (parts.length == 4) {
                 return ApiResponse.ok(spatialMapper.findByBbox(
@@ -45,7 +43,7 @@ public class FeatureController {
         LambdaQueryWrapper<MapFeature> wrapper = new LambdaQueryWrapper<MapFeature>()
                 .eq(MapFeature::getLayerId, layerId)
                 .eq(sourceId != null, MapFeature::getSourceId, sourceId)
-                .last("LIMIT " + pageSize + " OFFSET " + (pageNum - 1) * pageSize);
+                .last("LIMIT " + pageSize + " OFFSET " + ((pageNum - 1) * pageSize));
         return ApiResponse.ok(featureMapper.selectList(wrapper));
     }
 
@@ -62,6 +60,12 @@ public class FeatureController {
             @PathVariable String layerId,
             @RequestParam(defaultValue = "10") int k,
             @RequestParam(required = false) String bbox) {
+        if (bbox != null && !bbox.isBlank()) {
+            String[] parts = bbox.split(",");
+            if (parts.length == 4) {
+                return ApiResponse.ok(spatialMapper.clusterWithBbox(layerId, k, parts[0], parts[1], parts[2], parts[3]));
+            }
+        }
         return ApiResponse.ok(spatialMapper.cluster(layerId, k));
     }
 
@@ -76,19 +80,27 @@ public class FeatureController {
     public ApiResponse<Void> create(@PathVariable String layerId, @RequestBody MapFeature feature) {
         feature.setLayerId(layerId);
         featureMapper.insert(feature);
+        mvtService.invalidateLayerCache(layerId);
         return ApiResponse.ok(null);
     }
 
     @PutMapping("/feature/{id}")
     public ApiResponse<Void> update(@PathVariable Long id, @RequestBody MapFeature feature) {
+        MapFeature existing = featureMapper.selectById(id);
+        if (existing == null) throw BizException.notFound("要素");
         feature.setId(id);
         featureMapper.updateById(feature);
+        mvtService.invalidateLayerCache(existing.getLayerId());
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/feature/{id}")
     public ApiResponse<Void> delete(@PathVariable Long id) {
-        featureMapper.deleteById(id);
+        MapFeature existing = featureMapper.selectById(id);
+        if (existing != null) {
+            featureMapper.deleteById(id);
+            mvtService.invalidateLayerCache(existing.getLayerId());
+        }
         return ApiResponse.ok(null);
     }
 }

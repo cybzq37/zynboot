@@ -1,17 +1,17 @@
 package com.zynboot.map.service;
 
+import com.zynboot.infra.storage.model.UploadedFileInfo;
 import com.zynboot.infra.storage.service.StorageService;
+import com.zynboot.kit.util.IdUtils;
 import com.zynboot.map.domain.aggregate.LayerAggregate;
 import com.zynboot.map.domain.aggregate.SourceAggregate;
 import com.zynboot.map.domain.repository.LayerRepository;
 import com.zynboot.map.domain.repository.SourceRepository;
-import com.zynboot.map.infrastructure.entity.MapFeature;
-import com.zynboot.map.infrastructure.entity.MapLayerField;
-import com.zynboot.map.infrastructure.entity.MapLayerSource;
 import com.zynboot.map.infrastructure.entity.MapSourceRaster;
 import com.zynboot.map.infrastructure.importer.VectorImporter;
-import com.zynboot.map.infrastructure.mapper.*;
-import com.zynboot.infra.storage.model.UploadedFileInfo;
+import com.zynboot.map.infrastructure.mapper.MapFeatureMapper;
+import com.zynboot.map.infrastructure.mapper.MapLayerFieldMapper;
+import com.zynboot.map.infrastructure.mapper.MapSourceRasterMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,11 +22,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * 矢量 + 栅格数据导入服务。
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -40,7 +38,7 @@ public class ImportService {
     private final MapFeatureMapper featureMapper;
     private final List<VectorImporter> importers;
 
-    // ── 矢量导入 ───────────────────────────────────────────
+    // ── 矢量导入（PostGIS Geometry 写入）────────────────────
 
     @Transactional
     public SourceAggregate importVector(MultipartFile file, String layerId,
@@ -56,13 +54,9 @@ public class ImportService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("不支持的格式: " + format));
 
-        // 解析文件
         List<VectorImporter.FeatureRecord> features = importer.parse(file.getInputStream(), sourceSrid);
-
-        // 上传原始文件到 StorageService
         UploadedFileInfo uploaded = storageService.upload(file);
 
-        // 创建 source
         SourceAggregate source = SourceAggregate.create(layerId,
                 sourceName != null ? sourceName : originalName, "FILE", format);
         source.getEntity().setSourceSrid(parseSrid(sourceSrid));
@@ -70,29 +64,35 @@ public class ImportService {
         source.getEntity().setStorageKey(uploaded.getKey());
         sourceRepository.save(source);
 
-        // 写入要素（使用 PostGIS ST_GeomFromGeoJSON + ST_Transform）
         int imported = 0;
         List<String> errors = new ArrayList<>();
+        Integer targetSrid = layer.getTargetSrid();
+        String sridStr = targetSrid != null ? String.valueOf(targetSrid) : "4326";
+
         for (int i = 0; i < features.size(); i++) {
             VectorImporter.FeatureRecord rec = features.get(i);
             try {
-                MapFeature feature = new MapFeature();
-                feature.setId(generateId());
-                feature.setLayerId(layerId);
-                feature.setSourceId(source.getId());
-                feature.setProperties(rec.propertiesJson());
-                // geometry 通过 SQL 写入（需要 PostGIS 函数）
-                // 此处简化：直接存储 GeoJSON，由数据库触发器或应用层转换
-                feature.setGeometry(rec.geometryGeoJson());
-                featureMapper.insert(feature);
+                // 使用 PostGIS 函数写入几何：ST_GeomFromGeoJSON + ST_Transform
+                // 先验证几何有效性
+                String geomJson = rec.geometryGeoJson();
+                String propsJson = rec.propertiesJson();
+
+                // 通过 Mapper 的自定义 SQL 写入（带 PostGIS 函数）
+                featureMapper.insertWithGeometry(
+                        IdUtils.snowflakeId(),
+                        layerId,
+                        source.getId(),
+                        propsJson,
+                        geomJson,
+                        sridStr
+                );
                 imported++;
             } catch (Exception e) {
                 errors.add("feature[" + i + "]: " + e.getMessage());
-                if (errors.size() >= 100) break; // 最多记录 100 条错误
+                if (errors.size() >= 100) break;
             }
         }
 
-        // 更新统计
         source.markCompleted(imported);
         source.getEntity().setMessage(errors.isEmpty() ? null : String.join("\n", errors));
         sourceRepository.update(source);
@@ -100,6 +100,9 @@ public class ImportService {
         layer.incrementFeatureCount(imported);
         layer.incrementSourceCount();
         layerRepository.update(layer);
+
+        // 失效 MVT 缓存（如果有 MvtService）
+        // mvtService.invalidateLayerCache(layerId);  // 由 TileController 层处理
 
         log.info("Vector imported: sourceId={}, format={}, imported={}/{}", source.getId(), format, imported, features.size());
         return source;
@@ -211,10 +214,5 @@ public class ImportService {
         } catch (NumberFormatException e) {
             return null;
         }
-    }
-
-    private Long generateId() {
-        // 简化的 Snowflake ID 生成
-        return System.currentTimeMillis() << 16 | (Thread.currentThread().getId() & 0xFFFF);
     }
 }

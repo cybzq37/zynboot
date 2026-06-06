@@ -6,16 +6,19 @@ import com.zynboot.map.infrastructure.entity.MapInstance;
 import com.zynboot.map.infrastructure.entity.MapInstanceLayer;
 import com.zynboot.map.infrastructure.entity.MapPublish;
 import com.zynboot.map.infrastructure.entity.MapLayerSource;
+import com.zynboot.map.infrastructure.entity.MapSourceTile;
 import com.zynboot.map.infrastructure.mapper.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zynboot.infra.redis.RedisClient;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
-/**
- * 公开访问入口（无需登录）。
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/map/public")
@@ -25,6 +28,11 @@ public class PublicAccessController {
     private final MapInstanceMapper instanceMapper;
     private final MapInstanceLayerMapper instanceLayerMapper;
     private final MapLayerSourceMapper sourceMapper;
+    private final MapSourceTileMapper tileMapper;
+    private final RedisClient redisClient;
+
+    @Value("${zyn.map.raster.root-path:./map-data/raster}")
+    private String rasterRootPath;
 
     @GetMapping("/{publishId}")
     public ApiResponse<MapInstance> getPublicMap(@PathVariable String publishId) {
@@ -63,17 +71,39 @@ public class PublicAccessController {
             @PathVariable int x,
             @PathVariable int y,
             jakarta.servlet.http.HttpServletResponse response) throws Exception {
-        // 验证发布有效
+
         MapPublish pub = publishMapper.selectById(publishId);
         if (pub == null || !Boolean.TRUE.equals(pub.getIsActive())) {
             response.setStatus(404);
             return;
         }
-        // 转发到 TileController
-        // 简化实现：直接返回 200（实际应代理到 TileController）
-        response.setStatus(200);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"message\":\"public tile access ok\"}");
+
+        // 查找 source 并读取本地瓦片
+        MapLayerSource source = sourceMapper.selectById(sourceId);
+        if (source == null) {
+            response.setStatus(404);
+            return;
+        }
+
+        MapSourceTile tile = tileMapper.selectOne(
+                new LambdaQueryWrapper<MapSourceTile>().eq(MapSourceTile::getSourceId, sourceId));
+        if (tile == null || !"COMPLETED".equals(tile.getStatus())) {
+            response.setStatus(204);
+            return;
+        }
+
+        String tilePath = tile.getPath() != null ? tile.getPath() : sourceId + "/tiles";
+        Path filePath = Paths.get(rasterRootPath, source.getLayerId(), tilePath,
+                String.valueOf(z), String.valueOf(x), y + ".png");
+
+        if (!Files.exists(filePath)) {
+            response.setStatus(204);
+            return;
+        }
+
+        response.setContentType("image/png");
+        response.setHeader("Cache-Control", "public, max-age=300");
+        Files.copy(filePath, response.getOutputStream());
     }
 
     public record PublicMapConfig(MapInstance instance, List<MapInstanceLayer> layers) {}

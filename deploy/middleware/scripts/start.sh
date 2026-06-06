@@ -6,11 +6,15 @@
 #   ./start.sh postgres redis             # 检查指定服务
 #   ./start.sh -f                         # 重建全部容器
 #   ./start.sh -f postgres                # 重建指定容器
+#   ./start.sh -b                         # 重建镜像 + 容器
+#   ./start.sh -b postgres                # 重建指定镜像 + 容器
 #
 # 行为:
 #   健康运行 → 跳过
 #   不健康   → 重启
 #   未启动   → 创建并启动
+#   -f       → 强制重建容器
+#   -b       → 重建镜像 + 强制重建容器
 # ----------------------------------------------------------
 cd "$(dirname "$0")/.."
 
@@ -32,21 +36,21 @@ chown -R 1000:1000 kafka/data elasticsearch/data elasticsearch/logs
 
 # 解析参数
 FORCE_RECREATE=false
+BUILD=false
 SERVICES=()
 for arg in "$@"; do
-  if [ "$arg" = "--force-recreate" ] || [ "$arg" = "-f" ]; then
-    FORCE_RECREATE=true
-  else
-    SERVICES+=("$arg")
-  fi
+  case "$arg" in
+    --force-recreate|-f) FORCE_RECREATE=true ;;
+    --build|-b)          FORCE_RECREATE=true; BUILD=true ;;
+    *)                   SERVICES+=("$arg") ;;
+  esac
 done
 
 # 获取容器状态
-# 返回: healthy / unhealthy / starting / running / stopped
 get_status() {
   local svc="$1"
   local container
-  container=$(docker-compose ps -q "$svc" 2>/dev/null)
+  container=$(docker compose ps -q "$svc" 2>/dev/null)
   if [ -z "$container" ]; then
     echo "stopped"
     return
@@ -75,24 +79,28 @@ process_service() {
       ;;
     unhealthy|running)
       echo "  ↻ $svc ($status, restarting)"
-      docker-compose restart "$svc" > /dev/null 2>&1
+      docker compose restart "$svc" > /dev/null 2>&1
       ;;
     stopped)
       echo "  ▶ $svc (creating)"
-      docker-compose up -d "$svc" > /dev/null 2>&1
+      docker compose up -d "$svc" > /dev/null 2>&1
       ;;
   esac
 }
 
 # 执行
-if [ "$FORCE_RECREATE" = true ]; then
+if [ "$BUILD" = true ]; then
+  echo "重建镜像..."
+  docker compose build "${SERVICES[@]}" --quiet
   echo "重建容器..."
-  docker-compose up -d --force-recreate "${SERVICES[@]}"
+  docker compose up -d --force-recreate "${SERVICES[@]}"
+elif [ "$FORCE_RECREATE" = true ]; then
+  echo "重建容器..."
+  docker compose up -d --force-recreate "${SERVICES[@]}"
 else
   if [ ${#SERVICES[@]} -eq 0 ]; then
-    # 未指定服务：检查全部
     echo "检查全部服务:"
-    SERVICES=($(docker-compose config --services 2>/dev/null))
+    SERVICES=($(docker compose config --services 2>/dev/null))
   else
     echo "检查指定服务:"
   fi

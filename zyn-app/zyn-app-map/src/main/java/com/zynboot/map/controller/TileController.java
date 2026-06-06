@@ -203,7 +203,8 @@ public class TileController {
             return null;
         }
 
-        String url = buildExternalUrl(proxy, z, x, y, format);
+        String sourceType = source.getType();
+        String url = buildExternalUrl(proxy, sourceType, z, x, y, format);
         if (url == null) return null;
 
         try {
@@ -226,11 +227,46 @@ public class TileController {
         }
     }
 
-    private String buildExternalUrl(MapSourceProxy proxy, int z, int x, int y, String format) {
+    private String buildExternalUrl(MapSourceProxy proxy, String sourceType, int z, int x, int y, String format) {
         String baseUrl = proxy.getUrl();
         if (baseUrl == null) return null;
-        // 默认 XYZ 模式
-        return baseUrl.replaceAll("/$", "") + "/" + z + "/" + x + "/" + y + "." + format;
+        String base = baseUrl.replaceAll("/$", "");
+
+        return switch (sourceType) {
+            case "WMTS" -> {
+                String layer = proxy.getWmtsLayer() != null ? proxy.getWmtsLayer() : "";
+                String style = proxy.getWmtsStyle() != null ? proxy.getWmtsStyle() : "default";
+                String matrixSet = proxy.getWmtsMatrixSet() != null ? proxy.getWmtsMatrixSet() : "default";
+                String fmt = proxy.getWmtsFormat() != null ? proxy.getWmtsFormat() : "image/" + format;
+                yield base + "?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile"
+                        + "&LAYER=" + layer
+                        + "&STYLE=" + style
+                        + "&TILEMATRIXSET=" + matrixSet
+                        + "&TILEMATRIX=" + z
+                        + "&TILEROW=" + y
+                        + "&TILECOL=" + x
+                        + "&FORMAT=" + fmt;
+            }
+            case "WMS" -> {
+                // WMS: z/x/y → BBOX 计算（简化实现，Web Mercator）
+                double resolution = 40075016.68557849 / (256 * Math.pow(2, z));
+                double minx = x * 256 * resolution - 20037508.342789244;
+                double miny = 20037508.342789244 - (y + 1) * 256 * resolution;
+                double maxx = (x + 1) * 256 * resolution - 20037508.342789244;
+                double maxy = 20037508.342789244 - y * 256 * resolution;
+                String layers = proxy.getWmtsLayer() != null ? proxy.getWmtsLayer() : "";
+                yield base + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap"
+                        + "&LAYERS=" + layers
+                        + "&BBOX=" + minx + "," + miny + "," + maxx + "," + maxy
+                        + "&SRS=EPSG:3857"
+                        + "&WIDTH=256&HEIGHT=256"
+                        + "&FORMAT=image/" + format;
+            }
+            // TMS: Y 轴翻转
+            case "TMS" -> base + "/" + z + "/" + x + "/" + ((1 << z) - 1 - y) + "." + format;
+            // XYZ: 标准
+            default -> base + "/" + z + "/" + x + "/" + y + "." + format;
+        };
     }
 
     private void attachAuth(Request.Builder builder, MapSourceProxy proxy) {

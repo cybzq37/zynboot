@@ -41,24 +41,42 @@ public class CsvImporter implements VectorImporter {
             }
 
             String line;
+            int rowNum = 1;
+            List<String> errors = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
+                rowNum++;
                 if (line.isBlank()) continue;
                 String[] values = parseCsvLine(line);
-                if (values.length <= Math.max(lngIdx, latIdx)) continue;
-
-                double lng = Double.parseDouble(values[lngIdx].trim());
-                double lat = Double.parseDouble(values[latIdx].trim());
-
-                Map<String, Object> props = new LinkedHashMap<>();
-                for (int i = 0; i < headers.length; i++) {
-                    if (i != lngIdx && i != latIdx && i < values.length) {
-                        props.put(headers[i].trim(), values[i].trim());
-                    }
+                if (values.length <= Math.max(lngIdx, latIdx)) {
+                    errors.add("row[" + rowNum + "]: 列数不足");
+                    continue;
                 }
 
-                String propsJson = MAPPER.writeValueAsString(props);
-                String geomJson = String.format("{\"type\":\"Point\",\"coordinates\":[%s,%s]}", lng, lat);
-                records.add(new FeatureRecord(propsJson, geomJson));
+                try {
+                    double lng = Double.parseDouble(values[lngIdx].trim());
+                    double lat = Double.parseDouble(values[latIdx].trim());
+
+                    if (lng < -180 || lng > 180 || lat < -90 || lat > 90) {
+                        errors.add("row[" + rowNum + "]: 坐标越界 (" + lng + "," + lat + ")");
+                        continue;
+                    }
+
+                    Map<String, Object> props = new LinkedHashMap<>();
+                    for (int i = 0; i < headers.length; i++) {
+                        if (i != lngIdx && i != latIdx && i < values.length) {
+                            props.put(headers[i].trim(), values[i].trim());
+                        }
+                    }
+
+                    String propsJson = MAPPER.writeValueAsString(props);
+                    String geomJson = String.format("{\"type\":\"Point\",\"coordinates\":[%s,%s]}", lng, lat);
+                    records.add(new FeatureRecord(propsJson, geomJson));
+                } catch (NumberFormatException e) {
+                    errors.add("row[" + rowNum + "]: 数值解析失败 - " + e.getMessage());
+                }
+            }
+            if (!errors.isEmpty()) {
+                log.warn("CSV import warnings: {}", errors.size());
             }
         }
         log.info("CSV parsed: {} features", records.size());

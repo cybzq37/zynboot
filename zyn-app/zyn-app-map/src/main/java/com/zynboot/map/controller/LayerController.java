@@ -5,10 +5,17 @@ import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.map.command.layer.LayerSaveCmd;
 import com.zynboot.map.domain.aggregate.LayerAggregate;
 import com.zynboot.map.domain.repository.LayerRepository;
+import com.zynboot.map.domain.repository.SourceRepository;
 import com.zynboot.map.handler.query.LayerQueryHandler;
+import com.zynboot.map.infrastructure.entity.MapLayerField;
+import com.zynboot.map.infrastructure.entity.MapLayerStyle;
+import com.zynboot.map.infrastructure.entity.MapLayerVersion;
 import com.zynboot.map.response.layer.LayerRes;
+import com.zynboot.map.infrastructure.mapper.*;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,7 +26,11 @@ import java.util.List;
 public class LayerController {
 
     private final LayerRepository layerRepository;
+    private final SourceRepository sourceRepository;
     private final LayerQueryHandler layerQueryHandler;
+    private final MapLayerFieldMapper fieldMapper;
+    private final MapLayerStyleMapper styleMapper;
+    private final MapLayerVersionMapper versionMapper;
 
     @GetMapping
     public ApiResponse<List<LayerRes>> list(@RequestParam(required = false) String groupId) {
@@ -56,8 +67,18 @@ public class LayerController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ApiResponse<Void> delete(@PathVariable String id) {
+        layerRepository.findById(id)
+                .orElseThrow(() -> BizException.notFound("图层"));
+
+        // 级联删除：source → field → style → version
+        sourceRepository.findByLayerId(id).forEach(s -> sourceRepository.delete(s.getId()));
+        fieldMapper.delete(new LambdaQueryWrapper<MapLayerField>().eq(MapLayerField::getLayerId, id));
+        styleMapper.delete(new LambdaQueryWrapper<MapLayerStyle>().eq(MapLayerStyle::getLayerId, id));
+        versionMapper.delete(new LambdaQueryWrapper<MapLayerVersion>().eq(MapLayerVersion::getLayerId, id));
         layerRepository.delete(id);
+
         return ApiResponse.ok(null);
     }
 }
