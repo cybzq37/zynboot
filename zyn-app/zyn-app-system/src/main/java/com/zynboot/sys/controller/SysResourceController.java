@@ -9,13 +9,15 @@ import com.zynboot.sys.domain.repository.ResourceRepository;
 import com.zynboot.sys.response.resource.ResourceRes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/resource")
+@ApiVersion("1")
+@RequestMapping("/resource")
 public class SysResourceController {
 
     private final ResourceRepository resourceRepository;

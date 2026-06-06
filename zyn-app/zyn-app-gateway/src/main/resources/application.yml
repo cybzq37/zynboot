@@ -67,7 +67,7 @@ zyn:
   gateway:
     auth:
       exclude-paths:
-        - /sys/api/v1/auth/login
+        - /sys/v1/auth/login
         - /actuator/**
         - /v3/api-docs/**
         - /swagger-ui/**

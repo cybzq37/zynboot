@@ -5,19 +5,18 @@ import java.lang.annotation.*;
 /**
  * API 版本注解。
  * <p>
- * 标注在 Controller 类或方法上，自动映射到 URL 路径前缀。
- * 例如 {@code @ApiVersion("1")} 会将 {@code /api/user} 映射到 {@code /api/v1/user}。
+ * 标注在 Controller 类或方法上，自动映射到 URL 路径前缀 {@code /v{version}}。
  *
  * <pre>
  * {@literal @}RestController
- * {@literal @}RequestMapping("/api/user")
+ * {@literal @}RequestMapping("/user")
  * {@literal @}ApiVersion("1")
- * public class UserV1Controller { ... }
+ * public class UserV1Controller { ... }   // → /v1/user
  *
  * {@literal @}RestController
- * {@literal @}RequestMapping("/api/user")
+ * {@literal @}RequestMapping("/user")
  * {@literal @}ApiVersion("2")
- * public class UserV2Controller { ... }
+ * public class UserV2Controller { ... }   // → /v2/user
  * </pre>
  */
 @Target({ElementType.TYPE, ElementType.METHOD})

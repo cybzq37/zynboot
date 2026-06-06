@@ -8,11 +8,13 @@ import com.zynboot.sys.response.user.UserInfoRes;
 import cn.dev33.satoken.stp.StpUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/auth")
+@ApiVersion("1")
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthCommandHandler authService;

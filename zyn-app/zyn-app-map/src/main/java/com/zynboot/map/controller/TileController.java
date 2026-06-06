@@ -22,6 +22,8 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,7 +40,8 @@ import java.time.Duration;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map")
+@ApiVersion("1")
+@RequestMapping("/map")
 public class TileController {
 
     private final SourceRepository sourceRepository;

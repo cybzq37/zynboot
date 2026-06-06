@@ -7,11 +7,13 @@ import com.zynboot.map.infrastructure.mapper.MapSourceProxyMapper;
 import com.zynboot.map.service.ProxyHealthCheckService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map/source")
+@ApiVersion("1")
+@RequestMapping("/map/source")
 public class ProxyHealthController {
 
     private final MapSourceProxyMapper proxyMapper;

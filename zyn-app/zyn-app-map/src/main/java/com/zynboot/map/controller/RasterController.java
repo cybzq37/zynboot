@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
@@ -20,7 +22,8 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map/source")
+@ApiVersion("1")
+@RequestMapping("/map/source")
 public class RasterController {
 
     private final SourceRepository sourceRepository;

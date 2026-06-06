@@ -20,6 +20,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.List;
 import java.util.Map;
 
@@ -29,7 +31,8 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map")
+@ApiVersion("1")
+@RequestMapping("/map")
 public class ExportController {
 
     private final LayerRepository layerRepository;

@@ -11,13 +11,15 @@ import com.zynboot.sys.response.org.OrgRes;
 import com.zynboot.sys.response.org.OrgTreeRes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/org")
+@ApiVersion("1")
+@RequestMapping("/org")
 public class SysOrganizationController {
 
     private final OrgQueryHandler orgQueryHandler;

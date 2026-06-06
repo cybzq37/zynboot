@@ -1,5 +1,6 @@
 package com.zynboot.app.controller;
 
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.sys.api.SysAuthApi;
 import com.zynboot.sys.api.SysUserApi;
@@ -13,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/sys-demo")
+@ApiVersion("1")
+@RequestMapping("/sys-demo")
 public class SysDemoController {
 
     private final SysUserApi sysUserApi;

@@ -15,7 +15,7 @@ import java.util.Map;
 @Configuration
 public class SaTokenConfig {
 
-    @Value("${zyn.gateway.auth.exclude-paths:/sys/api/v1/auth/login,/actuator/**,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html}")
+    @Value("${zyn.gateway.auth.exclude-paths:/sys/v1/auth/login,/actuator/**,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html}")
     private List<String> excludePaths;
 
     @Bean

@@ -2,6 +2,7 @@ package com.zynboot.app.controller;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.zynboot.app.dto.HealthDto;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -15,7 +16,8 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/template")
+@ApiVersion("1")
+@RequestMapping("/template")
 @Profile("dev")
 public class TemplateController {
 

@@ -5,6 +5,8 @@ import com.zynboot.map.infrastructure.mapper.MapSpatialMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +15,8 @@ import java.util.Map;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map")
+@ApiVersion("1")
+@RequestMapping("/map")
 public class SearchController {
 
     private final MapSpatialMapper spatialMapper;

@@ -1,6 +1,7 @@
 package com.zynboot.app.controller;
 
 import com.zynboot.infra.redis.RedisClient;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,8 @@ import java.time.Duration;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/demo/redis")
+@ApiVersion("1")
+@RequestMapping("/demo/redis")
 public class RedisDemoController {
 
     private RedisClient redisClient;

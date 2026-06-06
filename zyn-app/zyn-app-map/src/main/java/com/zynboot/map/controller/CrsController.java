@@ -10,11 +10,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.Arrays;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/map/crs")
+@ApiVersion("1")
+@RequestMapping("/map/crs")
 public class CrsController {
 
     @GetMapping("/presets")

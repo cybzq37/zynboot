@@ -12,13 +12,15 @@ import com.zynboot.sys.response.permission.MenuTreeRes;
 import com.zynboot.sys.response.permission.PermissionRes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/permission")
+@ApiVersion("1")
+@RequestMapping("/permission")
 public class SysPermissionController {
 
     private final PermissionQueryHandler permissionQueryHandler;

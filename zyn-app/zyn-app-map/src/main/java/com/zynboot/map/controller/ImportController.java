@@ -13,12 +13,14 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map")
+@ApiVersion("1")
+@RequestMapping("/map")
 public class ImportController {
 
     private final ImportService importService;
@@ -94,6 +96,21 @@ public class ImportController {
         }
     }
 
+    // ── Elasticsearch 注册 ─────────────────────────────────
+
+    @PostMapping("/import/elasticsearch")
+    public ApiResponse<SourceAggregate> registerElasticsearch(@Valid @RequestBody EsImportCmd cmd) {
+        try {
+            SourceAggregate source = importService.registerElasticsearch(
+                    cmd.getLayerId(), cmd.getSourceName(), cmd.getDataSourceId(),
+                    cmd.getIndexName(), cmd.getGeomField(), cmd.getSourceSrid());
+            return ApiResponse.ok(source);
+        } catch (Exception e) {
+            log.error("Elasticsearch register failed", e);
+            throw BizException.badRequest("注册失败: " + e.getMessage());
+        }
+    }
+
     // ── DTO ─────────────────────────────────────────────────
 
     @Data
@@ -117,6 +134,18 @@ public class ImportController {
         @NotBlank String externalTable;
         String externalGeomCol;
         String externalIdCol;
+        @NotBlank String sourceSrid;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class EsImportCmd {
+        @NotBlank String layerId;
+        String sourceName;
+        @NotBlank String dataSourceId;
+        @NotBlank String indexName;        // ES 索引名
+        String geomField;                  // geo_point 字段名（默认 "location"）
         @NotBlank String sourceSrid;
     }
 }

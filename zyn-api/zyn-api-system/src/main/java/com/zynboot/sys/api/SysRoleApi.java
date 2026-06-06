@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "zyn-sys", contextId = "SysRoleApi", path = "/api/v1/role")
+@FeignClient(name = "zyn-sys", contextId = "SysRoleApi", path = "/role")
 public interface SysRoleApi {
 
     @GetMapping

@@ -11,11 +11,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map/group")
+@ApiVersion("1")
+@RequestMapping("/map/group")
 public class LayerGroupController {
 
     private final LayerGroupRepository groupRepository;

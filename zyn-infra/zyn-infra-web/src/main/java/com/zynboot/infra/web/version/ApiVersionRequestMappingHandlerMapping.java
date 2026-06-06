@@ -12,8 +12,8 @@ import java.lang.reflect.Method;
  * 支持 {@link ApiVersion} 注解的 RequestMappingHandlerMapping。
  * <p>
  * 将 {@code @ApiVersion("1")} 映射为 URL 前缀 {@code /v1}，
- * 使得 {@code @RequestMapping("/api/user") + @ApiVersion("1")}
- * 实际匹配 {@code /api/v1/user}。
+ * 使得 {@code @RequestMapping("/user") + @ApiVersion("1")}
+ * 实际匹配 {@code /v1/user}。
  */
 public class ApiVersionRequestMappingHandlerMapping extends RequestMappingHandlerMapping {
 

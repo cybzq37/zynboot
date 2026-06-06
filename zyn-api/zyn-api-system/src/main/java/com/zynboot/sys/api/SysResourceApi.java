@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "zyn-sys", contextId = "SysResourceApi", path = "/api/v1/resource")
+@FeignClient(name = "zyn-sys", contextId = "SysResourceApi", path = "/resource")
 public interface SysResourceApi {
 
     @GetMapping

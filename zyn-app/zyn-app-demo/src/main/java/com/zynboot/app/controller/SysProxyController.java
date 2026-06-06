@@ -1,5 +1,6 @@
 package com.zynboot.app.controller;
 
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.sys.api.*;
 import com.zynboot.sys.command.user.LoginCmd;
@@ -31,7 +32,8 @@ import java.util.List;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/sys-proxy")
+@ApiVersion("1")
+@RequestMapping("/sys-proxy")
 public class SysProxyController {
 
     private final SysAuthApi authApi;

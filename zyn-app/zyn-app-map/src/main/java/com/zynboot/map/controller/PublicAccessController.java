@@ -17,11 +17,14 @@ import org.springframework.web.bind.annotation.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map/public")
+@ApiVersion("1")
+@RequestMapping("/map/public")
 public class PublicAccessController {
 
     private final MapPublishMapper publishMapper;

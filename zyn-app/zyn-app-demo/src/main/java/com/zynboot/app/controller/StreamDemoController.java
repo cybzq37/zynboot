@@ -1,6 +1,7 @@
 package com.zynboot.app.controller;
 
 import com.zynboot.infra.kafka.MessageClient;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.sys.event.SysEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,8 @@ import java.util.function.Consumer;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/demo/event")
+@ApiVersion("1")
+@RequestMapping("/demo/event")
 public class StreamDemoController {
 
     private MessageClient messageClient;

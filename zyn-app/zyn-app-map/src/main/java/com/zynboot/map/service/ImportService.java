@@ -195,6 +195,31 @@ public class ImportService {
         return source;
     }
 
+    // ── Elasticsearch 注册 ───────────────────────────────
+
+    @Transactional
+    public SourceAggregate registerElasticsearch(String layerId, String sourceName,
+                                                  String dataSourceId, String indexName,
+                                                  String geomField, String sourceSrid) {
+        LayerAggregate layer = layerRepository.findById(layerId)
+                .orElseThrow(() -> new IllegalArgumentException("图层不存在: " + layerId));
+
+        SourceAggregate source = SourceAggregate.create(layerId, sourceName, "ELASTICSEARCH", null);
+        source.getEntity().setSourceSrid(parseSrid(sourceSrid));
+        source.getEntity().setTargetSrid(layer.getTargetSrid());
+        source.getEntity().setDataSourceId(dataSourceId);
+        source.getEntity().setExternalTable(indexName);        // ES 索引名
+        source.getEntity().setExternalGeomCol(geomField != null ? geomField : "location");
+        source.markCompleted(0);
+        sourceRepository.save(source);
+
+        layer.incrementSourceCount();
+        layerRepository.update(layer);
+
+        log.info("ES source registered: sourceId={}, index={}", source.getId(), indexName);
+        return source;
+    }
+
     // ── 内部方法 ───────────────────────────────────────────
 
     private String detectFormat(String filename) {

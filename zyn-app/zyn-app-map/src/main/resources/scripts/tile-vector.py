@@ -149,7 +149,7 @@ def main():
     print(f"  文件: {output_path} ({size_mb:.1f} MB)")
     print(f"  瓦片数: {tile_count}")
     print(f"  缩放级别: {args.min_zoom} - {args.max_zoom}")
-    print(f"  前端: /api/v1/map/mvt/mbtiles/{{layerId}}/{{z}}/{{x}}/{{y}}.pbf")
+    print(f"  前端: /v1/map/mvt/mbtiles/{{layerId}}/{{z}}/{{x}}/{{y}}.pbf")
     print(f"==============================")
 
 

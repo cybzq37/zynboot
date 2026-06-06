@@ -12,13 +12,15 @@ import com.zynboot.sys.query.role.RoleQuery;
 import com.zynboot.sys.response.role.RoleRes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/role")
+@ApiVersion("1")
+@RequestMapping("/role")
 public class SysRoleController {
 
     private final RoleQueryHandler roleQueryHandler;

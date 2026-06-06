@@ -9,7 +9,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "zyn-sys", contextId = "SysUserApi", path = "/api/v1/user")
+@FeignClient(name = "zyn-sys", contextId = "SysUserApi", path = "/user")
 public interface SysUserApi {
 
     @GetMapping

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -25,7 +26,8 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/file")
+@ApiVersion("1")
+@RequestMapping("/file")
 public class SysFileController {
 
     private final StorageService storageService;

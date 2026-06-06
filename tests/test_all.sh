@@ -86,7 +86,7 @@ fi
 if [ "$TEST_SVC" = true ]; then
 
 info "System 服务 - 登录"
-login_resp=$(curl -sf -X POST http://localhost:28081/api/v1/auth/login \
+login_resp=$(curl -sf -X POST http://localhost:28081/v1/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"username":"root","password":"Zyn@secure#99"}' 2>/dev/null)
 token=$(echo "$login_resp" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -94,12 +94,12 @@ token=$(echo "$login_resp" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4
 
 info "System 服务 - 用户列表"
 code=$(curl -sf -o /dev/null -w '%{http_code}' \
-  "http://localhost:28081/api/v1/user?pageNum=1&pageSize=5" \
+  "http://localhost:28081/v1/user?pageNum=1&pageSize=5" \
   -H "Authorization: $token" 2>/dev/null || echo '000')
 [ "$code" = "200" ] && pass "用户列表: $code" || fail "用户列表失败: $code"
 
 info "Gateway 路由 - 登录"
-gw_login=$(curl -sf -X POST http://localhost:28000/sys/api/v1/auth/login \
+gw_login=$(curl -sf -X POST http://localhost:28000/sys/v1/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"username":"root","password":"Zyn@secure#99"}' 2>/dev/null)
 gw_token=$(echo "$gw_login" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -107,13 +107,13 @@ gw_token=$(echo "$gw_login" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f
 
 info "Gateway 路由 - 用户列表"
 code=$(curl -sf -o /dev/null -w '%{http_code}' \
-  "http://localhost:28000/sys/api/v1/user?pageNum=1&pageSize=5" \
+  "http://localhost:28000/sys/v1/user?pageNum=1&pageSize=5" \
   -H "Authorization: $gw_token" 2>/dev/null || echo '000')
 [ "$code" = "200" ] && pass "Gateway 用户列表: $code" || fail "Gateway 用户列表失败: $code"
 
 info "Gateway 路由 - Demo 服务"
 code=$(curl -sf -o /dev/null -w '%{http_code}' \
-  http://localhost:28000/demo/api/v1/demo/health 2>/dev/null || echo '000')
+  http://localhost:28000/demo/v1/demo/health 2>/dev/null || echo '000')
 [ "$code" = "200" ] && pass "Gateway Demo 路由: $code" || fail "Gateway Demo 路由失败: $code"
 
 info "Nacos 服务注册"
@@ -121,13 +121,13 @@ echo -e "  ${YELLOW}⚠${NC} Nacos 3.x API 不兼容，暂未集成服务注册�
 
 info "Kafka 事件流 (Spring Cloud Stream)"
 # 通过 Demo 服务发送事件
-event_resp=$(curl -sf -X POST "http://localhost:28080/api/v1/demo/event/send?type=TEST&data=integration-test" \
+event_resp=$(curl -sf -X POST "http://localhost:28080/v1/demo/event/send?type=TEST&data=integration-test" \
   -H "Authorization: $token" 2>/dev/null || echo '')
 if echo "$event_resp" | grep -q "event sent"; then
   pass "事件发送成功"
   sleep 2
   # 查询已接收事件
-  events=$(curl -sf "http://localhost:28080/api/v1/demo/event/list" \
+  events=$(curl -sf "http://localhost:28080/v1/demo/event/list" \
     -H "Authorization: $token" 2>/dev/null || echo '')
   echo "$events" | grep -q "integration-test" && pass "事件消费成功" || fail "事件消费失败"
 else
@@ -151,7 +151,7 @@ if [ "$TEST_TRACE" = true ]; then
 
 info "SkyWalking - 服务列表"
 # 触发一次请求产生 trace
-curl -sf -X POST http://localhost:28000/sys/api/v1/auth/login \
+curl -sf -X POST http://localhost:28000/sys/v1/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"username":"root","password":"Zyn@secure#99"}' > /dev/null 2>&1
 sleep 5

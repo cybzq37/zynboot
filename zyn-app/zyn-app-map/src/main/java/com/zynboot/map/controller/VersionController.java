@@ -10,11 +10,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map")
+@ApiVersion("1")
+@RequestMapping("/map")
 public class VersionController {
 
     private final MapLayerVersionMapper mapper;

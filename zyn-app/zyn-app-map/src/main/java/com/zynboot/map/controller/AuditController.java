@@ -7,11 +7,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map/audit")
+@ApiVersion("1")
+@RequestMapping("/map/audit")
 public class AuditController {
 
     private final MapOperationLogMapper mapper;

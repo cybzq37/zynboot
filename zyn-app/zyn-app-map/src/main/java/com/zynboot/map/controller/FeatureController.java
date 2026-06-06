@@ -6,46 +6,73 @@ import com.zynboot.map.infrastructure.entity.MapFeature;
 import com.zynboot.map.infrastructure.mapper.MapFeatureMapper;
 import com.zynboot.map.infrastructure.mapper.MapSpatialMapper;
 import com.zynboot.map.service.MvtService;
+import com.zynboot.map.service.datasource.FeatureService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import com.zynboot.infra.web.version.ApiVersion;
+
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 要素 CRUD + 空间查询 + 聚类 + 全文搜索。
+ * 空间查询和搜索自动路由到 FILE / POSTGIS / ES。
+ */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/map")
+@ApiVersion("1")
+@RequestMapping("/map")
 public class FeatureController {
 
     private final MapFeatureMapper featureMapper;
     private final MapSpatialMapper spatialMapper;
     private final MvtService mvtService;
+    private final FeatureService featureService;
 
-    // ── CRUD ───────────────────────────────────────────────
+    // ── 查询（自动路由）────────────────────────────────────
 
     @GetMapping("/layer/{layerId}/feature")
-    public ApiResponse<List<MapFeature>> listByLayer(
+    public ApiResponse<?> listByLayer(
             @PathVariable String layerId,
             @RequestParam(required = false) String sourceId,
             @RequestParam(required = false) String bbox,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize) {
 
+        int offset = (pageNum - 1) * pageSize;
+
+        // bbox 空间查询：自动路由到 FILE / POSTGIS / ES
         if (bbox != null && !bbox.isBlank()) {
             String[] parts = bbox.split(",");
             if (parts.length == 4) {
-                return ApiResponse.ok(spatialMapper.findByBbox(
-                        layerId, parts[0], parts[1], parts[2], parts[3], pageSize, (pageNum - 1) * pageSize));
+                double[] bboxArr = new double[]{
+                        Double.parseDouble(parts[0]), Double.parseDouble(parts[1]),
+                        Double.parseDouble(parts[2]), Double.parseDouble(parts[3])};
+                return ApiResponse.ok(featureService.queryByBbox(layerId, bboxArr, pageSize, offset));
             }
         }
 
+        // 默认：查 map_feature（FILE 模式）
         LambdaQueryWrapper<MapFeature> wrapper = new LambdaQueryWrapper<MapFeature>()
                 .eq(MapFeature::getLayerId, layerId)
                 .eq(sourceId != null, MapFeature::getSourceId, sourceId)
-                .last("LIMIT " + pageSize + " OFFSET " + ((pageNum - 1) * pageSize));
+                .last("LIMIT " + pageSize + " OFFSET " + offset);
         return ApiResponse.ok(featureMapper.selectList(wrapper));
     }
+
+    @GetMapping("/layer/{layerId}/search")
+    public ApiResponse<List<Map<String, Object>>> search(
+            @PathVariable String layerId,
+            @RequestParam String query,
+            @RequestParam(defaultValue = "1") int pageNum,
+            @RequestParam(defaultValue = "20") int pageSize) {
+        int offset = (pageNum - 1) * pageSize;
+        return ApiResponse.ok(featureService.search(layerId, query, pageSize, offset));
+    }
+
+    // ── FILE 模式 CRUD ─────────────────────────────────────
 
     @GetMapping("/layer/{layerId}/feature/geojson")
     public ApiResponse<List<Map<String, Object>>> listAsGeoJson(

@@ -16,11 +16,13 @@ import com.zynboot.sys.util.PasswordUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import com.zynboot.infra.web.version.ApiVersion;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/user")
+@ApiVersion("1")
+@RequestMapping("/user")
 public class SysUserController {
 
     private final UserQueryHandler userQueryHandler;
