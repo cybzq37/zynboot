@@ -50,12 +50,12 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     public void save(RoleAggregate role) {
-        mapper.insert(role.getEntity());
+        mapper.insert(role.toEntity());
     }
 
     @Override
     public void update(RoleAggregate role) {
-        mapper.updateById(role.getEntity());
+        mapper.updateById(role.toEntity());
     }
 
     @Override

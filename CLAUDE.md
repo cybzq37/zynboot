@@ -44,24 +44,44 @@ zyn-kit          (utilities: Jackson, OkHttp, tree builders, ApiResponse, except
    ↓
 zyn-conf         (shared YAML config, no code — imported via spring.config.import)
    ↓
-zyn-infra        (infrastructure: redis, es, kafka, mybatis, storage, geo, web, satoken, exchange)
+zyn-infra        (infrastructure: exchange, redis, kafka, es, mybatis, storage, geo, web, satoken)
    ↓
 zyn-api          (API contracts: ExchangeClient interfaces, Cmd/Query/Res DTOs)
    ↓
 zyn-app          (deployable Spring Boot apps: zyn-app-system, zyn-app-demo)
 ```
 
-Infra sub-modules are independent of each other.
+The reactor modules are defined in the root `pom.xml` and `zyn-infra/pom.xml`. Infra sub-modules are independent of each other. The base package for all code is `com.zynboot`.
+
+> Note: the authoritative infra module list is the `<modules>` block in `zyn-infra/pom.xml`. If stray `target/`-only directories for non-listed modules reappear (e.g. from switching branches), they are stale build artifacts and can be safely deleted.
+
+### zyn-app-system DDD layout
+
+Each app follows a CQRS + DDD package structure under `com.zynboot.<app>`:
+
+```
+sys/
+├── controller/           ← REST controllers (implement the zyn-api *Api interfaces)
+├── handler/command/      ← write-side command handlers
+├── handler/query/        ← read-side query handlers
+├── domain/aggregate/     ← aggregate roots (*Aggregate) — business logic
+├── domain/repository/    ← domain repository interfaces
+├── domain/enums/
+├── infrastructure/entity/     ← MyBatis-Plus entities
+├── infrastructure/mapper/     ← MyBatis mappers
+├── infrastructure/repository/ ← domain repository implementations (*RepositoryImpl)
+└── config/
+```
 
 ## Key Patterns
 
-**CQRS + DDD**: API layer uses `Cmd` objects for writes, `Query` for reads. App layer has aggregate roots (`*Aggregate`) that encapsulate business logic, with domain repositories abstracting persistence.
+**CQRS + DDD**: API layer uses `Cmd` objects for writes, `Query` for reads. App layer has aggregate roots (`*Aggregate`) that encapsulate business logic, with domain repositories abstracting persistence from MyBatis mappers/entities.
 
 **Global response wrapping**: `GlobalResponseBodyAdvice` wraps all controller responses in `ApiResponse<T>`. Use `@IgnoreResponseWrap` to opt out. `GlobalExceptionHandler` catches all exceptions and returns `ErrorResponse`.
 
-**Declarative HTTP clients**: Interfaces annotated with `@ExchangeClient("serviceName")` + `@HttpExchange` are auto-scanned from `com.zyn` and registered as Spring beans. Service URLs configured under `zyn.exchange.services.<name>`. Use `@HttpQuery` to expand POJOs into query parameters (Spring 6.x workaround).
+**Declarative HTTP clients**: Interfaces annotated with `@ExchangeClient("serviceName")` + `@HttpExchange` are auto-scanned from the `com.zynboot` base package (see `ExchangeClientRegistrar`) and registered as Spring beans. Service URLs configured under `zyn.exchange.services.<name>`. Use `@HttpQuery` to expand POJOs into query parameters (Spring 6.x workaround, registered via SPI; native in Spring 7.1+).
 
-**Shared config**: Applications import `zyn-conf-common.yml` and `zyn-conf-{profile}.yml` via `spring.config.import`. Logging uses Log4j2 (Logback is globally excluded).
+**Shared config**: Applications import `zyn-conf-common.yml` and `zyn-conf-{profile}.yml` via `spring.config.import`. Logging uses Log4j2 + Disruptor (Logback is globally excluded).
 
 **Auto-configuration**: All infra modules use Spring Boot `@AutoConfiguration` registered in `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`, conditionally enabled via `@ConditionalOnProperty(prefix = "zyn.<module>", name = "enabled", matchIfMissing = true)`.
 

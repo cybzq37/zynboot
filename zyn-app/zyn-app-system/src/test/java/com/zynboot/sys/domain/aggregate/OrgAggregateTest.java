@@ -35,7 +35,7 @@ class OrgAggregateTest {
 
         org.setParentId("parent-001");
 
-        assertThat(org.getEntity().getParentId()).isEqualTo("parent-001");
+        assertThat(org.toEntity().getParentId()).isEqualTo("parent-001");
     }
 
     @Test
@@ -45,9 +45,9 @@ class OrgAggregateTest {
         org.updateInfo("研发中心", "123456", "a@b.com", "备注");
 
         assertThat(org.getOrgName()).isEqualTo("研发中心");
-        assertThat(org.getEntity().getPhone()).isEqualTo("123456");
-        assertThat(org.getEntity().getEmail()).isEqualTo("a@b.com");
-        assertThat(org.getEntity().getRemark()).isEqualTo("备注");
+        assertThat(org.toEntity().getPhone()).isEqualTo("123456");
+        assertThat(org.toEntity().getEmail()).isEqualTo("a@b.com");
+        assertThat(org.toEntity().getRemark()).isEqualTo("备注");
     }
 
     @Test
@@ -58,8 +58,8 @@ class OrgAggregateTest {
         org.updateInfo("新名称", null, null, "新备注");
 
         assertThat(org.getOrgName()).isEqualTo("新名称");
-        assertThat(org.getEntity().getPhone()).isEqualTo("123456");
-        assertThat(org.getEntity().getEmail()).isEqualTo("a@b.com");
-        assertThat(org.getEntity().getRemark()).isEqualTo("新备注");
+        assertThat(org.toEntity().getPhone()).isEqualTo("123456");
+        assertThat(org.toEntity().getEmail()).isEqualTo("a@b.com");
+        assertThat(org.toEntity().getRemark()).isEqualTo("新备注");
     }
 }

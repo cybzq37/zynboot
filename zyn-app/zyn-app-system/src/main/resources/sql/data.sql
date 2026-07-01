@@ -69,6 +69,17 @@ INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, stat
 ('bfc26fad4bf740dd814c601f3b9ee311', 'dae64518f2a8424a94fe57d87ff44618', 'system:org:update', '组织编辑', 3, 1),
 ('f1a3cc5c94ed4921a4fd6f993e256640', 'dae64518f2a8424a94fe57d87ff44618', 'system:org:delete', '组织删除', 3, 1);
 
+-- 资源管理菜单
+INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, path, sort, status) VALUES
+('fa00000000004a1fbe01000000000001', '65e2290d58b84b0eb97103c19cc401c4', 'system:resource', '资源管理', 2, '/system/resource', 6, 1);
+
+-- 资源管理按钮
+INSERT INTO sys_permission (id, parent_id, perm_code, perm_name, perm_type, status) VALUES
+('fa00000000004a1fbe01000000000002', 'fa00000000004a1fbe01000000000001', 'system:resource:query',  '资源查询', 3, 1),
+('fa00000000004a1fbe01000000000003', 'fa00000000004a1fbe01000000000001', 'system:resource:create', '资源新增', 3, 1),
+('fa00000000004a1fbe01000000000004', 'fa00000000004a1fbe01000000000001', 'system:resource:update', '资源编辑', 3, 1),
+('fa00000000004a1fbe01000000000005', 'fa00000000004a1fbe01000000000001', 'system:resource:delete', '资源删除', 3, 1);
+
 -- admin 拥有全部权限
 INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES
 ('e61682be6ce34144ad44d69353de2be8', 'cb05b80a47244344a812c33c3356ed4f', '65e2290d58b84b0eb97103c19cc401c4'),
@@ -92,6 +103,11 @@ INSERT INTO sys_role_permission (id, role_id, permission_id) VALUES
 ('7cc7c087157d480eaad55ecc3efe0381', 'cb05b80a47244344a812c33c3356ed4f', 'f0c6dbc597a241c1b53940eb8d64c587'),
 ('0e73911ee8f446d38af674b0a035b0db', 'cb05b80a47244344a812c33c3356ed4f', 'fae3b236392c40689c198cf20ac9d575'),
 ('72bb55054bb642c7b84cf0096c659c61', 'cb05b80a47244344a812c33c3356ed4f', 'bfc26fad4bf740dd814c601f3b9ee311'),
-('9dc7d04cbc2746aea5b8bd2150c88620', 'cb05b80a47244344a812c33c3356ed4f', 'f1a3cc5c94ed4921a4fd6f993e256640');
+('9dc7d04cbc2746aea5b8bd2150c88620', 'cb05b80a47244344a812c33c3356ed4f', 'f1a3cc5c94ed4921a4fd6f993e256640'),
+('fb00000000004a1fbe01000000000001', 'cb05b80a47244344a812c33c3356ed4f', 'fa00000000004a1fbe01000000000001'),
+('fb00000000004a1fbe01000000000002', 'cb05b80a47244344a812c33c3356ed4f', 'fa00000000004a1fbe01000000000002'),
+('fb00000000004a1fbe01000000000003', 'cb05b80a47244344a812c33c3356ed4f', 'fa00000000004a1fbe01000000000003'),
+('fb00000000004a1fbe01000000000004', 'cb05b80a47244344a812c33c3356ed4f', 'fa00000000004a1fbe01000000000004'),
+('fb00000000004a1fbe01000000000005', 'cb05b80a47244344a812c33c3356ed4f', 'fa00000000004a1fbe01000000000005');
 
 -- root 角色不需要权限关联（代码里直接绕过）

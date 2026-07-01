@@ -56,12 +56,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public void save(UserAggregate user) {
-        mapper.insert(user.getEntity());
+        mapper.insert(user.toEntity());
     }
 
     @Override
     public void update(UserAggregate user) {
-        mapper.updateById(user.getEntity());
+        mapper.updateById(user.toEntity());
     }
 
     @Override

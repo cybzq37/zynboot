@@ -15,7 +15,7 @@ class UserAggregateTest {
         assertThat(user.getUsername()).isEqualTo("admin");
         assertThat(user.getPassword()).isEqualTo("encoded_pwd");
         assertThat(user.getStatus()).isEqualTo(UserStatus.NORMAL.getCode());
-        assertThat(user.getEntity().getLoginAttempts()).isEqualTo(0);
+        assertThat(user.toEntity().getLoginAttempts()).isEqualTo(0);
     }
 
     @Test
@@ -60,21 +60,21 @@ class UserAggregateTest {
         user.updatePassword("new_encoded_pwd");
 
         assertThat(user.getPassword()).isEqualTo("new_encoded_pwd");
-        assertThat(user.getEntity().getPwdUpdateTime()).isNotNull();
+        assertThat(user.toEntity().getPwdUpdateTime()).isNotNull();
     }
 
     @Test
     void shouldResetAttemptsAndLockOnLoginSuccess() {
         UserAggregate user = UserAggregate.create("admin", "pwd");
-        user.getEntity().setLoginAttempts(3);
-        user.getEntity().setLockTime(java.time.LocalDateTime.now());
+        user.toEntity().setLoginAttempts(3);
+        user.toEntity().setLockTime(java.time.LocalDateTime.now());
 
         user.recordLoginSuccess("192.168.1.1");
 
-        assertThat(user.getEntity().getLoginAttempts()).isEqualTo(0);
-        assertThat(user.getEntity().getLockTime()).isNull();
-        assertThat(user.getEntity().getLoginIp()).isEqualTo("192.168.1.1");
-        assertThat(user.getEntity().getLoginTime()).isNotNull();
+        assertThat(user.toEntity().getLoginAttempts()).isEqualTo(0);
+        assertThat(user.toEntity().getLockTime()).isNull();
+        assertThat(user.toEntity().getLoginIp()).isEqualTo("192.168.1.1");
+        assertThat(user.toEntity().getLoginTime()).isNotNull();
     }
 
     @Test
@@ -84,7 +84,7 @@ class UserAggregateTest {
         user.recordLoginFailure(5);
         user.recordLoginFailure(5);
 
-        assertThat(user.getEntity().getLoginAttempts()).isEqualTo(2);
+        assertThat(user.toEntity().getLoginAttempts()).isEqualTo(2);
         assertThat(user.isLocked()).isFalse();
     }
 
@@ -96,18 +96,18 @@ class UserAggregateTest {
         user.recordLoginFailure(3);
         user.recordLoginFailure(3);
 
-        assertThat(user.getEntity().getLoginAttempts()).isEqualTo(3);
+        assertThat(user.toEntity().getLoginAttempts()).isEqualTo(3);
         assertThat(user.isLocked()).isTrue();
     }
 
     @Test
     void shouldHandleNullLoginAttemptsGracefully() {
         UserAggregate user = UserAggregate.create("admin", "pwd");
-        user.getEntity().setLoginAttempts(null);
+        user.toEntity().setLoginAttempts(null);
 
         user.recordLoginFailure(5);
 
-        assertThat(user.getEntity().getLoginAttempts()).isEqualTo(1);
+        assertThat(user.toEntity().getLoginAttempts()).isEqualTo(1);
     }
 
     @Test
@@ -124,15 +124,15 @@ class UserAggregateTest {
     void shouldEnableUserAndResetAttempts() {
         UserAggregate user = UserAggregate.create("admin", "pwd");
         user.disable();
-        user.getEntity().setLoginAttempts(3);
-        user.getEntity().setLockTime(java.time.LocalDateTime.now());
+        user.toEntity().setLoginAttempts(3);
+        user.toEntity().setLockTime(java.time.LocalDateTime.now());
 
         user.enable();
 
         assertThat(user.isDisabled()).isFalse();
         assertThat(user.getStatus()).isEqualTo(UserStatus.NORMAL.getCode());
-        assertThat(user.getEntity().getLoginAttempts()).isEqualTo(0);
-        assertThat(user.getEntity().getLockTime()).isNull();
+        assertThat(user.toEntity().getLoginAttempts()).isEqualTo(0);
+        assertThat(user.toEntity().getLockTime()).isNull();
     }
 
     @Test
@@ -151,7 +151,7 @@ class UserAggregateTest {
 
         assertThat(user.isLocked()).isFalse();
 
-        user.getEntity().setLockTime(java.time.LocalDateTime.now());
+        user.toEntity().setLockTime(java.time.LocalDateTime.now());
         assertThat(user.isLocked()).isTrue();
     }
 }

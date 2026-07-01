@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
  */
 public class UserAggregate {
 
+    /** 用户资料值对象，群组化 updateProfile 参数。 */
+    public record UserProfileVO(String nickname, String realName, String email,
+                                String phone, String avatar, Integer gender, String remark) {}
+
     private final SysUser entity;
 
     private UserAggregate(SysUser entity) {
@@ -29,8 +33,8 @@ public class UserAggregate {
         return new UserAggregate(user);
     }
 
-    /** 供 Repository 层持久化使用。 */
-    public SysUser getEntity() {
+    /** 供 Repository 层持久化使用，禁止业务层调用。 */
+    public SysUser toEntity() {
         return entity;
     }
 
@@ -74,15 +78,24 @@ public class UserAggregate {
         return entity.getStatus();
     }
 
+    public String getRemark() {
+        return entity.getRemark();
+    }
+
+    public void updateProfile(UserProfileVO profile) {
+        if (profile.nickname() != null) entity.setNickname(profile.nickname());
+        if (profile.realName() != null) entity.setRealName(profile.realName());
+        if (profile.email() != null) entity.setEmail(profile.email());
+        if (profile.phone() != null) entity.setPhone(profile.phone());
+        if (profile.avatar() != null) entity.setAvatar(profile.avatar());
+        if (profile.gender() != null) entity.setGender(profile.gender());
+        if (profile.remark() != null) entity.setRemark(profile.remark());
+    }
+
+    /** 重载：兼容旧调用（逐步迁移到 UserProfileVO）。 */
     public void updateProfile(String nickname, String realName, String email,
                               String phone, String avatar, Integer gender, String remark) {
-        if (nickname != null) entity.setNickname(nickname);
-        if (realName != null) entity.setRealName(realName);
-        if (email != null) entity.setEmail(email);
-        if (phone != null) entity.setPhone(phone);
-        if (avatar != null) entity.setAvatar(avatar);
-        if (gender != null) entity.setGender(gender);
-        if (remark != null) entity.setRemark(remark);
+        updateProfile(new UserProfileVO(nickname, realName, email, phone, avatar, gender, remark));
     }
 
     public void updatePassword(String encodedPassword) {
@@ -105,6 +118,21 @@ public class UserAggregate {
         }
     }
 
+    /**
+     * 手动锁定账户（管理员操作），记录锁定时间。
+     */
+    public void lock() {
+        entity.setLockTime(LocalDateTime.now());
+    }
+
+    /**
+     * 手动解锁账户，清除锁定状态与失败计数。
+     */
+    public void unlock() {
+        entity.setLockTime(null);
+        entity.setLoginAttempts(0);
+    }
+
     public void disable() {
         entity.setStatus(UserStatus.DISABLED.getCode());
     }
@@ -113,6 +141,13 @@ public class UserAggregate {
         entity.setStatus(UserStatus.NORMAL.getCode());
         entity.setLoginAttempts(0);
         entity.setLockTime(null);
+    }
+
+    /**
+     * 保留用户名（注册时预占），状态为待激活。
+     */
+    public void reserve() {
+        entity.setStatus(UserStatus.DISABLED.getCode());
     }
 
     public boolean isLocked() {

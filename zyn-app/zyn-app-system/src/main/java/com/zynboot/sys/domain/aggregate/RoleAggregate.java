@@ -25,8 +25,8 @@ public class RoleAggregate {
         return new RoleAggregate(role);
     }
 
-    /** 供 Repository 层持久化使用。 */
-    public SysRole getEntity() {
+    /** 供 Repository 层持久化使用，禁止业务层调用。 */
+    public SysRole toEntity() {
         return entity;
     }
 

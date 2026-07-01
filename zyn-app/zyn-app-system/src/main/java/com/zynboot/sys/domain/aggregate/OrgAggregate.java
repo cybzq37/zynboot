@@ -26,8 +26,8 @@ public class OrgAggregate {
         return new OrgAggregate(org);
     }
 
-    /** 供 Repository 层持久化使用。 */
-    public SysOrganization getEntity() {
+    /** 供 Repository 层持久化使用，禁止业务层调用。 */
+    public SysOrganization toEntity() {
         return entity;
     }
 

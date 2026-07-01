@@ -4,15 +4,15 @@
 #
 # 环境变量:
 #   SPRING_ACTIVE_PROFILES  - Spring Profile（默认 prod）
-#   JVM_XMS          - 初始堆大小（默认 512m）
-#   JVM_XMX          - 最大堆大小（默认 512m）
+#   JVM_XMS          - 初始堆大小（默认 1g）
+#   JVM_XMX          - 最大堆大小（默认 2g）
 #   JVM_OPTS         - 额外 JVM 参数
 # ----------------------------------------------------------
 set -e
 
 SPRING_ACTIVE_PROFILES=${SPRING_ACTIVE_PROFILES:-prod}
-JVM_XMS=${JVM_XMS:-512m}
-JVM_XMX=${JVM_XMX:-512m}
+JVM_XMS=${JVM_XMS:-1g}
+JVM_XMX=${JVM_XMX:-2g}
 
 APP_JAR=/app/app.jar
 
@@ -28,6 +28,11 @@ exec java \
   -Xmx$JVM_XMX \
   -XX:+UseG1GC \
   -XX:MaxGCPauseMillis=200 \
+  -XX:InitiatingHeapOccupancyPercent=35 \
+  -XX:+ParallelRefProcEnabled \
+  -XX:+UseStringDeduplication \
+  -XX:TieredStopAtLevel=4 \
+  -Xlog:gc*:file=logs/gc.log:time,level,tags:filecount=10,filesize=100m \
   -Djava.security.egd=file:/dev/./urandom \
   -Dfile.encoding=UTF-8 \
   -Duser.timezone=Asia/Shanghai \

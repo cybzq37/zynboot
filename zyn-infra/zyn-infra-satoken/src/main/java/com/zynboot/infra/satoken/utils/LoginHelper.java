@@ -35,10 +35,10 @@ public class LoginHelper {
      * 用户登录
      *
      * @param loginId   登录ID
-     * @param userId    用户ID
+     * @param userId    用户ID（UUID 字符串）
      * @param loginUser 登录用户对象
      */
-    public static void login(Object loginId, Long userId, Object loginUser) {
+    public static void login(Object loginId, String userId, Object loginUser) {
         loginByDevice(loginId, userId, loginUser, null);
     }
 
@@ -46,11 +46,11 @@ public class LoginHelper {
      * 用户登录（指定设备类型）
      *
      * @param loginId   登录ID
-     * @param userId    用户ID
+     * @param userId    用户ID（UUID 字符串）
      * @param loginUser 登录用户对象
      * @param device    设备类型
      */
-    public static void loginByDevice(Object loginId, Long userId, Object loginUser, String device) {
+    public static void loginByDevice(Object loginId, String userId, Object loginUser, String device) {
         if (loginId == null) {
             throw new IllegalArgumentException("loginId must not be null");
         }
@@ -98,9 +98,9 @@ public class LoginHelper {
     }
 
     /**
-     * 获取当前用户ID
+     * 获取当前用户ID（UUID 字符串）
      */
-    public static Long getUserId() {
+    public static String getUserId() {
         Object userId = SaHolder.getStorage().get(USER_ID_KEY);
         if (userId == null) {
             try {
@@ -111,13 +111,13 @@ public class LoginHelper {
                 return null;
             }
         }
-        return parseUserId(userId);
+        return userId == null ? null : String.valueOf(userId);
     }
 
     /**
      * 判断是否为超级管理员
      */
-    public static boolean isRoot(Long userId) {
+    public static boolean isRoot(String userId) {
         return userId != null && properties != null
                 && userId.equals(properties.getRootUserId());
     }
@@ -127,19 +127,5 @@ public class LoginHelper {
      */
     public static boolean isRoot() {
         return isRoot(getUserId());
-    }
-
-    private static Long parseUserId(Object userIdObj) {
-        if (userIdObj == null) {
-            return null;
-        }
-        if (userIdObj instanceof Number number) {
-            return number.longValue();
-        }
-        try {
-            return Long.parseLong(String.valueOf(userIdObj));
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 }

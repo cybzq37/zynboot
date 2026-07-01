@@ -12,6 +12,7 @@ import com.zynboot.sys.query.user.UserPageQuery;
 import com.zynboot.sys.response.PageRes;
 import com.zynboot.sys.response.user.UserRes;
 import com.zynboot.sys.util.PasswordUtils;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -27,6 +28,7 @@ public class SysUserController {
     private final UserRepository userRepository;
 
     @GetMapping
+    @SaCheckPermission("system:user:query")
     public ApiResponse<PageRes<UserRes>> page(UserPageQuery query) {
         Page<UserAggregate> result = userRepository.page(query);
         return ApiResponse.ok(new PageRes<>(
@@ -38,11 +40,13 @@ public class SysUserController {
     }
 
     @GetMapping("/{id}")
+    @SaCheckPermission("system:user:query")
     public ApiResponse<UserRes> getById(@PathVariable String id) {
         return ApiResponse.ok(userQueryHandler.findById(id));
     }
 
     @PostMapping
+    @SaCheckPermission("system:user:create")
     public ApiResponse<Void> create(@Valid @RequestBody UserSaveCmd cmd) {
         UserAggregate user = UserAggregate.create(cmd.getUsername(), PasswordUtils.encode(cmd.getPassword()));
         user.updateProfile(cmd.getNickname(), cmd.getRealName(), cmd.getEmail(),
@@ -54,6 +58,7 @@ public class SysUserController {
     }
 
     @PutMapping("/{id}")
+    @SaCheckPermission("system:user:update")
     public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody UserSaveCmd cmd) {
         UserAggregate user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
@@ -69,6 +74,7 @@ public class SysUserController {
     }
 
     @DeleteMapping("/{id}")
+    @SaCheckPermission("system:user:delete")
     public ApiResponse<Void> delete(@PathVariable String id) {
         userRepository.delete(id);
         userQueryHandler.clearCache(id);

@@ -40,12 +40,12 @@ public class OrgRepositoryImpl implements OrgRepository {
 
     @Override
     public void save(OrgAggregate org) {
-        mapper.insert(org.getEntity());
+        mapper.insert(org.toEntity());
     }
 
     @Override
     public void update(OrgAggregate org) {
-        mapper.updateById(org.getEntity());
+        mapper.updateById(org.toEntity());
     }
 
     @Override

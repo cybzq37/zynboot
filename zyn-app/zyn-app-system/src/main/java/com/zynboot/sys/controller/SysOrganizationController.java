@@ -8,6 +8,7 @@ import com.zynboot.sys.domain.repository.OrgRepository;
 import com.zynboot.sys.handler.query.OrgQueryHandler;
 import com.zynboot.sys.response.org.OrgRes;
 import com.zynboot.sys.response.org.OrgTreeRes;
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ public class SysOrganizationController {
     private final OrgRepository orgRepository;
 
     @GetMapping
+    @SaCheckPermission("system:org:query")
     public ApiResponse<List<OrgRes>> list() {
         return ApiResponse.ok(
                 orgRepository.findAll().stream()
@@ -32,11 +34,13 @@ public class SysOrganizationController {
     }
 
     @GetMapping("/tree")
+    @SaCheckPermission("system:org:query")
     public ApiResponse<List<OrgTreeRes>> tree() {
         return ApiResponse.ok(orgQueryHandler.getOrgTree());
     }
 
     @GetMapping("/{id}")
+    @SaCheckPermission("system:org:query")
     public ApiResponse<OrgRes> getById(@PathVariable String id) {
         OrgAggregate org = orgRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("组织不存在"));
@@ -44,6 +48,7 @@ public class SysOrganizationController {
     }
 
     @PostMapping
+    @SaCheckPermission("system:org:create")
     public ApiResponse<Void> create(@Valid @RequestBody OrgSaveCmd cmd) {
         OrgAggregate org = OrgAggregate.create(cmd.getOrgCode(), cmd.getOrgName(), cmd.getOrgType());
         org.setParentId(cmd.getParentId());
@@ -53,6 +58,7 @@ public class SysOrganizationController {
     }
 
     @PutMapping("/{id}")
+    @SaCheckPermission("system:org:update")
     public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody OrgSaveCmd cmd) {
         OrgAggregate org = orgRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("组织不存在"));
@@ -62,6 +68,7 @@ public class SysOrganizationController {
     }
 
     @DeleteMapping("/{id}")
+    @SaCheckPermission("system:org:delete")
     public ApiResponse<Void> delete(@PathVariable String id) {
         orgRepository.delete(id);
         return ApiResponse.ok(null);
