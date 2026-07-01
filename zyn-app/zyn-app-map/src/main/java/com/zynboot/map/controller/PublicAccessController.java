@@ -1,25 +1,13 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
-import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.entity.MapInstance;
-import com.zynboot.map.infrastructure.entity.MapInstanceLayer;
-import com.zynboot.map.infrastructure.entity.MapPublish;
-import com.zynboot.map.infrastructure.entity.MapLayerSource;
-import com.zynboot.map.infrastructure.entity.MapSourceTile;
-import com.zynboot.map.infrastructure.mapper.*;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.zynboot.infra.redis.RedisClient;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.*;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import com.zynboot.infra.web.version.ApiVersion;
-
-import java.util.List;
+import com.zynboot.kit.response.ApiResponse;
+import com.zynboot.map.response.instance.InstanceRes;
+import com.zynboot.map.response.instance.PublicMapConfigRes;
+import com.zynboot.map.service.MapInstanceService;
+import com.zynboot.map.service.MapTileReadService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,43 +15,17 @@ import java.util.List;
 @RequestMapping("/map/public")
 public class PublicAccessController {
 
-    private final MapPublishMapper publishMapper;
-    private final MapInstanceMapper instanceMapper;
-    private final MapInstanceLayerMapper instanceLayerMapper;
-    private final MapLayerSourceMapper sourceMapper;
-    private final MapSourceTileMapper tileMapper;
-    private final RedisClient redisClient;
-
-    @Value("${zyn.map.raster.root-path:./map-data/raster}")
-    private String rasterRootPath;
+    private final MapInstanceService instanceService;
+    private final MapTileReadService tileReadService;
 
     @GetMapping("/{publishId}")
-    public ApiResponse<MapInstance> getPublicMap(@PathVariable String publishId) {
-        MapPublish pub = publishMapper.selectById(publishId);
-        if (pub == null || !Boolean.TRUE.equals(pub.getIsActive())) {
-            throw BizException.notFound("发布记录");
-        }
-        MapInstance instance = instanceMapper.selectById(pub.getInstanceId());
-        if (instance == null) throw BizException.notFound("地图实例");
-        return ApiResponse.ok(instance);
+    public ApiResponse<InstanceRes> getPublicMap(@PathVariable String publishId) {
+        return ApiResponse.ok(instanceService.getPublicMap(publishId));
     }
 
     @GetMapping("/{publishId}/config")
-    public ApiResponse<PublicMapConfig> getConfig(@PathVariable String publishId) {
-        MapPublish pub = publishMapper.selectById(publishId);
-        if (pub == null || !Boolean.TRUE.equals(pub.getIsActive())) {
-            throw BizException.notFound("发布记录");
-        }
-        MapInstance instance = instanceMapper.selectById(pub.getInstanceId());
-        if (instance == null) throw BizException.notFound("地图实例");
-
-        List<MapInstanceLayer> layers = instanceLayerMapper.selectList(
-                new LambdaQueryWrapper<MapInstanceLayer>()
-                        .eq(MapInstanceLayer::getInstanceId, instance.getId())
-                        .eq(MapInstanceLayer::getVisible, true)
-                        .orderByAsc(MapInstanceLayer::getRenderOrder));
-
-        return ApiResponse.ok(new PublicMapConfig(instance, layers));
+    public ApiResponse<PublicMapConfigRes> getConfig(@PathVariable String publishId) {
+        return ApiResponse.ok(instanceService.getPublicConfig(publishId));
     }
 
     @GetMapping("/{publishId}/tile/{sourceId}/{z}/{x}/{y}.png")
@@ -75,39 +37,14 @@ public class PublicAccessController {
             @PathVariable int y,
             jakarta.servlet.http.HttpServletResponse response) throws Exception {
 
-        MapPublish pub = publishMapper.selectById(publishId);
-        if (pub == null || !Boolean.TRUE.equals(pub.getIsActive())) {
-            response.setStatus(404);
-            return;
-        }
-
-        // 查找 source 并读取本地瓦片
-        MapLayerSource source = sourceMapper.selectById(sourceId);
-        if (source == null) {
-            response.setStatus(404);
-            return;
-        }
-
-        MapSourceTile tile = tileMapper.selectOne(
-                new LambdaQueryWrapper<MapSourceTile>().eq(MapSourceTile::getSourceId, sourceId));
-        if (tile == null || !"COMPLETED".equals(tile.getStatus())) {
+        instanceService.getPublicMap(publishId);
+        MapTileReadService.TilePayload tile = tileReadService.readRasterTile(sourceId, z, x, y, "png");
+        if (tile == null) {
             response.setStatus(204);
             return;
         }
-
-        String tilePath = tile.getPath() != null ? tile.getPath() : sourceId + "/tiles";
-        Path filePath = Paths.get(rasterRootPath, source.getLayerId(), tilePath,
-                String.valueOf(z), String.valueOf(x), y + ".png");
-
-        if (!Files.exists(filePath)) {
-            response.setStatus(204);
-            return;
-        }
-
-        response.setContentType("image/png");
+        response.setContentType(tile.getContentType());
         response.setHeader("Cache-Control", "public, max-age=300");
-        Files.copy(filePath, response.getOutputStream());
+        response.getOutputStream().write(tile.getData());
     }
-
-    public record PublicMapConfig(MapInstance instance, List<MapInstanceLayer> layers) {}
 }

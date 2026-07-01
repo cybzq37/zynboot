@@ -1,5 +1,6 @@
 package com.zynboot.map.infrastructure.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -11,6 +12,7 @@ public class MapInstanceLayer implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @TableId
     private String id;
     private String instanceId;
     private String parentId;

@@ -1,15 +1,13 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.entity.MapBasemap;
-import com.zynboot.map.infrastructure.mapper.MapBasemapMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zynboot.map.command.basemap.BasemapSaveCmd;
+import com.zynboot.map.response.basemap.BasemapRes;
+import com.zynboot.map.service.MapMetadataService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import com.zynboot.infra.web.version.ApiVersion;
 
 import java.util.List;
 
@@ -19,38 +17,31 @@ import java.util.List;
 @RequestMapping("/map/basemap")
 public class BasemapController {
 
-    private final MapBasemapMapper mapper;
+    private final MapMetadataService metadataService;
 
     @GetMapping
-    public ApiResponse<List<MapBasemap>> list() {
-        return ApiResponse.ok(mapper.selectList(
-                new LambdaQueryWrapper<MapBasemap>().orderByAsc(MapBasemap::getSortOrder)));
+    public ApiResponse<List<BasemapRes>> list() {
+        return ApiResponse.ok(metadataService.listBasemaps());
     }
 
     @GetMapping("/default")
-    public ApiResponse<MapBasemap> getDefault() {
-        MapBasemap basemap = mapper.selectOne(
-                new LambdaQueryWrapper<MapBasemap>().eq(MapBasemap::getIsDefault, true));
-        if (basemap == null) throw BizException.notFound("默认底图");
-        return ApiResponse.ok(basemap);
+    public ApiResponse<BasemapRes> getDefault() {
+        return ApiResponse.ok(metadataService.getDefaultBasemap());
     }
 
     @PostMapping
-    public ApiResponse<Void> create(@Valid @RequestBody MapBasemap basemap) {
-        mapper.insert(basemap);
-        return ApiResponse.ok(null);
+    public ApiResponse<BasemapRes> create(@Valid @RequestBody BasemapSaveCmd cmd) {
+        return ApiResponse.ok(metadataService.createBasemap(cmd));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody MapBasemap basemap) {
-        basemap.setId(id);
-        mapper.updateById(basemap);
-        return ApiResponse.ok(null);
+    public ApiResponse<BasemapRes> update(@PathVariable String id, @Valid @RequestBody BasemapSaveCmd cmd) {
+        return ApiResponse.ok(metadataService.updateBasemap(id, cmd));
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        mapper.deleteById(id);
+        metadataService.deleteBasemap(id);
         return ApiResponse.ok(null);
     }
 }

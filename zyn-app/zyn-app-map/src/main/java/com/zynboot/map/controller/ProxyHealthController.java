@@ -1,13 +1,10 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
-import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.entity.MapSourceProxy;
-import com.zynboot.map.infrastructure.mapper.MapSourceProxyMapper;
-import com.zynboot.map.service.ProxyHealthCheckService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import lombok.RequiredArgsConstructor;
 import com.zynboot.infra.web.version.ApiVersion;
+import com.zynboot.kit.response.ApiResponse;
+import com.zynboot.map.response.source.ProxyHealthRes;
+import com.zynboot.map.service.MapQueryFacadeService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,23 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/map/source")
 public class ProxyHealthController {
 
-    private final MapSourceProxyMapper proxyMapper;
-    private final ProxyHealthCheckService healthCheckService;
+    private final MapQueryFacadeService queryFacadeService;
 
     @GetMapping("/{id}/proxy/health")
-    public ApiResponse<MapSourceProxy> getHealth(@PathVariable String id) {
-        MapSourceProxy proxy = proxyMapper.selectOne(
-                new LambdaQueryWrapper<MapSourceProxy>().eq(MapSourceProxy::getSourceId, id));
-        if (proxy == null) throw BizException.notFound("代理配置");
-        return ApiResponse.ok(proxy);
+    public ApiResponse<ProxyHealthRes> getHealth(@PathVariable String id) {
+        return ApiResponse.ok(queryFacadeService.getProxyHealth(id));
     }
 
     @PostMapping("/{id}/proxy/check")
-    public ApiResponse<MapSourceProxy> triggerCheck(@PathVariable String id) {
-        MapSourceProxy proxy = proxyMapper.selectOne(
-                new LambdaQueryWrapper<MapSourceProxy>().eq(MapSourceProxy::getSourceId, id));
-        if (proxy == null) throw BizException.notFound("代理配置");
-        healthCheckService.checkOne(proxy);
-        return ApiResponse.ok(proxy);
+    public ApiResponse<ProxyHealthRes> triggerCheck(@PathVariable String id) {
+        return ApiResponse.ok(queryFacadeService.triggerProxyCheck(id));
     }
 }

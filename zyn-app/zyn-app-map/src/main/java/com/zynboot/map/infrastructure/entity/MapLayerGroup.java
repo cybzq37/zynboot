@@ -1,6 +1,7 @@
 package com.zynboot.map.infrastructure.entity;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class MapLayerGroup implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @TableId
     private String id;
     private String parentId;
     private String name;

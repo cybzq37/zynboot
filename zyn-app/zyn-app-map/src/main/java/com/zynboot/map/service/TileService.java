@@ -1,8 +1,10 @@
 package com.zynboot.map.service;
 
-import com.zynboot.map.infrastructure.entity.MapSourceTile;
-import com.zynboot.map.infrastructure.mapper.MapSourceTileMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zynboot.map.infrastructure.entity.MapAsyncTask;
+import com.zynboot.map.infrastructure.entity.MapSourceTile;
+import com.zynboot.map.infrastructure.mapper.MapAsyncTaskMapper;
+import com.zynboot.map.infrastructure.mapper.MapSourceTileMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,11 +17,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
 /**
  * 瓦片切片服务（异步执行）。
- * 预切片模式：扫描目录结构注册。
- * 原始栅格模式：调用 gdal2tiles.py 切片。
  */
 @Slf4j
 @Service
@@ -27,6 +28,8 @@ import java.nio.file.Paths;
 public class TileService {
 
     private final MapSourceTileMapper tileMapper;
+    private final MapAsyncTaskMapper taskMapper;
+    private final LayerCacheVersionService layerCacheVersionService;
 
     @Value("${zyn.map.raster.root-path:./map-data/raster}")
     private String rasterRootPath;
@@ -40,10 +43,6 @@ public class TileService {
     @Value("${zyn.map.raster.tile-max-zoom:18}")
     private int defaultMaxZoom;
 
-    /**
-     * 注册预切片数据（source_format=XYZ）。
-     * 扫描目录结构 {z}/{x}/{y}.png，注册 tile 元数据。
-     */
     public MapSourceTile registerPreTiled(String sourceId, String layerId, Path tilesDir) throws Exception {
         int minZoom = Integer.MAX_VALUE;
         int maxZoom = Integer.MIN_VALUE;
@@ -62,7 +61,8 @@ public class TileService {
                                 .filter(f -> f.toString().endsWith(".png") || f.toString().endsWith(".jpeg"))
                                 .count();
                     }
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
 
@@ -82,12 +82,13 @@ public class TileService {
         return tile;
     }
 
-    /**
-     * 异步切片（原始栅格 → XYZ 瓦片）。
-     * 调用 gdal2tiles.py（GDAL_PATH 环境变量指定 GDAL 安装路径）。
-     */
     @Async("mapTileExecutor")
-    public void tileAsync(String sourceId, String storageKey, String layerId) {
+    public void tileAsync(String taskId, String sourceId, String storageKey, String layerId) {
+        MapAsyncTask task = taskMapper.selectById(taskId);
+        if (task == null || "CANCELLED".equals(task.getStatus())) {
+            return;
+        }
+
         MapSourceTile tile = tileMapper.selectOne(
                 new LambdaQueryWrapper<MapSourceTile>().eq(MapSourceTile::getSourceId, sourceId));
         if (tile == null) {
@@ -97,6 +98,11 @@ public class TileService {
             tile.setTileSize(256);
             tileMapper.insert(tile);
         }
+
+        task.setStatus("RUNNING");
+        task.setStartedAt(LocalDateTime.now());
+        task.setProgress(0);
+        taskMapper.updateById(task);
 
         tile.setStatus("TILING");
         tile.setProgress(0);
@@ -110,7 +116,6 @@ public class TileService {
             String gdal2tiles = gdalPath + "/bin/gdal2tiles.py";
             String gdaladdo = gdalPath + "/bin/gdaladdo";
 
-            // Step 1: 生成概览金字塔（加速切片）
             log.info("Generating overviews: {}", storageKey);
             ProcessBuilder overviewPb = new ProcessBuilder(
                     gdaladdo, "-r", "average", rasterPath.toAbsolutePath().toString(),
@@ -119,7 +124,6 @@ public class TileService {
             Process overviewProc = overviewPb.start();
             overviewProc.waitFor();
 
-            // Step 2: 切片
             log.info("Starting tiling: sourceId={}, input={}", sourceId, storageKey);
             ProcessBuilder tilePb = new ProcessBuilder(
                     gdal2tiles,
@@ -134,24 +138,31 @@ public class TileService {
             tilePb.redirectErrorStream(true);
             Process tileProc = tilePb.start();
 
-            // 读取输出，跟踪进度
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(tileProc.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     log.debug("[gdal2tiles] {}", line);
+                    if (isCancelled(taskId)) {
+                        tileProc.destroyForcibly();
+                        tile.setStatus("FAILED");
+                        tile.setProgress(0);
+                        tileMapper.updateById(tile);
+                        return;
+                    }
                     if (line.contains("Generating tiles")) {
                         tile.setProgress(50);
                         tileMapper.updateById(tile);
+                        task.setProgress(50);
+                        taskMapper.updateById(task);
                     }
                 }
             }
 
             int exitCode = tileProc.waitFor();
             if (exitCode == 0) {
-                // 统计瓦片数量
                 long count = Files.walk(tilesDir)
-                        .filter(p -> p.toString().endsWith(".png"))
+                        .filter(path -> path.toString().endsWith(".png"))
                         .count();
 
                 tile.setStatus("COMPLETED");
@@ -160,16 +171,45 @@ public class TileService {
                 tile.setMinZoom(defaultMinZoom);
                 tile.setMaxZoom(defaultMaxZoom);
                 tile.setTileCount((int) count);
+
+                task.setStatus("COMPLETED");
+                task.setProgress(100);
+                task.setProcessedCount(1);
+                task.setFinishedAt(LocalDateTime.now());
+
+                layerCacheVersionService.bumpVersion(layerId);
                 log.info("Tiling completed: sourceId={}, tiles={}", sourceId, count);
             } else {
                 tile.setStatus("FAILED");
+                task.setStatus("FAILED");
+                task.setErrorCount(1);
+                task.setErrorMessage("切片进程退出码: " + exitCode);
+                task.setFinishedAt(LocalDateTime.now());
                 log.error("Tiling failed: sourceId={}, exitCode={}", sourceId, exitCode);
             }
         } catch (Exception e) {
             tile.setStatus("FAILED");
+            task.setStatus("FAILED");
+            task.setErrorCount(1);
+            task.setErrorMessage(e.getMessage());
+            task.setFinishedAt(LocalDateTime.now());
             log.error("Tiling error: sourceId={}", sourceId, e);
         }
 
         tileMapper.updateById(tile);
+        taskMapper.updateById(task);
+    }
+
+    private boolean isCancelled(String taskId) {
+        MapAsyncTask current = taskMapper.selectById(taskId);
+        if (current == null) {
+            return false;
+        }
+        if ("CANCELLED".equals(current.getStatus())) {
+            current.setFinishedAt(LocalDateTime.now());
+            taskMapper.updateById(current);
+            return true;
+        }
+        return false;
     }
 }

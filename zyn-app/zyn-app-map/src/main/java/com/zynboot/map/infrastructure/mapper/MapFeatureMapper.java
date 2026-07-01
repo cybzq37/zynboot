@@ -2,10 +2,12 @@ package com.zynboot.map.infrastructure.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.zynboot.map.infrastructure.entity.MapFeature;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 @Mapper
 public interface MapFeatureMapper extends BaseMapper<MapFeature> {
@@ -30,6 +32,22 @@ public interface MapFeatureMapper extends BaseMapper<MapFeature> {
                             @Param("properties") String propertiesJson,
                             @Param("geometryGeoJson") String geometryGeoJson,
                             @Param("targetSrid") String targetSrid);
+
+    @Update("UPDATE map_feature SET source_id = #{sourceId}, properties = #{properties}::jsonb, " +
+            "geometry = ST_Transform(ST_GeomFromGeoJSON(#{geometryGeoJson}), CAST(#{targetSrid} AS INTEGER)), " +
+            "update_time = CURRENT_TIMESTAMP WHERE id = #{id}")
+    int updateWithGeometry(@Param("id") long id,
+                           @Param("sourceId") String sourceId,
+                           @Param("properties") String propertiesJson,
+                           @Param("geometryGeoJson") String geometryGeoJson,
+                           @Param("targetSrid") String targetSrid);
+
+    @Select("SELECT id, layer_id, source_id, properties::text AS properties, ST_AsGeoJSON(geometry) AS geometry, " +
+            "create_by, create_time, update_by, update_time FROM map_feature WHERE id = #{id}")
+    MapFeature selectViewById(@Param("id") long id);
+
+    @Delete("DELETE FROM map_feature WHERE id = #{id}")
+    int deleteByIdValue(@Param("id") long id);
 
     /**
      * 获取图层特征的 ETag（基于 MAX(update_time) + feature_count）。

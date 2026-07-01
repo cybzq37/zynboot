@@ -24,9 +24,28 @@ public class FileFeatureQueryHandler implements FeatureQueryHandler {
     }
 
     @Override
+    public List<Map<String, Object>> list(String sourceId, String layerId, int limit, int offset) {
+        if (sourceId != null && !sourceId.isBlank()) {
+            return spatialMapper.findAsGeoJsonBySource(layerId, sourceId, limit, offset);
+        }
+        return spatialMapper.findAsGeoJson(layerId, limit, offset);
+    }
+
+    @Override
     public List<Map<String, Object>> queryByBbox(String sourceId, String layerId,
                                                   double[] bbox, int limit, int offset) {
-        return spatialMapper.findAsGeoJson(layerId, limit, offset);
+        if (sourceId != null && !sourceId.isBlank()) {
+            return spatialMapper.findAsGeoJsonBySourceAndBbox(
+                    layerId, sourceId,
+                    String.valueOf(bbox[0]), String.valueOf(bbox[1]),
+                    String.valueOf(bbox[2]), String.valueOf(bbox[3]),
+                    limit, offset);
+        }
+        return spatialMapper.findAsGeoJsonByBbox(
+                layerId,
+                String.valueOf(bbox[0]), String.valueOf(bbox[1]),
+                String.valueOf(bbox[2]), String.valueOf(bbox[3]),
+                limit, offset);
     }
 
     @Override
@@ -42,7 +61,15 @@ public class FileFeatureQueryHandler implements FeatureQueryHandler {
 
     @Override
     public long countByBbox(String sourceId, String layerId, double[] bbox) {
-        // 简化：返回总数（精确 bbox count 需要额外 SQL）
-        return featureMapper.countByLayerId(layerId);
+        if (sourceId != null && !sourceId.isBlank()) {
+            return spatialMapper.countByLayerSourceAndBbox(
+                    layerId, sourceId,
+                    String.valueOf(bbox[0]), String.valueOf(bbox[1]),
+                    String.valueOf(bbox[2]), String.valueOf(bbox[3]));
+        }
+        return spatialMapper.countByLayerAndBbox(
+                layerId,
+                String.valueOf(bbox[0]), String.valueOf(bbox[1]),
+                String.valueOf(bbox[2]), String.valueOf(bbox[3]));
     }
 }

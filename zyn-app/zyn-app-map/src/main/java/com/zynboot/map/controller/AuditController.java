@@ -1,13 +1,11 @@
 package com.zynboot.map.controller;
 
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.entity.MapOperationLog;
-import com.zynboot.map.infrastructure.mapper.MapOperationLogMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zynboot.map.response.audit.AuditLogRes;
+import com.zynboot.map.service.MapQueryFacadeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import com.zynboot.infra.web.version.ApiVersion;
 
 import java.util.List;
 
@@ -17,33 +15,21 @@ import java.util.List;
 @RequestMapping("/map/audit")
 public class AuditController {
 
-    private final MapOperationLogMapper mapper;
+    private final MapQueryFacadeService queryFacadeService;
 
     @GetMapping
-    public ApiResponse<List<MapOperationLog>> list(
+    public ApiResponse<List<AuditLogRes>> list(
             @RequestParam(required = false) String targetType,
             @RequestParam(required = false) String targetId,
             @RequestParam(required = false) String action,
             @RequestParam(required = false) String operatorId,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize) {
-        LambdaQueryWrapper<MapOperationLog> wrapper = new LambdaQueryWrapper<MapOperationLog>()
-                .eq(targetType != null, MapOperationLog::getTargetType, targetType)
-                .eq(targetId != null, MapOperationLog::getTargetId, targetId)
-                .eq(action != null, MapOperationLog::getAction, action)
-                .eq(operatorId != null, MapOperationLog::getOperatorId, operatorId)
-                .orderByDesc(MapOperationLog::getCreateTime)
-                .last("LIMIT " + pageSize + " OFFSET " + (pageNum - 1) * pageSize);
-        return ApiResponse.ok(mapper.selectList(wrapper));
+        return ApiResponse.ok(queryFacadeService.listAudit(targetType, targetId, action, operatorId, pageNum, pageSize));
     }
 
     @GetMapping("/{targetType}/{targetId}")
-    public ApiResponse<List<MapOperationLog>> getByTarget(
-            @PathVariable String targetType, @PathVariable String targetId) {
-        return ApiResponse.ok(mapper.selectList(
-                new LambdaQueryWrapper<MapOperationLog>()
-                        .eq(MapOperationLog::getTargetType, targetType)
-                        .eq(MapOperationLog::getTargetId, targetId)
-                        .orderByDesc(MapOperationLog::getCreateTime)));
+    public ApiResponse<List<AuditLogRes>> getByTarget(@PathVariable String targetType, @PathVariable String targetId) {
+        return ApiResponse.ok(queryFacadeService.getAuditByTarget(targetType, targetId));
     }
 }

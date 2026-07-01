@@ -1,18 +1,19 @@
 package com.zynboot.map.service.datasource;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zynboot.map.infrastructure.entity.MapDataSource;
 import com.zynboot.map.infrastructure.entity.MapLayerSource;
 import com.zynboot.map.infrastructure.mapper.MapDataSourceMapper;
 import com.zynboot.map.infrastructure.mapper.MapLayerSourceMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
- * 统一要素查询服务：按 source_type 自动路由到对应查询处理器。
+ * 统一要素查询服务：按 source_type 解析单一查询主源，避免在服务层聚合多源结果后再分页。
  */
 @Slf4j
 @Service
@@ -24,65 +25,41 @@ public class FeatureService {
     private final MapDataSourceMapper dataSourceMapper;
     private final DynamicDataSourceService dynamicDataSourceService;
 
-    /**
-     * 按 bbox 查询图层的所有要素（自动路由 FILE / POSTGIS / ES）。
-     */
-    public List<Map<String, Object>> queryByBbox(String layerId, double[] bbox, int limit, int offset) {
-        List<MapLayerSource> sources = sourceMapper.selectList(
-                new LambdaQueryWrapper<MapLayerSource>()
-                        .eq(MapLayerSource::getLayerId, layerId)
-                        .eq(MapLayerSource::getStatus, "COMPLETED"));
-
-        List<Map<String, Object>> allResults = new ArrayList<>();
-        for (MapLayerSource source : sources) {
-            FeatureQueryHandler handler = findHandler(source.getType());
-            if (handler != null) {
-                allResults.addAll(handler.queryByBbox(source.getId(), layerId, bbox, limit, offset));
-            }
-        }
-        return allResults;
+    public FeatureQueryResult list(String layerId, String sourceId, int limit, int offset) {
+        ResolvedSource resolved = resolveSource(layerId, sourceId, Operation.LIST);
+        FeatureQueryHandler handler = requireHandler(resolved.source().getType());
+        return new FeatureQueryResult(
+                resolved.source().getId(),
+                resolved.source().getType(),
+                handler.list(resolved.source().getId(), layerId, limit, offset),
+                handler.count(resolved.source().getId(), layerId));
     }
 
-    /**
-     * 全文搜索（自动路由到 BM25 或 ES）。
-     */
-    public List<Map<String, Object>> search(String layerId, String query, int limit, int offset) {
-        List<MapLayerSource> sources = sourceMapper.selectList(
-                new LambdaQueryWrapper<MapLayerSource>()
-                        .eq(MapLayerSource::getLayerId, layerId)
-                        .eq(MapLayerSource::getStatus, "COMPLETED"));
-
-        List<Map<String, Object>> allResults = new ArrayList<>();
-        for (MapLayerSource source : sources) {
-            FeatureQueryHandler handler = findHandler(source.getType());
-            if (handler != null) {
-                List<Map<String, Object>> results = handler.search(source.getId(), layerId, query, limit, offset);
-                if (!results.isEmpty()) {
-                    allResults.addAll(results);
-                    break; // 找到支持搜索的 source 即返回
-                }
-            }
-        }
-        return allResults;
+    public FeatureQueryResult queryByBbox(String layerId, String sourceId, double[] bbox, int limit, int offset) {
+        ResolvedSource resolved = resolveSource(layerId, sourceId, Operation.BBOX);
+        FeatureQueryHandler handler = requireHandler(resolved.source().getType());
+        return new FeatureQueryResult(
+                resolved.source().getId(),
+                resolved.source().getType(),
+                handler.queryByBbox(resolved.source().getId(), layerId, bbox, limit, offset),
+                handler.countByBbox(resolved.source().getId(), layerId, bbox));
     }
 
-    /**
-     * 要素总数。
-     */
-    public long count(String layerId) {
-        List<MapLayerSource> sources = sourceMapper.selectList(
-                new LambdaQueryWrapper<MapLayerSource>()
-                        .eq(MapLayerSource::getLayerId, layerId)
-                        .eq(MapLayerSource::getStatus, "COMPLETED"));
+    public FeatureQueryResult search(String layerId, String sourceId, String query, int limit, int offset) {
+        ResolvedSource resolved = resolveSource(layerId, sourceId, Operation.SEARCH);
+        FeatureQueryHandler handler = requireHandler(resolved.source().getType());
+        List<Map<String, Object>> items = handler.search(resolved.source().getId(), layerId, query, limit, offset);
+        long total = "POSTGIS".equals(resolved.source().getType()) ? 0 : handler.count(resolved.source().getId(), layerId);
+        return new FeatureQueryResult(
+                resolved.source().getId(),
+                resolved.source().getType(),
+                items,
+                total);
+    }
 
-        long total = 0;
-        for (MapLayerSource source : sources) {
-            FeatureQueryHandler handler = findHandler(source.getType());
-            if (handler != null) {
-                total += handler.count(source.getId(), layerId);
-            }
-        }
-        return total;
+    public long count(String layerId, String sourceId) {
+        ResolvedSource resolved = resolveSource(layerId, sourceId, Operation.LIST);
+        return requireHandler(resolved.source().getType()).count(resolved.source().getId(), layerId);
     }
 
     /**
@@ -94,10 +71,55 @@ public class FeatureService {
         return dynamicDataSourceService.testConnection(ds);
     }
 
-    private FeatureQueryHandler findHandler(String sourceType) {
+    private ResolvedSource resolveSource(String layerId, String sourceId, Operation operation) {
+        List<MapLayerSource> sources = sourceMapper.selectList(
+                new LambdaQueryWrapper<MapLayerSource>()
+                        .eq(MapLayerSource::getLayerId, layerId)
+                        .eq(MapLayerSource::getStatus, "COMPLETED")
+                        .orderByDesc(MapLayerSource::getCreateTime));
+        if (sources.isEmpty()) {
+            throw new IllegalArgumentException("图层没有可查询的数据源: " + layerId);
+        }
+
+        if (sourceId != null && !sourceId.isBlank()) {
+            return sources.stream()
+                    .filter(source -> sourceId.equals(source.getId()))
+                    .findFirst()
+                    .map(ResolvedSource::new)
+                    .orElseThrow(() -> new IllegalArgumentException("数据源不存在或不可查询: " + sourceId));
+        }
+
+        List<String> priority = switch (operation) {
+            case SEARCH -> List.of("FILE", "ELASTICSEARCH", "POSTGIS");
+            case BBOX, LIST -> List.of("FILE", "POSTGIS", "ELASTICSEARCH");
+        };
+        for (String type : priority) {
+            for (MapLayerSource source : sources) {
+                if (type.equals(source.getType())) {
+                    return new ResolvedSource(source);
+                }
+            }
+        }
+        return new ResolvedSource(sources.get(0));
+    }
+
+    private FeatureQueryHandler requireHandler(String sourceType) {
         return handlers.stream()
-                .filter(h -> h.supports(sourceType))
+                .filter(handler -> handler.supports(sourceType))
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("未找到 sourceType 对应的查询处理器: " + sourceType));
+    }
+
+    private enum Operation {
+        LIST, BBOX, SEARCH
+    }
+
+    private record ResolvedSource(MapLayerSource source) {
+    }
+
+    public record FeatureQueryResult(String sourceId,
+                                     String sourceType,
+                                     List<Map<String, Object>> items,
+                                     long total) {
     }
 }

@@ -1,15 +1,13 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.entity.MapLayerField;
-import com.zynboot.map.infrastructure.mapper.MapLayerFieldMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zynboot.map.command.layer.LayerFieldSaveCmd;
+import com.zynboot.map.response.layer.LayerFieldRes;
+import com.zynboot.map.service.MapMetadataService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import com.zynboot.infra.web.version.ApiVersion;
 
 import java.util.List;
 
@@ -19,33 +17,26 @@ import java.util.List;
 @RequestMapping("/map")
 public class LayerFieldController {
 
-    private final MapLayerFieldMapper mapper;
+    private final MapMetadataService metadataService;
 
     @GetMapping("/layer/{layerId}/field")
-    public ApiResponse<List<MapLayerField>> list(@PathVariable String layerId) {
-        return ApiResponse.ok(mapper.selectList(
-                new LambdaQueryWrapper<MapLayerField>()
-                        .eq(MapLayerField::getLayerId, layerId)
-                        .orderByAsc(MapLayerField::getSortOrder)));
+    public ApiResponse<List<LayerFieldRes>> list(@PathVariable String layerId) {
+        return ApiResponse.ok(metadataService.listFields(layerId));
     }
 
     @PostMapping("/layer/{layerId}/field")
-    public ApiResponse<Void> create(@PathVariable String layerId, @Valid @RequestBody MapLayerField field) {
-        field.setLayerId(layerId);
-        mapper.insert(field);
-        return ApiResponse.ok(null);
+    public ApiResponse<LayerFieldRes> create(@PathVariable String layerId, @Valid @RequestBody LayerFieldSaveCmd cmd) {
+        return ApiResponse.ok(metadataService.createField(layerId, cmd));
     }
 
     @PutMapping("/field/{id}")
-    public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody MapLayerField field) {
-        field.setId(id);
-        mapper.updateById(field);
-        return ApiResponse.ok(null);
+    public ApiResponse<LayerFieldRes> update(@PathVariable String id, @Valid @RequestBody LayerFieldSaveCmd cmd) {
+        return ApiResponse.ok(metadataService.updateField(id, cmd));
     }
 
     @DeleteMapping("/field/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        mapper.deleteById(id);
+        metadataService.deleteField(id);
         return ApiResponse.ok(null);
     }
 }

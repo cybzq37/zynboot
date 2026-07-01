@@ -1,5 +1,6 @@
 package com.zynboot.map.domain.aggregate;
 
+import com.zynboot.kit.util.IdUtils;
 import com.zynboot.map.infrastructure.entity.MapLayerGroup;
 
 public class LayerGroupAggregate {
@@ -16,6 +17,7 @@ public class LayerGroupAggregate {
 
     public static LayerGroupAggregate create(String parentId, String name) {
         MapLayerGroup group = new MapLayerGroup();
+        group.setId(IdUtils.uuid());
         group.setParentId(parentId);
         group.setName(name);
         group.setSortOrder(0);

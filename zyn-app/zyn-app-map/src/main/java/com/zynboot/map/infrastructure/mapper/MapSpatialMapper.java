@@ -36,6 +36,55 @@ public interface MapSpatialMapper {
     @Select("SELECT id, layer_id, source_id, properties, ST_AsGeoJSON(geometry) as geometry, create_by, create_time, update_by, update_time FROM map_feature WHERE layer_id = #{layerId} LIMIT #{limit} OFFSET #{offset}")
     List<Map<String, Object>> findAsGeoJson(@Param("layerId") String layerId, @Param("limit") int limit, @Param("offset") int offset);
 
+    @Select("SELECT id, layer_id, source_id, properties, ST_AsGeoJSON(geometry) as geometry, create_by, create_time, update_by, update_time " +
+            "FROM map_feature WHERE layer_id = #{layerId} AND source_id = #{sourceId} LIMIT #{limit} OFFSET #{offset}")
+    List<Map<String, Object>> findAsGeoJsonBySource(@Param("layerId") String layerId,
+                                                    @Param("sourceId") String sourceId,
+                                                    @Param("limit") int limit,
+                                                    @Param("offset") int offset);
+
+    @Select("SELECT id, layer_id, source_id, properties, ST_AsGeoJSON(geometry) as geometry, create_by, create_time, update_by, update_time " +
+            "FROM map_feature WHERE layer_id = #{layerId} " +
+            "AND geometry && ST_MakeEnvelope(CAST(#{minX} AS DOUBLE PRECISION), CAST(#{minY} AS DOUBLE PRECISION), CAST(#{maxX} AS DOUBLE PRECISION), CAST(#{maxY} AS DOUBLE PRECISION), 4326) " +
+            "LIMIT #{limit} OFFSET #{offset}")
+    List<Map<String, Object>> findAsGeoJsonByBbox(@Param("layerId") String layerId,
+                                                  @Param("minX") String minX,
+                                                  @Param("minY") String minY,
+                                                  @Param("maxX") String maxX,
+                                                  @Param("maxY") String maxY,
+                                                  @Param("limit") int limit,
+                                                  @Param("offset") int offset);
+
+    @Select("SELECT id, layer_id, source_id, properties, ST_AsGeoJSON(geometry) as geometry, create_by, create_time, update_by, update_time " +
+            "FROM map_feature WHERE layer_id = #{layerId} AND source_id = #{sourceId} " +
+            "AND geometry && ST_MakeEnvelope(CAST(#{minX} AS DOUBLE PRECISION), CAST(#{minY} AS DOUBLE PRECISION), CAST(#{maxX} AS DOUBLE PRECISION), CAST(#{maxY} AS DOUBLE PRECISION), 4326) " +
+            "LIMIT #{limit} OFFSET #{offset}")
+    List<Map<String, Object>> findAsGeoJsonBySourceAndBbox(@Param("layerId") String layerId,
+                                                           @Param("sourceId") String sourceId,
+                                                           @Param("minX") String minX,
+                                                           @Param("minY") String minY,
+                                                           @Param("maxX") String maxX,
+                                                           @Param("maxY") String maxY,
+                                                           @Param("limit") int limit,
+                                                           @Param("offset") int offset);
+
+    @Select("SELECT count(*) FROM map_feature WHERE layer_id = #{layerId} " +
+            "AND geometry && ST_MakeEnvelope(CAST(#{minX} AS DOUBLE PRECISION), CAST(#{minY} AS DOUBLE PRECISION), CAST(#{maxX} AS DOUBLE PRECISION), CAST(#{maxY} AS DOUBLE PRECISION), 4326)")
+    long countByLayerAndBbox(@Param("layerId") String layerId,
+                             @Param("minX") String minX,
+                             @Param("minY") String minY,
+                             @Param("maxX") String maxX,
+                             @Param("maxY") String maxY);
+
+    @Select("SELECT count(*) FROM map_feature WHERE layer_id = #{layerId} AND source_id = #{sourceId} " +
+            "AND geometry && ST_MakeEnvelope(CAST(#{minX} AS DOUBLE PRECISION), CAST(#{minY} AS DOUBLE PRECISION), CAST(#{maxX} AS DOUBLE PRECISION), CAST(#{maxY} AS DOUBLE PRECISION), 4326)")
+    long countByLayerSourceAndBbox(@Param("layerId") String layerId,
+                                   @Param("sourceId") String sourceId,
+                                   @Param("minX") String minX,
+                                   @Param("minY") String minY,
+                                   @Param("maxX") String maxX,
+                                   @Param("maxY") String maxY);
+
     // ── 要素聚类 ───────────────────────────────────────────
 
     @Select("SELECT ST_AsGeoJSON(ST_Centroid(ST_Collect(geometry))) as center, COUNT(*) as count FROM (SELECT geometry, ST_ClusterKMeans(geometry, #{k}) OVER () AS cluster_id FROM map_feature WHERE layer_id = #{layerId}) t GROUP BY cluster_id")

@@ -1,32 +1,23 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.map.domain.aggregate.SourceAggregate;
-import com.zynboot.map.domain.repository.LayerRepository;
-import com.zynboot.map.domain.repository.SourceRepository;
-import com.zynboot.map.infrastructure.entity.MapSourceProxy;
-import com.zynboot.map.infrastructure.entity.MapSourceTile;
-import com.zynboot.map.infrastructure.mapper.MapSourceProxyMapper;
-import com.zynboot.map.infrastructure.mapper.MapSourceTileMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zynboot.infra.redis.RedisClient;
+import com.zynboot.map.response.task.TaskRes;
+import com.zynboot.map.service.LayerCacheVersionService;
+import com.zynboot.map.service.MapTaskService;
+import com.zynboot.map.response.source.SourceTileRes;
+import com.zynboot.map.service.MapTileReadService;
+import com.zynboot.map.service.MapQueryFacadeService;
 import com.zynboot.map.service.MvtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import com.zynboot.infra.web.version.ApiVersion;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 
 /**
@@ -37,23 +28,18 @@ import java.time.Duration;
  * <p>
  * 缓存策略：Redis 热瓦片 + Nginx proxy_cache 磁盘缓存。
  */
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @ApiVersion("1")
 @RequestMapping("/map")
 public class TileController {
 
-    private final SourceRepository sourceRepository;
-    private final LayerRepository layerRepository;
-    private final MapSourceTileMapper tileMapper;
-    private final MapSourceProxyMapper proxyMapper;
-    private final OkHttpClient httpClient;
     private final RedisClient redisClient;
     private final MvtService mvtService;
-
-    @Value("${zyn.map.raster.root-path:./map-data/raster}")
-    private String rasterRootPath;
+    private final MapTaskService taskService;
+    private final LayerCacheVersionService layerCacheVersionService;
+    private final MapQueryFacadeService queryFacadeService;
+    private final MapTileReadService tileReadService;
 
     @Value("${zyn.map.tile.cache-enabled:true}")
     private boolean cacheEnabled;
@@ -80,40 +66,33 @@ public class TileController {
             return;
         }
 
-        String cacheKey = "cache:tile:" + sourceId + ":" + z + ":" + x + ":" + y + ":" + srid;
+        // 1. 查 source 类型路由
+        SourceAggregate source = queryFacadeService.requireSource(sourceId);
+        long version = layerCacheVersionService.currentVersion(source.getLayerId());
+        String cacheKey = "cache:tile:" + sourceId + ":v" + version + ":" + z + ":" + x + ":" + y + ":" + srid;
 
-        // 1. 查 Redis 缓存
+        // 2. 查 Redis 缓存
         if (cacheEnabled) {
             byte[] cached = getCachedTile(cacheKey);
             if (cached != null) {
-                writeRasterResponse(response, format, cached, null);
+                writeRasterResponse(response, getRasterContentType(format), cached, null);
                 return;
             }
         }
 
-        // 2. 查 source 类型路由
-        SourceAggregate source = sourceRepository.findById(sourceId)
-                .orElseThrow(() -> BizException.notFound("数据源"));
-
-        byte[] tileBytes;
-        if ("FILE".equals(source.getType())) {
-            tileBytes = serveLocalTile(source, z, x, y, format);
-        } else {
-            tileBytes = proxyExternalTile(source, z, x, y, format);
-        }
-
-        if (tileBytes == null || tileBytes.length == 0) {
+        MapTileReadService.TilePayload tile = tileReadService.readRasterTile(source, z, x, y, format);
+        if (tile == null) {
             response.setStatus(204);
             return;
         }
 
         // 3. 写入缓存
         if (cacheEnabled) {
-            cacheTile(cacheKey, tileBytes);
+            cacheTile(cacheKey, tile.getData());
         }
 
         // 4. 返回
-        writeRasterResponse(response, format, tileBytes, null);
+        writeRasterResponse(response, tile.getContentType(), tile.getData(), null);
     }
 
     // ── 矢量瓦片（MVT）────────────────────────────────────
@@ -169,122 +148,16 @@ public class TileController {
         return ApiResponse.ok(null);
     }
 
+    @PostMapping("/source/{id}/tile/task")
+    public ApiResponse<TaskRes> submitTileTask(@PathVariable String id) {
+        return ApiResponse.ok(taskService.submitTileTask(id));
+    }
+
     // ── 瓦片状态 ───────────────────────────────────────────
 
     @GetMapping("/source/{id}/tile/status")
-    public ApiResponse<MapSourceTile> tileStatus(@PathVariable String id) {
-        MapSourceTile tile = tileMapper.selectOne(
-                new LambdaQueryWrapper<MapSourceTile>().eq(MapSourceTile::getSourceId, id));
-        if (tile == null) throw BizException.notFound("瓦片信息");
-        return ApiResponse.ok(tile);
-    }
-
-    // ── 本地瓦片 ───────────────────────────────────────────
-
-    private byte[] serveLocalTile(SourceAggregate source, int z, int x, int y, String format) throws Exception {
-        MapSourceTile tile = tileMapper.selectOne(
-                new LambdaQueryWrapper<MapSourceTile>().eq(MapSourceTile::getSourceId, source.getId()));
-        if (tile == null || !"COMPLETED".equals(tile.getStatus())) return null;
-
-        String tilePath = tile.getPath() != null ? tile.getPath() : source.getId() + "/tiles";
-        Path filePath = Paths.get(rasterRootPath, source.getEntity().getLayerId(), tilePath,
-                String.valueOf(z), String.valueOf(x), y + "." + format);
-
-        if (!Files.exists(filePath)) return null;
-        return Files.readAllBytes(filePath);
-    }
-
-    // ── 代理外部瓦片 ───────────────────────────────────────
-
-    private byte[] proxyExternalTile(SourceAggregate source, int z, int x, int y, String format) {
-        MapSourceProxy proxy = proxyMapper.selectOne(
-                new LambdaQueryWrapper<MapSourceProxy>().eq(MapSourceProxy::getSourceId, source.getId()));
-        if (proxy == null) return null;
-
-        if ("DOWN".equals(proxy.getHealthStatus())) {
-            log.warn("External service DOWN: sourceId={}", source.getId());
-            return null;
-        }
-
-        String sourceType = source.getType();
-        String url = buildExternalUrl(proxy, sourceType, z, x, y, format);
-        if (url == null) return null;
-
-        try {
-            Request.Builder reqBuilder = new Request.Builder().url(url);
-            if (proxy.getAuthType() != null && !"NONE".equals(proxy.getAuthType())) {
-                attachAuth(reqBuilder, proxy);
-            }
-
-            Response resp = httpClient.newCall(reqBuilder.build()).execute();
-            if (resp.isSuccessful() && resp.body() != null) {
-                return resp.body().bytes();
-            }
-            log.warn("Proxy tile failed: sourceId={}, status={}", source.getId(), resp.code());
-            return null;
-        } catch (Exception e) {
-            log.error("Proxy tile error: sourceId={}", source.getId(), e);
-            proxy.setFailCount(proxy.getFailCount() + 1);
-            proxyMapper.updateById(proxy);
-            return null;
-        }
-    }
-
-    private String buildExternalUrl(MapSourceProxy proxy, String sourceType, int z, int x, int y, String format) {
-        String baseUrl = proxy.getUrl();
-        if (baseUrl == null) return null;
-        String base = baseUrl.replaceAll("/$", "");
-
-        return switch (sourceType) {
-            case "WMTS" -> {
-                String layer = proxy.getWmtsLayer() != null ? proxy.getWmtsLayer() : "";
-                String style = proxy.getWmtsStyle() != null ? proxy.getWmtsStyle() : "default";
-                String matrixSet = proxy.getWmtsMatrixSet() != null ? proxy.getWmtsMatrixSet() : "default";
-                String fmt = proxy.getWmtsFormat() != null ? proxy.getWmtsFormat() : "image/" + format;
-                yield base + "?SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile"
-                        + "&LAYER=" + layer
-                        + "&STYLE=" + style
-                        + "&TILEMATRIXSET=" + matrixSet
-                        + "&TILEMATRIX=" + z
-                        + "&TILEROW=" + y
-                        + "&TILECOL=" + x
-                        + "&FORMAT=" + fmt;
-            }
-            case "WMS" -> {
-                // WMS: z/x/y → BBOX 计算（简化实现，Web Mercator）
-                double resolution = 40075016.68557849 / (256 * Math.pow(2, z));
-                double minx = x * 256 * resolution - 20037508.342789244;
-                double miny = 20037508.342789244 - (y + 1) * 256 * resolution;
-                double maxx = (x + 1) * 256 * resolution - 20037508.342789244;
-                double maxy = 20037508.342789244 - y * 256 * resolution;
-                String layers = proxy.getWmtsLayer() != null ? proxy.getWmtsLayer() : "";
-                yield base + "?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap"
-                        + "&LAYERS=" + layers
-                        + "&BBOX=" + minx + "," + miny + "," + maxx + "," + maxy
-                        + "&SRS=EPSG:3857"
-                        + "&WIDTH=256&HEIGHT=256"
-                        + "&FORMAT=image/" + format;
-            }
-            // TMS: Y 轴翻转
-            case "TMS" -> base + "/" + z + "/" + x + "/" + ((1 << z) - 1 - y) + "." + format;
-            // XYZ: 标准
-            default -> base + "/" + z + "/" + x + "/" + y + "." + format;
-        };
-    }
-
-    private void attachAuth(Request.Builder builder, MapSourceProxy proxy) {
-        switch (proxy.getAuthType()) {
-            case "BASIC" -> {
-                String encoded = java.util.Base64.getEncoder()
-                        .encodeToString((proxy.getAuthValue() != null ? proxy.getAuthValue() : "").getBytes());
-                builder.addHeader("Authorization", "Basic " + encoded);
-            }
-            case "TOKEN" -> builder.addHeader("Authorization", "Bearer " + proxy.getAuthValue());
-            case "API_KEY" -> {
-                String header = proxy.getAuthHeader() != null ? proxy.getAuthHeader() : "X-API-Key";
-                builder.addHeader(header, proxy.getAuthValue());
-            }
-        }
+    public ApiResponse<SourceTileRes> tileStatus(@PathVariable String id) {
+        return ApiResponse.ok(queryFacadeService.getTileStatus(id));
     }
 
     // ── MBTiles 瓦片读取 ─────────────────────────────────────
@@ -302,50 +175,19 @@ public class TileController {
             @PathVariable int y,
             @RequestParam(defaultValue = "3857") int srid,
             HttpServletResponse response) throws Exception {
-
-        // 查找 MBTiles 文件路径
-        Path mbtilesPath = Paths.get(rasterRootPath, layerId, layerId + ".mbtiles");
-        if (!Files.exists(mbtilesPath)) {
-            response.setStatus(404);
-            return;
-        }
-
-        // 从 SQLite MBTiles 读取瓦片
-        // y 需要翻转: MBTiles 使用 TMS 坐标 (y = 2^z - 1 - y)
-        int tmsY = (1 << z) - 1 - y;
-        byte[] tileData = readMbtilesTile(mbtilesPath.toString(), z, x, tmsY);
-
+        byte[] tileData = tileReadService.readMbtilesTile(layerId, z, x, y);
         if (tileData == null || tileData.length == 0) {
-            response.setStatus(204);
+            response.setStatus(404);
             return;
         }
 
         writeMvtResponse(response, tileData, "\"" + layerId + "-" + z + "-" + x + "-" + y + "\"");
     }
 
-    private byte[] readMbtilesTile(String mbtilesPath, int z, int x, int y) {
-        // 使用 JDBC 查询 SQLite
-        try (var conn = java.sql.DriverManager.getConnection("jdbc:sqlite:" + mbtilesPath);
-             var ps = conn.prepareStatement(
-                     "SELECT tile_data FROM tiles WHERE zoom_level=? AND tile_column=? AND tile_row=?")) {
-            ps.setInt(1, z);
-            ps.setInt(2, x);
-            ps.setInt(3, y);
-            try (var rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getBytes("tile_data");
-                }
-            }
-        } catch (Exception e) {
-            log.error("MBTiles read error: path={}, z={}, x={}, y={}", mbtilesPath, z, x, y, e);
-        }
-        return null;
-    }
-
     // ── 响应写入 ───────────────────────────────────────────
 
-    private void writeRasterResponse(HttpServletResponse response, String format, byte[] data, String etag) throws Exception {
-        response.setContentType(getContentType(format));
+    private void writeRasterResponse(HttpServletResponse response, String contentType, byte[] data, String etag) throws Exception {
+        response.setContentType(contentType);
         response.setHeader("Cache-Control", "public, max-age=300");
         if (etag != null) response.setHeader("ETag", etag);
         response.getOutputStream().write(data);
@@ -376,11 +218,12 @@ public class TileController {
         } catch (Exception ignored) {}
     }
 
-    private String getContentType(String format) {
+    private String getRasterContentType(String format) {
         return switch (format.toLowerCase()) {
             case "jpeg", "jpg" -> "image/jpeg";
             case "webp" -> "image/webp";
             default -> "image/png";
         };
     }
+
 }

@@ -1,7 +1,7 @@
 package com.zynboot.map.controller;
 
 import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.mapper.MapSpatialMapper;
+import com.zynboot.map.service.MapFeatureService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +19,7 @@ import java.util.Map;
 @RequestMapping("/map")
 public class SearchController {
 
-    private final MapSpatialMapper spatialMapper;
+    private final MapFeatureService featureService;
 
     /**
      * BM25 全文搜索。
@@ -30,24 +30,13 @@ public class SearchController {
      * @param pageNum 页码
      * @param pageSize 每页数量
      */
-    @GetMapping("/layer/{layerId}/search")
+    @GetMapping("/layer/{layerId}/search/bm25")
     public ApiResponse<List<Map<String, Object>>> search(
             @PathVariable String layerId,
             @RequestParam String query,
             @RequestParam(required = false) String bbox,
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize) {
-
-        int offset = (pageNum - 1) * pageSize;
-
-        if (bbox != null && !bbox.isBlank()) {
-            String[] parts = bbox.split(",");
-            if (parts.length == 4) {
-                return ApiResponse.ok(spatialMapper.searchBm25WithBbox(
-                        layerId, query, parts[0], parts[1], parts[2], parts[3], pageSize, offset));
-            }
-        }
-
-        return ApiResponse.ok(spatialMapper.searchBm25(layerId, query, pageSize, offset));
+        return ApiResponse.ok(featureService.searchBm25(layerId, query, bbox, pageNum, pageSize));
     }
 }

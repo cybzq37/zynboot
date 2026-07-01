@@ -1,14 +1,11 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.entity.MapAsyncTask;
-import com.zynboot.map.infrastructure.mapper.MapAsyncTaskMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zynboot.map.response.task.TaskRes;
+import com.zynboot.map.service.MapTaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import com.zynboot.infra.web.version.ApiVersion;
 
 import java.util.List;
 
@@ -18,35 +15,23 @@ import java.util.List;
 @RequestMapping("/map/task")
 public class TaskController {
 
-    private final MapAsyncTaskMapper mapper;
+    private final MapTaskService taskService;
 
     @GetMapping
-    public ApiResponse<List<MapAsyncTask>> list(
+    public ApiResponse<List<TaskRes>> list(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String status) {
-        LambdaQueryWrapper<MapAsyncTask> wrapper = new LambdaQueryWrapper<MapAsyncTask>()
-                .eq(type != null, MapAsyncTask::getType, type)
-                .eq(status != null, MapAsyncTask::getStatus, status)
-                .orderByDesc(MapAsyncTask::getCreatedAt);
-        return ApiResponse.ok(mapper.selectList(wrapper));
+        return ApiResponse.ok(taskService.list(type, status));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<MapAsyncTask> getById(@PathVariable String id) {
-        MapAsyncTask task = mapper.selectById(id);
-        if (task == null) throw BizException.notFound("任务");
-        return ApiResponse.ok(task);
+    public ApiResponse<TaskRes> getById(@PathVariable String id) {
+        return ApiResponse.ok(taskService.getById(id));
     }
 
     @PostMapping("/{id}/cancel")
     public ApiResponse<Void> cancel(@PathVariable String id) {
-        MapAsyncTask task = mapper.selectById(id);
-        if (task == null) throw BizException.notFound("任务");
-        if (!"PENDING".equals(task.getStatus()) && !"RUNNING".equals(task.getStatus())) {
-            throw BizException.badRequest("任务已结束，无法取消");
-        }
-        task.setStatus("CANCELLED");
-        mapper.updateById(task);
+        taskService.cancel(id);
         return ApiResponse.ok(null);
     }
 }

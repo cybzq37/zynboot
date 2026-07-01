@@ -1,5 +1,6 @@
 package com.zynboot.map.domain.aggregate;
 
+import com.zynboot.kit.util.IdUtils;
 import com.zynboot.map.infrastructure.entity.MapLayerSource;
 
 public class SourceAggregate {
@@ -16,6 +17,7 @@ public class SourceAggregate {
 
     public static SourceAggregate create(String layerId, String name, String type, String format) {
         MapLayerSource source = new MapLayerSource();
+        source.setId(IdUtils.uuid());
         source.setLayerId(layerId);
         source.setName(name);
         source.setType(type);

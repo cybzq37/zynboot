@@ -1,17 +1,13 @@
 package com.zynboot.map.service;
 
 import com.zynboot.infra.redis.RedisClient;
-import com.zynboot.map.infrastructure.entity.MapSourceProxy;
 import com.zynboot.map.infrastructure.mapper.MapMvtMapper;
-import com.zynboot.map.infrastructure.mapper.MapSourceProxyMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Set;
 
 /**
  * 矢量瓦片服务（MVT）。
@@ -28,6 +24,7 @@ public class MvtService {
 
     private final MapMvtMapper mvtMapper;
     private final RedisClient redisClient;
+    private final LayerCacheVersionService layerCacheVersionService;
 
     @Value("${zyn.map.tile.mvt-cache-enabled:true}")
     private boolean cacheEnabled;
@@ -43,7 +40,8 @@ public class MvtService {
      * 优先查 Redis，未命中则调 PostGIS ST_AsMVT 生成。
      */
     public MvtResult getMvt(String layerId, int z, int x, int y, int srid) {
-        String cacheKey = buildCacheKey(layerId, z, x, y, srid);
+        long version = layerCacheVersionService.currentVersion(layerId);
+        String cacheKey = buildCacheKey(layerId, version, z, x, y, srid);
         String etag = null;
 
         // 1. 计算 ETag（用于 Nginx/浏览器 304 判断）
@@ -107,20 +105,12 @@ public class MvtService {
      * 数据变更时调用（导入/编辑/删除要素后）。
      */
     public void invalidateLayerCache(String layerId) {
-        if (!cacheEnabled) return;
-        try {
-            Set<String> keys = redisClient.scan("cache:mvt:" + layerId + ":*");
-            if (!keys.isEmpty()) {
-                redisClient.delete(keys);
-                log.info("MVT cache invalidated: layerId={}, keys={}", layerId, keys.size());
-            }
-        } catch (Exception e) {
-            log.debug("MVT cache invalidation error: {}", e.getMessage());
-        }
+        long version = layerCacheVersionService.bumpVersion(layerId);
+        log.info("MVT cache version bumped: layerId={}, version={}", layerId, version);
     }
 
-    private String buildCacheKey(String layerId, int z, int x, int y, int srid) {
-        return String.format("cache:mvt:%s:%d:%d:%d:%d", layerId, z, x, y, srid);
+    private String buildCacheKey(String layerId, long version, int z, int x, int y, int srid) {
+        return String.format("cache:mvt:%s:v%d:%d:%d:%d:%d", layerId, version, z, x, y, srid);
     }
 
     public record MvtResult(byte[] data, String etag, boolean fromCache) {}

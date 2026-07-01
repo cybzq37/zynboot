@@ -1,12 +1,9 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
 import com.zynboot.kit.response.ApiResponse;
 import com.zynboot.map.command.group.GroupSaveCmd;
-import com.zynboot.map.domain.aggregate.LayerGroupAggregate;
-import com.zynboot.map.domain.repository.LayerGroupRepository;
-import com.zynboot.map.handler.query.LayerGroupQueryHandler;
 import com.zynboot.map.response.group.GroupTreeRes;
+import com.zynboot.map.service.MapLayerGroupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -21,34 +18,28 @@ import java.util.List;
 @RequestMapping("/map/group")
 public class LayerGroupController {
 
-    private final LayerGroupRepository groupRepository;
-    private final LayerGroupQueryHandler groupQueryHandler;
+    private final MapLayerGroupService layerGroupService;
 
     @GetMapping("/tree")
     public ApiResponse<List<GroupTreeRes>> tree() {
-        return ApiResponse.ok(groupQueryHandler.getTree());
+        return ApiResponse.ok(layerGroupService.tree());
     }
 
     @PostMapping
     public ApiResponse<Void> create(@Valid @RequestBody GroupSaveCmd cmd) {
-        LayerGroupAggregate group = LayerGroupAggregate.create(cmd.getParentId(), cmd.getName());
-        group.updateInfo(cmd.getName(), cmd.getDescription(), cmd.getSortOrder(), cmd.getIcon(), cmd.getColor());
-        groupRepository.save(group);
+        layerGroupService.create(cmd);
         return ApiResponse.ok(null);
     }
 
     @PutMapping("/{id}")
     public ApiResponse<Void> update(@PathVariable String id, @Valid @RequestBody GroupSaveCmd cmd) {
-        LayerGroupAggregate group = groupRepository.findById(id)
-                .orElseThrow(() -> BizException.notFound("分组"));
-        group.updateInfo(cmd.getName(), cmd.getDescription(), cmd.getSortOrder(), cmd.getIcon(), cmd.getColor());
-        groupRepository.update(group);
+        layerGroupService.update(id, cmd);
         return ApiResponse.ok(null);
     }
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        groupRepository.delete(id);
+        layerGroupService.delete(id);
         return ApiResponse.ok(null);
     }
 }

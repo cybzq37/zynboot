@@ -36,6 +36,26 @@ public class PostgisFeatureQueryHandler implements FeatureQueryHandler {
     }
 
     @Override
+    public List<Map<String, Object>> list(String sourceId, String layerId, int limit, int offset) {
+        MapLayerSource source = sourceMapper.selectById(sourceId);
+        if (source == null || source.getDataSourceId() == null) return Collections.emptyList();
+
+        MapDataSource ds = dataSourceMapper.selectById(source.getDataSourceId());
+        if (ds == null) return Collections.emptyList();
+
+        String schema = source.getExternalSchema() != null ? source.getExternalSchema() : ds.getSchemaName();
+        String table = source.getExternalTable();
+        String geomCol = source.getExternalGeomCol() != null ? source.getExternalGeomCol() : "geom";
+        String idCol = source.getExternalIdCol() != null ? source.getExternalIdCol() : "gid";
+
+        String sql = String.format(
+                "SELECT %s AS id, row_to_json(t) AS properties, ST_AsGeoJSON(%s) AS geometry " +
+                        "FROM %s.%s t LIMIT ? OFFSET ?",
+                idCol, geomCol, schema, table);
+        return executeOnDataSource(ds, sql, limit, offset);
+    }
+
+    @Override
     public List<Map<String, Object>> queryByBbox(String sourceId, String layerId,
                                                   double[] bbox, int limit, int offset) {
         MapLayerSource source = sourceMapper.selectById(sourceId);

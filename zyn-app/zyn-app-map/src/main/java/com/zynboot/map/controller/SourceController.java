@@ -1,15 +1,11 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.domain.aggregate.SourceAggregate;
-import com.zynboot.map.domain.repository.SourceRepository;
-import com.zynboot.map.infrastructure.entity.MapLayerSource;
-import com.zynboot.map.infrastructure.mapper.MapFeatureMapper;
+import com.zynboot.map.response.source.SourceRes;
+import com.zynboot.map.service.MapSourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import com.zynboot.infra.web.version.ApiVersion;
 
 import java.util.List;
 
@@ -19,24 +15,21 @@ import java.util.List;
 @RequestMapping("/map")
 public class SourceController {
 
-    private final SourceRepository sourceRepository;
-    private final MapFeatureMapper featureMapper;
+    private final MapSourceService sourceService;
 
     @GetMapping("/layer/{layerId}/source")
-    public ApiResponse<List<SourceAggregate>> listByLayer(@PathVariable String layerId) {
-        return ApiResponse.ok(sourceRepository.findByLayerId(layerId));
+    public ApiResponse<List<SourceRes>> listByLayer(@PathVariable String layerId) {
+        return ApiResponse.ok(sourceService.listByLayer(layerId));
     }
 
     @GetMapping("/source/{id}")
-    public ApiResponse<MapLayerSource> getById(@PathVariable String id) {
-        SourceAggregate source = sourceRepository.findById(id)
-                .orElseThrow(() -> BizException.notFound("数据源"));
-        return ApiResponse.ok(source.getEntity());
+    public ApiResponse<SourceRes> getById(@PathVariable String id) {
+        return ApiResponse.ok(sourceService.getById(id));
     }
 
     @DeleteMapping("/source/{id}")
     public ApiResponse<Void> delete(@PathVariable String id) {
-        sourceRepository.delete(id);
+        sourceService.delete(id);
         return ApiResponse.ok(null);
     }
 }

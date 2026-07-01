@@ -35,6 +35,13 @@ public class EsFeatureQueryHandler implements FeatureQueryHandler {
     }
 
     @Override
+    public List<Map<String, Object>> list(String sourceId, String layerId, int limit, int offset) {
+        MapLayerSource source = sourceMapper.selectById(sourceId);
+        if (source == null || source.getDataSourceId() == null) return Collections.emptyList();
+        return executeSearch(source.getDataSourceId(), "{\"match_all\": {}}", limit, offset);
+    }
+
+    @Override
     public List<Map<String, Object>> queryByBbox(String sourceId, String layerId,
                                                   double[] bbox, int limit, int offset) {
         MapLayerSource source = sourceMapper.selectById(sourceId);
@@ -96,7 +103,25 @@ public class EsFeatureQueryHandler implements FeatureQueryHandler {
 
     @Override
     public long countByBbox(String sourceId, String layerId, double[] bbox) {
-        return count(sourceId, layerId);
+        MapLayerSource source = sourceMapper.selectById(sourceId);
+        if (source == null || source.getDataSourceId() == null) return 0;
+
+        String geomField = source.getExternalGeomCol() != null ? source.getExternalGeomCol() : "location";
+        String jsonQuery = """
+                {
+                  "bool": {
+                    "filter": {
+                      "geo_bounding_box": {
+                        "%s": {
+                          "top_left": { "lat": %f, "lon": %f },
+                          "bottom_right": { "lat": %f, "lon": %f }
+                        }
+                      }
+                    }
+                  }
+                }
+                """.formatted(geomField, bbox[3], bbox[0], bbox[1], bbox[2]);
+        return executeCount(source.getDataSourceId(), jsonQuery);
     }
 
     private List<Map<String, Object>> executeSearch(String dataSourceId, String jsonQuery, int limit, int offset) {
@@ -123,6 +148,17 @@ public class EsFeatureQueryHandler implements FeatureQueryHandler {
         } catch (Exception e) {
             log.error("ES search failed: {}", e.getMessage());
             return Collections.emptyList();
+        }
+    }
+
+    private long executeCount(String dataSourceId, String jsonQuery) {
+        try {
+            EsClient esClient = esClientManager.getOrCreateEsClient(dataSourceId);
+            Query query = new StringQuery(jsonQuery);
+            return esClient.getOperations().count(query, Object.class);
+        } catch (Exception e) {
+            log.error("ES count failed: {}", e.getMessage());
+            return 0;
         }
     }
 

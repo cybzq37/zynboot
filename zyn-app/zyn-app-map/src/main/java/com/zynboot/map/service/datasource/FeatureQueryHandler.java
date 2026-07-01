@@ -14,6 +14,11 @@ public interface FeatureQueryHandler {
     boolean supports(String sourceType);
 
     /**
+     * 列表查询。
+     */
+    List<Map<String, Object>> list(String sourceId, String layerId, int limit, int offset);
+
+    /**
      * 空间查询（bbox 范围内）。
      *
      * @param sourceId 数据源 ID

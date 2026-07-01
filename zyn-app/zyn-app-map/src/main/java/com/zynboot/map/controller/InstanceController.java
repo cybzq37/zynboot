@@ -1,19 +1,16 @@
 package com.zynboot.map.controller;
 
-import com.zynboot.kit.exception.BizException;
+import com.zynboot.infra.web.version.ApiVersion;
 import com.zynboot.kit.response.ApiResponse;
-import com.zynboot.map.infrastructure.entity.MapInstance;
-import com.zynboot.map.infrastructure.entity.MapInstanceLayer;
-import com.zynboot.map.infrastructure.entity.MapPublish;
-import com.zynboot.map.infrastructure.mapper.MapInstanceMapper;
-import com.zynboot.map.infrastructure.mapper.MapInstanceLayerMapper;
-import com.zynboot.map.infrastructure.mapper.MapPublishMapper;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.zynboot.map.command.instance.InstanceLayerSaveCmd;
+import com.zynboot.map.command.instance.InstanceSaveCmd;
+import com.zynboot.map.response.instance.InstanceLayerRes;
+import com.zynboot.map.response.instance.InstanceRes;
+import com.zynboot.map.response.instance.PublishRes;
+import com.zynboot.map.service.MapInstanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
-import com.zynboot.infra.web.version.ApiVersion;
 
 import java.util.List;
 
@@ -23,90 +20,58 @@ import java.util.List;
 @RequestMapping("/map")
 public class InstanceController {
 
-    private final MapInstanceMapper instanceMapper;
-    private final MapInstanceLayerMapper instanceLayerMapper;
-    private final MapPublishMapper publishMapper;
-
-    // ── Instance CRUD ──────────────────────────────────────
+    private final MapInstanceService instanceService;
 
     @GetMapping("/instance")
-    public ApiResponse<List<MapInstance>> listInstances() {
-        return ApiResponse.ok(instanceMapper.selectList(null));
+    public ApiResponse<List<InstanceRes>> listInstances() {
+        return ApiResponse.ok(instanceService.listInstances());
     }
 
     @GetMapping("/instance/{id}")
-    public ApiResponse<MapInstance> getInstance(@PathVariable String id) {
-        MapInstance instance = instanceMapper.selectById(id);
-        if (instance == null) throw BizException.notFound("地图实例");
-        return ApiResponse.ok(instance);
+    public ApiResponse<InstanceRes> getInstance(@PathVariable String id) {
+        return ApiResponse.ok(instanceService.getInstance(id));
     }
 
     @PostMapping("/instance")
-    public ApiResponse<Void> createInstance(@Valid @RequestBody MapInstance instance) {
-        instanceMapper.insert(instance);
-        return ApiResponse.ok(null);
+    public ApiResponse<InstanceRes> createInstance(@Valid @RequestBody InstanceSaveCmd cmd) {
+        return ApiResponse.ok(instanceService.createInstance(cmd));
     }
 
     @PutMapping("/instance/{id}")
-    public ApiResponse<Void> updateInstance(@PathVariable String id, @Valid @RequestBody MapInstance instance) {
-        instance.setId(id);
-        instanceMapper.updateById(instance);
-        return ApiResponse.ok(null);
+    public ApiResponse<InstanceRes> updateInstance(@PathVariable String id, @Valid @RequestBody InstanceSaveCmd cmd) {
+        return ApiResponse.ok(instanceService.updateInstance(id, cmd));
     }
 
     @DeleteMapping("/instance/{id}")
     public ApiResponse<Void> deleteInstance(@PathVariable String id) {
-        instanceLayerMapper.delete(
-                new LambdaQueryWrapper<MapInstanceLayer>().eq(MapInstanceLayer::getInstanceId, id));
-        publishMapper.delete(
-                new LambdaQueryWrapper<MapPublish>().eq(MapPublish::getInstanceId, id));
-        instanceMapper.deleteById(id);
+        instanceService.deleteInstance(id);
         return ApiResponse.ok(null);
     }
 
-    // ── Instance Layer ─────────────────────────────────────
-
     @GetMapping("/instance/{id}/layers")
-    public ApiResponse<List<MapInstanceLayer>> getLayers(@PathVariable String id) {
-        return ApiResponse.ok(instanceLayerMapper.selectList(
-                new LambdaQueryWrapper<MapInstanceLayer>()
-                        .eq(MapInstanceLayer::getInstanceId, id)
-                        .orderByAsc(MapInstanceLayer::getRenderOrder)));
+    public ApiResponse<List<InstanceLayerRes>> getLayers(@PathVariable String id) {
+        return ApiResponse.ok(instanceService.getLayers(id));
     }
 
     @PutMapping("/instance/{id}/layers")
-    public ApiResponse<Void> updateLayers(@PathVariable String id, @RequestBody List<MapInstanceLayer> layers) {
-        // 整体替换
-        instanceLayerMapper.delete(
-                new LambdaQueryWrapper<MapInstanceLayer>().eq(MapInstanceLayer::getInstanceId, id));
-        for (MapInstanceLayer layer : layers) {
-            layer.setInstanceId(id);
-            instanceLayerMapper.insert(layer);
-        }
+    public ApiResponse<Void> updateLayers(@PathVariable String id, @RequestBody List<InstanceLayerSaveCmd> layers) {
+        instanceService.updateLayers(id, layers);
         return ApiResponse.ok(null);
     }
 
-    // ── Publish ─────────────────────────────────────────────
-
     @GetMapping("/instance/{id}/publish")
-    public ApiResponse<List<MapPublish>> listPublish(@PathVariable String id) {
-        return ApiResponse.ok(publishMapper.selectList(
-                new LambdaQueryWrapper<MapPublish>().eq(MapPublish::getInstanceId, id)));
+    public ApiResponse<List<PublishRes>> listPublish(@PathVariable String id) {
+        return ApiResponse.ok(instanceService.listPublish(id));
     }
 
     @PostMapping("/instance/{id}/publish")
-    public ApiResponse<MapPublish> publish(@PathVariable String id) {
-        MapPublish pub = new MapPublish();
-        pub.setInstanceId(id);
-        pub.setType("PUBLIC");
-        pub.setIsActive(true);
-        publishMapper.insert(pub);
-        return ApiResponse.ok(pub);
+    public ApiResponse<PublishRes> publish(@PathVariable String id) {
+        return ApiResponse.ok(instanceService.publish(id));
     }
 
     @DeleteMapping("/publish/{id}")
     public ApiResponse<Void> deletePublish(@PathVariable String id) {
-        publishMapper.deleteById(id);
+        instanceService.deletePublish(id);
         return ApiResponse.ok(null);
     }
 }

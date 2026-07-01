@@ -1,5 +1,6 @@
 package com.zynboot.map.domain.aggregate;
 
+import com.zynboot.kit.util.IdUtils;
 import com.zynboot.map.infrastructure.entity.MapLayer;
 
 public class LayerAggregate {
@@ -14,12 +15,14 @@ public class LayerAggregate {
         return new LayerAggregate(entity);
     }
 
-    public static LayerAggregate create(String groupId, String name, String type, Integer targetSrid) {
+    public static LayerAggregate create(String groupId, String name, String type, Integer targetSrid, String geometryType) {
         MapLayer layer = new MapLayer();
+        layer.setId(IdUtils.uuid());
         layer.setGroupId(groupId);
         layer.setName(name);
         layer.setType(type);
         layer.setTargetSrid(targetSrid);
+        layer.setGeometryType(geometryType);
         layer.setFeatureCount(0);
         layer.setSourceCount(0);
         layer.setRenderOrder(0);
@@ -55,6 +58,13 @@ public class LayerAggregate {
         if (minZoom != null) entity.setMinZoom(minZoom);
         if (maxZoom != null) entity.setMaxZoom(maxZoom);
         if (opacity != null) entity.setOpacity(opacity);
+    }
+
+    public void updateStructure(String groupId, String type, Integer targetSrid, String geometryType) {
+        if (groupId != null) entity.setGroupId(groupId);
+        if (type != null) entity.setType(type);
+        if (targetSrid != null) entity.setTargetSrid(targetSrid);
+        if (geometryType != null) entity.setGeometryType(geometryType);
     }
 
     public void incrementFeatureCount(int count) {
